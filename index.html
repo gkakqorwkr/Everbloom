@@ -7,21 +7,49 @@
   <title>에버브림 TRPG</title>
 
   <style>
-    :root{
-      --bg:#0f0f14;
-      --panel:#171720;
-      --panel2:#1d1d2a;
-      --txt:#f2f2f2;
-      --muted:#b9b9c6;
-      --line:rgba(255,255,255,.10);
-      --line2:rgba(255,255,255,.14);
-      --accent:#b59cff;
-      --good:#9ad59a;
-      --warn:#f0d28a;
-      --bad:#ff8a8a;
-      --r:18px;
-      --shadow: 0 16px 40px rgba(0,0,0,.45);
-    }
+  :root{
+  /* Everbloom: wisteria + ruins + soft mist */
+  --bg: #f5f3ff;          /* 연보라빛 안개 */
+  --panel: rgba(255,255,255,.66); /* 유리판 */
+  --panel2: rgba(255,255,255,.52);
+  --stroke: rgba(70,50,95,.16);
+
+  --txt: #1f1630;         /* 잉크 보라 */
+  --muted: rgba(31,22,48,.62);
+
+  --accent: #7c5cff;      /* 등나무 보라 */
+  --accent2:#35b39a;      /* 숲의 민트 */
+  --good: #1f9b6c;
+  --bad: #d84b78;
+
+  --btn: rgba(124,92,255,.16);
+  --btn2: rgba(53,179,154,.14);
+
+  --r: 18px;
+}
+    body{
+  background:
+    radial-gradient(900px 600px at 20% 10%, rgba(124,92,255,.20), transparent 60%),
+    radial-gradient(900px 600px at 80% 0%, rgba(53,179,154,.18), transparent 55%),
+    radial-gradient(1100px 800px at 50% 110%, rgba(255,214,140,.18), transparent 55%),
+    var(--bg);
+  color: var(--txt);
+}
+
+.card{
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.btn{
+  background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25));
+  border: 1px solid var(--stroke);
+}
+.pill{
+  background: rgba(255,255,255,.45);
+  border: 1px solid var(--stroke);
+}
     *{ box-sizing:border-box; }
     html,body{ height:100%; }
     body{
