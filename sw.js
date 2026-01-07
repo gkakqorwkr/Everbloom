@@ -1,9 +1,15 @@
-const CACHE = "everbloom-cache-v3";
+const CACHE = "everbloom-cache-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./sw.js"
+  "./sw.js",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png",
+  "./splash-1179x2556.png",
+  "./splash-1290x2796.png",
+  "./splash-1170x2532.png"
 ];
 
 self.addEventListener("install", (e) => {
