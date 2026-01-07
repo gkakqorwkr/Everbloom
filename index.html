@@ -135,6 +135,223 @@
 </head>
 
 <body>
+  <section id="charGen" style="margin:16px 0; padding:14px; border:1px solid rgba(255,255,255,.12); border-radius:14px;">
+  <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+    <div style="font-weight:800; font-size:18px;">🧙 캐릭터 이미지 프롬프트 생성기</div>
+    <div style="opacity:.7; font-size:12px;">(선택 → 생성 → 복사)</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+    <label>
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">성별/스타일</div>
+      <select id="cgGender" style="width:100%; padding:10px; border-radius:12px;">
+        <option value="random">랜덤</option>
+        <option value="female">여성</option>
+        <option value="male">남성</option>
+        <option value="androgynous">중성</option>
+      </select>
+    </label>
+
+    <label>
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">분위기</div>
+      <select id="cgMood" style="width:100%; padding:10px; border-radius:12px;">
+        <option value="random">랜덤</option>
+        <option value="gentle">순둥/따뜻</option>
+        <option value="cool">쿨/무심</option>
+        <option value="mysterious">신비/음영</option>
+        <option value="royal">귀족/우아</option>
+        <option value="wild">야성/험상</option>
+      </select>
+    </label>
+
+    <label>
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">종족(TRPG)</div>
+      <select id="cgRace" style="width:100%; padding:10px; border-radius:12px;">
+        <option value="random">랜덤</option>
+        <option value="human">인간</option>
+        <option value="elf">엘프</option>
+        <option value="half-elf">하프엘프</option>
+        <option value="dwarf">드워프</option>
+        <option value="tiefling">티플링</option>
+        <option value="dragonborn">드래곤본</option>
+        <option value="catfolk">캣포크(고양이)</option>
+      </select>
+    </label>
+
+    <label>
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">직업(TRPG)</div>
+      <select id="cgClass" style="width:100%; padding:10px; border-radius:12px;">
+        <option value="random">랜덤</option>
+        <option value="fighter">파이터</option>
+        <option value="ranger">레인저</option>
+        <option value="rogue">로그</option>
+        <option value="wizard">위저드</option>
+        <option value="sorcerer">소서러</option>
+        <option value="cleric">클레릭</option>
+        <option value="paladin">팔라딘</option>
+        <option value="bard">바드</option>
+        <option value="druid">드루이드</option>
+      </select>
+    </label>
+
+    <label style="grid-column:1 / -1;">
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">추가 키워드(선택)</div>
+      <input id="cgExtra" placeholder="예: wisteria forest, ancient ruins, soft light, purple flowers"
+             style="width:100%; padding:10px; border-radius:12px;" />
+    </label>
+  </div>
+
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+    <button id="cgGenBtn" style="padding:10px 14px; border-radius:12px; font-weight:800;">생성</button>
+    <button id="cgCopyBtn" style="padding:10px 14px; border-radius:12px;">프롬프트 복사</button>
+    <button id="cgRerollBtn" style="padding:10px 14px; border-radius:12px; opacity:.85;">랜덤 리롤</button>
+  </div>
+
+  <div style="margin-top:12px;">
+    <div style="font-size:12px; opacity:.8; margin-bottom:6px;">생성된 프롬프트</div>
+    <textarea id="cgPrompt" rows="6" style="width:100%; padding:10px; border-radius:12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;"></textarea>
+  </div>
+</section>
+
+<script>
+(function(){
+  // ====== 데이터(원하면 너 취향대로 계속 추가) ======
+  const genderMap = {
+    female: "female",
+    male: "male",
+    androgynous: "androgynous",
+  };
+  const moodMap = {
+    gentle: ["gentle face", "warm smile", "soft eyes", "cozy vibe"],
+    cool: ["cool gaze", "minimal expression", "clean silhouette", "sharp mood"],
+    mysterious: ["mysterious aura", "dramatic shadows", "foggy atmosphere", "ancient secret vibe"],
+    royal: ["elegant posture", "noble outfit", "ornate details", "regal mood"],
+    wild: ["rugged look", "battle-worn outfit", "dynamic pose", "feral energy"],
+  };
+  const raceMap = {
+    human: ["human"],
+    elf: ["elf", "long ears"],
+    "half-elf": ["half-elf", "subtle elven features"],
+    dwarf: ["dwarf", "sturdy build"],
+    tiefling: ["tiefling", "small horns", "tail"],
+    dragonborn: ["dragonborn", "scaled skin"],
+    catfolk: ["catfolk", "cat ears", "tail"],
+  };
+  const classMap = {
+    fighter: ["fighter", "armor", "sword"],
+    ranger: ["ranger", "hood", "bow", "forest traveler"],
+    rogue: ["rogue", "cloak", "dagger", "stealthy"],
+    wizard: ["wizard", "robe", "staff", "arcane glow"],
+    sorcerer: ["sorcerer", "magic aura", "glowing hands"],
+    cleric: ["cleric", "holy symbol", "soft divine light"],
+    paladin: ["paladin", "plate armor", "radiant light"],
+    bard: ["bard", "lute", "charming smile"],
+    druid: ["druid", "nature magic", "leaf motifs"],
+  };
+
+  const sharedStyle = [
+    "fantasy character concept art",
+    "high detail",
+    "soft cinematic lighting",
+    "clean composition",
+  ];
+
+  // “Everblom” 기본 세계관 느낌(숲/유적/등나무)
+  const everblomWorld = [
+    "wisteria forest",
+    "ancient mossy ruins",
+    "sunlight through leaves",
+    "soft mist",
+    "green & purple palette",
+  ];
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function pickFromMap(map, key){
+    if(key === "random") return rand(Object.values(map));
+    return map[key];
+  }
+  function pickKey(map){
+    const keys = Object.keys(map);
+    return keys[Math.floor(Math.random()*keys.length)];
+  }
+
+  function buildPrompt(opts){
+    const genderKey = (opts.gender === "random") ? pickKey(genderMap) : opts.gender;
+    const moodKey   = (opts.mood === "random") ? pickKey(moodMap) : opts.mood;
+    const raceKey   = (opts.race === "random") ? pickKey(raceMap) : opts.race;
+    const classKey  = (opts.clazz === "random") ? pickKey(classMap) : opts.clazz;
+
+    const genderStr = genderMap[genderKey] || "androgynous";
+    const moodTags  = moodMap[moodKey] || [];
+    const raceTags  = raceMap[raceKey] || [];
+    const classTags = classMap[classKey] || [];
+
+    const extra = (opts.extra || "").trim();
+
+    // Prompt (Stable Diffusion / Midjourney 둘 다 무난하게)
+    const parts = [
+      ...sharedStyle,
+      ...everblomWorld,
+      genderStr,
+      ...raceTags,
+      ...classTags,
+      ...moodTags,
+      "full body",
+      "standing pose",
+      "no text",
+      "no watermark",
+    ];
+
+    if(extra) parts.push(extra);
+
+    // 한 줄로 보기 좋게
+    return parts.join(", ");
+  }
+
+  const $gender = document.getElementById("cgGender");
+  const $mood   = document.getElementById("cgMood");
+  const $race   = document.getElementById("cgRace");
+  const $class  = document.getElementById("cgClass");
+  const $extra  = document.getElementById("cgExtra");
+  const $prompt = document.getElementById("cgPrompt");
+
+  function generate(){
+    const p = buildPrompt({
+      gender: $gender.value,
+      mood: $mood.value,
+      race: $race.value,
+      clazz: $class.value,
+      extra: $extra.value
+    });
+    $prompt.value = p;
+  }
+
+  document.getElementById("cgGenBtn").addEventListener("click", generate);
+
+  document.getElementById("cgRerollBtn").addEventListener("click", () => {
+    $gender.value = "random";
+    $mood.value = "random";
+    $race.value = "random";
+    $class.value = "random";
+    generate();
+  });
+
+  document.getElementById("cgCopyBtn").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText($prompt.value || "");
+      alert("복사됨!");
+    }catch(e){
+      // iOS에서 클립보드 권한이 꼬이면 대비
+      $prompt.focus();
+      $prompt.select();
+      alert("복사 실패하면 텍스트 길게 눌러서 '복사' 해줘!");
+    }
+  });
+
+  // 처음 로드시 한 번 생성
+  generate();
+})();
+</script>
 <div id="app">
   <header>
     <div>
