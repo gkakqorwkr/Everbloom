@@ -8,22 +8,31 @@
 
   <style>
   :root{
-  /* Everbloom: wisteria + ruins + soft mist */
-  --bg: #f5f3ff;          /* 연보라빛 안개 */
-  --panel: rgba(255,255,255,.66); /* 유리판 */
-  --panel2: rgba(255,255,255,.52);
-  --stroke: rgba(70,50,95,.16);
+  --font-title: 'Cinzel', 'Shippori Mincho', serif;
+  --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+}
+    
+  /* BG: 밝지 않은 연보라 안개 */
+  --bg: #1b1824;
 
-  --txt: #1f1630;         /* 잉크 보라 */
-  --muted: rgba(31,22,48,.62);
+  /* 카드/패널 */
+  --panel: rgba(36,32,50,.82);
+  --panel2: rgba(30,26,44,.78);
+  --stroke: rgba(170,150,210,.14);
 
-  --accent: #7c5cff;      /* 등나무 보라 */
-  --accent2:#35b39a;      /* 숲의 민트 */
-  --good: #1f9b6c;
-  --bad: #d84b78;
+  /* 텍스트 */
+  --txt: #ece9f6;
+  --muted: rgba(236,233,246,.62);
 
-  --btn: rgba(124,92,255,.16);
-  --btn2: rgba(53,179,154,.14);
+  /* 포인트 컬러 */
+  --accent: #8b78ff;     /* 등나무 보라 */
+  --accent2:#3fbf9b;     /* 숲 민트 */
+  --good: #41c48a;
+  --bad: #e06a8a;
+
+  /* 버튼 */
+  --btn: rgba(139,120,255,.22);
+  --btn2: rgba(63,191,155,.18);
 
   --r: 18px;
 }
@@ -34,6 +43,21 @@
     radial-gradient(1100px 800px at 50% 110%, rgba(255,214,140,.18), transparent 55%),
     var(--bg);
   color: var(--txt);
+}
+
+.card{
+  background: var(--panel);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.btn{
+  background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.25));
+  border: 1px solid var(--stroke);
+}
+.pill{
+  background: rgba(255,255,255,.45);
+  border: 1px solid var(--stroke);
 }
 
 .card{
@@ -309,10 +333,21 @@
       .actions{ grid-template-columns: 1fr; }
       .pill{ width:100%; justify-content:space-between; }
     }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
   </style>
 </head>
 
 <body>
+  body{font-family: var(--font-body);
+}
+  
+.title, h1, h2, h3, .section-title{
+  font-family: var(--font-title);
+  letter-spacing: .04em;
+}
+  
 <div class="app">
   <header>
     <div class="brand">
