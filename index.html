@@ -205,6 +205,20 @@
   </style>
 </head>
 
+  <script>
+  window.addEventListener("load", () => {
+    const fakeSplash = document.getElementById("fake-splash");
+    const app = document.getElementById("app");
+
+    if (fakeSplash) {
+      setTimeout(() => {
+        fakeSplash.style.display = "none";
+        if (app) app.style.display = "block";
+      }, 800); // 0.8초 후 사라짐
+    }
+  });
+</script>
+  
 <body>
   <div id="tapStart" class="hidden">
   <div class="box">
