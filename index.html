@@ -10,8 +10,7 @@
   :root{
   --font-title: 'Cinzel', 'Shippori Mincho', serif;
   --font-body: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
-}
-    
+
   /* BG: 밝지 않은 연보라 안개 */
   --bg: #1b1824;
 
@@ -25,24 +24,26 @@
   --muted: rgba(236,233,246,.62);
 
   /* 포인트 컬러 */
-  --accent: #8b78ff;     /* 등나무 보라 */
-  --accent2:#3fbf9b;     /* 숲 민트 */
+  --accent: #8b78ff;  /* 등나무 보라 */
+  --accent2:#3fbf9b;  /* 숲 민트 */
   --good: #41c48a;
-  --bad: #e06a8a;
+  --bad:  #e06a8a;
 
   /* 버튼 */
-  --btn: rgba(139,120,255,.22);
+  --btn:  rgba(139,120,255,.22);
   --btn2: rgba(63,191,155,.18);
 
   --r: 18px;
 }
-    body{
+
+body{
   background:
-    radial-gradient(900px 600px at 20% 10%, rgba(124,92,255,.20), transparent 60%),
-    radial-gradient(900px 600px at 80% 0%, rgba(53,179,154,.18), transparent 55%),
-    radial-gradient(1100px 800px at 50% 110%, rgba(255,214,140,.18), transparent 55%),
+    radial-gradient(900px 600px at 20% 5%, rgba(139,120,255,.22), transparent 60%),
+    radial-gradient(900px 600px at 80% 20%, rgba(63,191,155,.18), transparent 55%),
+    radial-gradient(1100px 800px at 45% 90%, rgba(255,255,255,.06), transparent 55%),
     var(--bg);
   color: var(--txt);
+  font-family: var(--font-body);
 }
 
 .card{
