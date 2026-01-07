@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>에버브림 : TRPG 시뮬레이션</title>
+
+<link rel="manifest" href="data:application/json,{
+ &quot;name&quot;:&quot;에버브림 TRPG&quot;,
+ &quot;short_name&quot;:&quot;에버브림&quot;,
+ &quot;display&quot;:&quot;standalone&quot;,
+ &quot;start_url&quot;:&quot;.&quot;
+}">
+<meta name="theme-color" content="#0f0f14">
+
+<style>
+body{
+ margin:0;background:#0f0f14;color:#eee;
+ font-family:system-ui;height:100dvh;
+ display:flex;justify-content:center;align-items:center;
+}
+#game{
+ width:100%;max-width:760px;height:100%;
+ padding:14px;box-sizing:border-box;
+ display:flex;flex-direction:column;
+}
+#log{
+ flex:1;overflow-y:auto;
+ background:#171720;padding:14px;
+ border-radius:14px;
+}
+#choices{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:10px;margin-top:10px;
+}
+button{
+ padding:16px;border:none;border-radius:14px;
+ background:#2d2d44;color:white;
+ font-size:16px;
+}
+button:active{transform:scale(.97)}
+#status{
+ margin-top:6px;font-size:12px;
+ color:#aaa;text-align:center;
+}
+</style>
+</head>
+
+<body>
+<div id="game">
+ <div id="log"></div>
+ <div id="choices"></div>
+ <div id="status"></div>
+</div>
+
+<script>
+// ================= SAVE =================
+const SAVE="everbloom_full";
+function save(){localStorage.setItem(SAVE,JSON.stringify(state))}
+function load(){
+ let d=localStorage.getItem(SAVE);
+ if(d){state=JSON.parse(d);write("🔄 저장된 모험 재개");return true}
+ return false
+}
+
+// ================= STATE =================
+let state={
+ job:null,area:"숲",
+ hp:100,food:60,gold:30,fame:0,moral:0,
+ turn:0,
+ inventory:[],
+ companion:null,
+ alive:true
+}
+
+const jobs={
+ 전사:{bonus:20},
+ 정찰자:{bonus:30},
+ 학자:{bonus:25}
+}
+
+const areas={
+ 숲:["유적","마을"],
+ 유적:["숲","황무지"],
+ 마을:["숲"],
+ 황무지:["유적"]
+}
+
+// ================= UI =================
+const log=document.getElementById("log");
+const choices=document.getElementById("choices");
+const status=document.getElementById("status");
+
+function write(t){
+ log.innerHTML+=`• ${t}<br>`;
+ log.scrollTop=log.scrollHeight;
+}
+function clear(){choices.innerHTML=""}
+function btn(t,f){
+ let b=document.createElement("button");
+ b.textContent=t;b.onclick=f;
+ choices.appendChild(b);
+}
+function update(){
+ status.textContent=
+ `직업:${state.job||"-"} | 지역:${state.area} | 체:${state.hp} | 식:${state.food} | 금:${state.gold} | 명:${state.fame} | 도덕:${state.moral}`
+}
+
+// ================= CORE =================
+function roll(p){return Math.random()*100<p}
+
+function chooseJob(){
+ write("당신은 어떤 길을 걷겠는가?");
+ clear();
+ Object.keys(jobs).forEach(j=>{
+  btn(j,()=>{state.job=j;write(`${j} 선택`);next()})
+ })
+}
+
+function move(){
+ clear();
+ write("이동할 지역을 선택하라.");
+ areas[state.area].forEach(a=>{
+  btn(a,()=>{
+   state.area=a;
+   state.food-=10;
+   write(`🗺️ ${a}로 이동`);
+   randomEvent();
+   next();
+  })
+ })
+}
+
+function explore(){
+ state.food-=8;state.turn++;
+ write("🔍 탐험 중...");
+ let chance=40+jobs[state.job].bonus;
+ if(roll(chance)){
+  state.gold+=20;
+  write("보물 발견");
+  if(Math.random()<0.3){
+   state.inventory.push("포션");
+   write("포션 획득");
+  }
+ }else{
+  state.hp-=20;
+  write("함정 피해");
+ }
+ next();
+}
+
+function event(){
+ state.turn++;
+ write("📜 사건 발생");
+ let r=Math.random();
+ if(r<0.33){
+  write("약자를 도울 기회");
+  state.moral+=10;state.fame+=5;
+ }else if(r<0.66){
+  write("이익을 위해 배신");
+  state.moral-=10;state.gold+=15;
+ }else{
+  write("전투 발생");
+  if(state.companion && Math.random()<0.3){
+   write("💀 동료 전사");
+   state.companion=null;
+  }
+  state.hp-=15;
+ }
+ next();
+}
+
+function rest(){
+ state.hp+=25;state.food-=5;
+ write("😴 휴식");
+ next();
+}
+
+function useItem(){
+ if(!state.inventory.length){write("아이템 없음");return}
+ state.hp+=30;state.inventory.pop();
+ write("포션 사용");
+ next();
+}
+
+// ================= RANDOM =================
+function randomEvent(){
+ if(Math.random()<0.25){
+  write("⚠️ 돌발 이벤트!");
+  event();
+ }
+}
+
+// ================= ENDINGS =================
+function checkEnding(){
+ if(state.hp<=0||state.food<=0){
+  write("☠️ 생존 실패 엔딩");
+  end();return true
+ }
+ if(state.fame>=50){
+  write("👑 영웅 엔딩");
+  end();return true
+ }
+ if(state.moral<=-30){
+  write("😈 타락 엔딩");
+  end();return true
+ }
+ return false
+}
+
+function end(){
+ clear();
+ btn("처음부터",()=>{
+  localStorage.removeItem(SAVE);
+  location.reload();
+ })
+}
+
+// ================= FLOW =================
+function next(){
+ save();update();clear();
+ if(checkEnding())return;
+
+ btn("이동",move);
+ btn("탐험",explore);
+ btn("사건",event);
+ btn("휴식",rest);
+ btn("아이템",useItem);
+ btn("저장",()=>{save();write("💾 저장됨")});
+}
+
+// ================= INIT =================
+write("🎲 에버브림 : TRPG 시뮬레이션");
+if(!load()) chooseJob();
+else next();
+update();
+</script>
+</body>
+</html>
