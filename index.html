@@ -154,10 +154,65 @@
   color: #f2e8c9;
   letter-spacing: 1px;
 }
+    /* Tap to Start overlay */
+#tapStart{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:rgba(15,15,20,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index:9998;
+}
+
+#tapStart.hidden{ display:none; }
+
+#tapStart .box{
+  width:min(92vw, 420px);
+  padding:18px 16px;
+  border-radius:18px;
+  background:rgba(23,23,32,0.92);
+  border:1px solid rgba(255,255,255,0.12);
+  text-align:center;
+  color:#f2f2f2;
+}
+
+#tapStart .title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+#tapStart .hint{
+  font-size:13px;
+  opacity:.8;
+  margin-bottom:14px;
+}
+
+#tapStart .btn{
+  width:100%;
+  padding:14px 14px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:700;
+  background:#2d2d44;
+  color:#fff;
+}
+#tapStart .btn:active{ transform: scale(0.99); }
   </style>
 </head>
 
 <body>
+  <div id="tapStart" class="hidden">
+  <div class="box">
+    <div class="title">에버브림</div>
+    <div class="hint">탭하면 게임이 시작돼!</div>
+    <button class="btn" id="startBtn">탭해서 시작</button>
+  </div>
+</div>
   <div id="fake-splash">
   <img src="./splash-1536x2048.png" alt="Everblom Splash">
   <div class="title">Everbloom Fantasy</div>
@@ -244,6 +299,34 @@
       document.getElementById("fake-splash")?.remove();
     }, 1200);
   });
+  function showTapStart(){
+  const el = document.getElementById("tapStart");
+  el?.classList.remove("hidden");
+}
+
+function hideTapStart(){
+  const el = document.getElementById("tapStart");
+  el?.classList.add("hidden");
+}
+
+/* 스플래시(가짜/진짜) 끝난 다음 시작 버튼 띄우기 */
+window.addEventListener("load", () => {
+  // 너가 만든 fake-splash 제거 타이밍이 1200ms였지?
+  // 그 직후에 시작 버튼을 띄우자.
+  setTimeout(showTapStart, 1250);
+});
+
+/* 버튼 누르거나, 화면 아무데나 탭하면 시작 */
+document.addEventListener("click", (e) => {
+  const tap = document.getElementById("tapStart");
+  if (!tap || tap.classList.contains("hidden")) return;
+
+  // overlay 안에서 클릭이든 밖이든 그냥 시작하게
+  hideTapStart();
+
+  // 여기부터 "게임 시작" 트리거를 넣을 자리
+  // 예: startGame(); 또는 renderMainMenu(); 같은 함수가 있으면 여기서 호출
+});
 </script>
 /** =========================
  *  완전체 TRPG 시뮬 엔진
