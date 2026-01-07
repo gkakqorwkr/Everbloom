@@ -131,10 +131,37 @@
       .left,.right{flex:unset}
       .list{max-height:180px}
     }
+    /* 가짜 스플래시 화면 */
+#fake-splash {
+  position: fixed;
+  inset: 0;
+  background: #0f0f14;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#fake-splash img {
+  width: 70%;
+  max-width: 320px;
+}
+
+#fake-splash .title {
+  margin-top: 16px;
+  font-size: 24px;
+  color: #f2e8c9;
+  letter-spacing: 1px;
+}
   </style>
 </head>
 
 <body>
+  <div id="fake-splash">
+  <img src="./splash-1536x2048.png" alt="Everblom Splash">
+  <div class="title">Everbloom Fantasy</div>
+</div>
 <div id="app">
   <header>
     <div>
@@ -211,6 +238,13 @@
 </div>
 
 <script>
+<script>
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      document.getElementById("fake-splash")?.remove();
+    }, 1200);
+  });
+</script>
 /** =========================
  *  완전체 TRPG 시뮬 엔진
  *  - 맵 이동
