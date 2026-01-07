@@ -135,6 +135,551 @@
 </head>
 
 <body>
+  <!-- CHAR STUDIO (ONE BLOCK) START -->
+<section id="charStudio"
+  style="margin:16px 0; padding:14px; border:1px solid rgba(255,255,255,.12); border-radius:14px;">
+  <div style="display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+    <div style="font-weight:900; font-size:18px;">🃏 캐릭터 스튜디오</div>
+    <div style="opacity:.7; font-size:12px;">도트 생성 + 카드(일본풍 2D 프롬프트)</div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 170px 1fr; gap:12px; margin-top:12px;">
+
+    <!-- DOT PREVIEW -->
+    <div>
+      <div style="font-size:12px; opacity:.8; margin-bottom:6px;">도트 캐릭터(기본)</div>
+      <canvas id="csDot" width="96" height="96"
+        style="width:170px; height:170px; image-rendering: pixelated; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:#0f0f14;"></canvas>
+
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="csDotReroll" style="flex:1; padding:10px; border-radius:12px;">도트 리롤</button>
+        <button id="csSeedLock" style="flex:1; padding:10px; border-radius:12px; opacity:.9;">시드 고정</button>
+      </div>
+
+      <div id="csSeedLabel" style="margin-top:8px; font-size:11px; opacity:.7;"></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">성별/스타일</div>
+          <select id="csGender" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="female">여성</option>
+            <option value="male">남성</option>
+            <option value="androgynous">중성</option>
+          </select>
+        </label>
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">분위기</div>
+          <select id="csMood" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="gentle">순둥/따뜻</option>
+            <option value="cool">쿨/무심</option>
+            <option value="mysterious">신비/음영</option>
+            <option value="royal">귀족/우아</option>
+            <option value="wild">야성/험상</option>
+          </select>
+        </label>
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">종족(TRPG)</div>
+          <select id="csRace" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="human">인간</option>
+            <option value="elf">엘프</option>
+            <option value="half-elf">하프엘프</option>
+            <option value="dwarf">드워프</option>
+            <option value="tiefling">티플링</option>
+            <option value="dragonborn">드래곤본</option>
+            <option value="catfolk">캣포크(고양이)</option>
+          </select>
+        </label>
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">직업(TRPG)</div>
+          <select id="csClass" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="fighter">파이터</option>
+            <option value="ranger">레인저</option>
+            <option value="rogue">로그</option>
+            <option value="wizard">위저드</option>
+            <option value="sorcerer">소서러</option>
+            <option value="cleric">클레릭</option>
+            <option value="paladin">팔라딘</option>
+            <option value="bard">바드</option>
+            <option value="druid">드루이드</option>
+          </select>
+        </label>
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">무기</div>
+          <select id="csWeapon" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="katana">카타나(일본풍)</option>
+            <option value="sword">검</option>
+            <option value="bow">활</option>
+            <option value="dagger">단검</option>
+            <option value="staff">지팡이</option>
+            <option value="spear">창</option>
+            <option value="fan">전통 부채(일본풍)</option>
+          </select>
+        </label>
+
+        <label>
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">방어구</div>
+          <select id="csArmor" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="kimono">기모노/유카타(일본풍)</option>
+            <option value="shinobi">시노비 복장(일본풍)</option>
+            <option value="robe">로브</option>
+            <option value="leather">가죽</option>
+            <option value="chain">사슬갑옷</option>
+            <option value="plate">판금</option>
+          </select>
+        </label>
+
+        <label style="grid-column:1 / -1;">
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">악세서리</div>
+          <select id="csAcc" style="width:100%; padding:10px; border-radius:12px;">
+            <option value="random">랜덤</option>
+            <option value="amulet">부적/오마모리(일본풍)</option>
+            <option value="hairpin">비녀/칸자시(일본풍)</option>
+            <option value="mask">가면</option>
+            <option value="cape">망토</option>
+            <option value="ring">문장 반지</option>
+            <option value="book">마도서</option>
+          </select>
+        </label>
+
+        <label style="grid-column:1 / -1;">
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">이름(선택)</div>
+          <input id="csName" placeholder="예: 이리안 / 노바 / 세리아"
+            style="width:100%; padding:10px; border-radius:12px;" />
+        </label>
+
+        <label style="grid-column:1 / -1;">
+          <div style="font-size:12px; opacity:.8; margin-bottom:6px;">추가 키워드(선택)</div>
+          <input id="csExtra" placeholder="예: wisteria forest, ancient ruins, soft light, purple flowers"
+            style="width:100%; padding:10px; border-radius:12px;" />
+        </label>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <button id="csGen" style="padding:10px 14px; border-radius:12px; font-weight:900;">카드 생성</button>
+        <button id="csCopy" style="padding:10px 14px; border-radius:12px;">프롬프트 복사</button>
+        <button id="csReroll" style="padding:10px 14px; border-radius:12px; opacity:.85;">랜덤 리롤</button>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:12px; opacity:.8; margin-bottom:6px;">일러스트 프롬프트(일본풍 2D)</div>
+        <textarea id="csPrompt" rows="5"
+          style="width:100%; padding:10px; border-radius:12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;"></textarea>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div style="font-size:12px; opacity:.8; margin-bottom:6px;">일러스트 이미지 URL(선택)</div>
+        <div style="display:flex; gap:8px;">
+          <input id="csImgUrl" placeholder="이미지 주소 붙여넣기(선택)"
+            style="flex:1; padding:10px; border-radius:12px;" />
+          <button id="csApplyImg" style="padding:10px 12px; border-radius:12px;">적용</button>
+        </div>
+        <div style="font-size:11px; opacity:.65; margin-top:6px;">
+          * AI 이미지 생성 앱/사이트에서 만든 그림의 “이미지 주소/공유 링크”를 붙여서 카드에 띄움
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD PREVIEW -->
+  <div style="margin-top:14px; padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.10);">
+    <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+      <div style="width:240px;">
+        <div style="font-size:12px; opacity:.8; margin-bottom:6px;">카드 일러스트(크게)</div>
+        <img id="csCardImg" src="" alt="illustration"
+          style="width:240px; height:320px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:#111;" />
+      </div>
+
+      <div style="flex:1; min-width:220px;">
+        <div id="csCardTitle" style="font-size:18px; font-weight:900; margin-bottom:6px;">(카드 미리보기)</div>
+        <div id="csCardLine" style="opacity:.8; margin-bottom:10px;">-</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="padding:10px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);">
+            <div style="font-size:11px; opacity:.7;">특성</div>
+            <div id="csTrait" style="font-weight:800;">-</div>
+          </div>
+          <div style="padding:10px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);">
+            <div style="font-size:11px; opacity:.7;">키워드</div>
+            <div id="csKeywords" style="font-weight:800;">-</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px; padding:10px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);">
+          <div style="font-size:11px; opacity:.7; margin-bottom:6px;">장비</div>
+          <div id="csGear" style="line-height:1.35; font-weight:800;">-</div>
+        </div>
+
+        <div style="margin-top:10px; padding:10px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);">
+          <div style="font-size:11px; opacity:.7; margin-bottom:6px;">짧은 배경</div>
+          <div id="csBio" style="line-height:1.35;">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(() => {
+  // ---------- utils ----------
+  const $ = (id) => document.getElementById(id);
+  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const pickKey = (map) => rand(Object.keys(map));
+  const safeUpper = (s) => (s || "").toUpperCase();
+
+  // seeded RNG
+  function mulberry32(a){
+    return function(){
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- data ----------
+  const genderMap = { female:"female", male:"male", androgynous:"androgynous" };
+
+  const moodMap = {
+    gentle: { tags:["gentle face","warm smile","soft eyes"], trait:"따뜻한 공감", bio:["누군가의 상처를 다독이는 데 익숙하다.","말보다 행동으로 믿음을 만든다."] },
+    cool: { tags:["cool gaze","minimal expression","clean silhouette"], trait:"침착한 결단", bio:["감정이 흔들려도 판단은 흔들리지 않는다.","필요한 말만 남기는 타입."] },
+    mysterious: { tags:["mysterious aura","dramatic shadows","mist"], trait:"숨겨진 비밀", bio:["과거가 베일에 가려져 있다.","낯선 유적에 강하게 이끌린다."] },
+    royal: { tags:["elegant posture","noble outfit","ornate details"], trait:"품위와 규율", bio:["예법을 무기로 쓰는 사람.","책임을 회피하지 않는다."] },
+    wild: { tags:["rugged look","dynamic pose","battle-worn"], trait:"야성의 생존", bio:["위험을 피하지 않고 길로 만든다.","숲의 소리를 듣는다."] }
+  };
+
+  const raceMap = {
+    human: { tags:["human"], dot:"human" },
+    elf: { tags:["elf","long ears"], dot:"elf" },
+    "half-elf": { tags:["half-elf","subtle elven features"], dot:"elf" },
+    dwarf: { tags:["dwarf","sturdy build"], dot:"human" },
+    tiefling: { tags:["tiefling","small horns","tail"], dot:"tiefling" },
+    dragonborn: { tags:["dragonborn","scaled skin"], dot:"dragon" },
+    catfolk: { tags:["catfolk","cat ears","tail"], dot:"cat" }
+  };
+
+  const classMap = {
+    fighter: { tags:["fighter","armor","sword"], keyword:"검과 갑주" },
+    ranger: { tags:["ranger","hood","bow","forest traveler"], keyword:"숲의 사냥꾼" },
+    rogue: { tags:["rogue","cloak","dagger","stealthy"], keyword:"그림자의 발" },
+    wizard: { tags:["wizard","robe","staff","arcane glow"], keyword:"비전의 서고" },
+    sorcerer: { tags:["sorcerer","magic aura","glowing hands"], keyword:"타고난 마력" },
+    cleric: { tags:["cleric","holy symbol","divine light"], keyword:"성역의 빛" },
+    paladin: { tags:["paladin","plate armor","radiant light"], keyword:"서약의 검" },
+    bard: { tags:["bard","lute","charming smile"], keyword:"노래와 속삭임" },
+    druid: { tags:["druid","nature magic","leaf motifs"], keyword:"자연의 맹세" }
+  };
+
+  const weaponMap = {
+    katana: { tags:["katana","samurai sword"], dot:"katana", label:"카타나" },
+    sword:  { tags:["sword","steel blade"], dot:"sword", label:"검" },
+    bow:    { tags:["bow","quiver"], dot:"bow", label:"활" },
+    dagger: { tags:["dagger","short blade"], dot:"dagger", label:"단검" },
+    staff:  { tags:["magic staff","crystal staff"], dot:"staff", label:"지팡이" },
+    spear:  { tags:["spear","lance"], dot:"spear", label:"창" },
+    fan:    { tags:["folding fan","traditional fan"], dot:"fan", label:"부채" }
+  };
+
+  const armorMap = {
+    kimono: { tags:["kimono","yukata","obi belt"], label:"기모노" },
+    shinobi:{ tags:["shinobi outfit","ninja garb"], label:"시노비" },
+    robe:   { tags:["robe","layered cloth"], label:"로브" },
+    leather:{ tags:["leather armor"], label:"가죽" },
+    chain:  { tags:["chainmail"], label:"사슬" },
+    plate:  { tags:["plate armor"], label:"판금" }
+  };
+
+  const accMap = {
+    amulet: { tags:["omamori charm","amulet"], label:"부적" },
+    hairpin:{ tags:["kanzashi hairpin"], label:"칸자시" },
+    mask:   { tags:["mask","half mask"], label:"가면" },
+    cape:   { tags:["cape","cloak"], label:"망토" },
+    ring:   { tags:["sigil ring","crest"], label:"문장 반지" },
+    book:   { tags:["spellbook"], label:"마도서" }
+  };
+
+  // 일본풍 2D 강화 + 에버블룸(등나무/유적) 월드
+  const sharedStyle = [
+    "Japanese anime style illustration",
+    "fantasy character key visual",
+    "official anime illustration",
+    "clean crisp lineart",
+    "cel shading with soft gradients",
+    "high detail face, expressive eyes, subtle blush",
+    "studio quality, sharp focus",
+    "character card illustration",
+    "include both portrait and full body",
+    "no text, no watermark, no logo"
+  ];
+
+  const worldStyle = [
+    "wisteria forest",
+    "ancient mossy ruins",
+    "soft mist",
+    "sunlight through leaves",
+    "green and purple palette"
+  ];
+
+  // ---------- elements ----------
+  const el = {
+    gender: $("csGender"),
+    mood: $("csMood"),
+    race: $("csRace"),
+    clazz: $("csClass"),
+    weapon: $("csWeapon"),
+    armor: $("csArmor"),
+    acc: $("csAcc"),
+    name: $("csName"),
+    extra: $("csExtra"),
+
+    gen: $("csGen"),
+    copy: $("csCopy"),
+    reroll: $("csReroll"),
+
+    prompt: $("csPrompt"),
+
+    imgUrl: $("csImgUrl"),
+    applyImg: $("csApplyImg"),
+
+    cardImg: $("csCardImg"),
+    cardTitle: $("csCardTitle"),
+    cardLine: $("csCardLine"),
+    trait: $("csTrait"),
+    keywords: $("csKeywords"),
+    gear: $("csGear"),
+    bio: $("csBio"),
+
+    dot: $("csDot"),
+    dotReroll: $("csDotReroll"),
+    seedLock: $("csSeedLock"),
+    seedLabel: $("csSeedLabel"),
+  };
+
+  // ---------- state ----------
+  let seed = (Date.now() >>> 0);
+  let locked = false;
+
+  // ---------- selection ----------
+  function selection(){
+    const genderKey = (el.gender.value === "random") ? pickKey(genderMap) : el.gender.value;
+    const moodKey   = (el.mood.value   === "random") ? pickKey(moodMap)   : el.mood.value;
+    const raceKey   = (el.race.value   === "random") ? pickKey(raceMap)   : el.race.value;
+    const classKey  = (el.clazz.value  === "random") ? pickKey(classMap)  : el.clazz.value;
+
+    const weaponKey = (el.weapon.value === "random") ? pickKey(weaponMap) : el.weapon.value;
+    const armorKey  = (el.armor.value  === "random") ? pickKey(armorMap)  : el.armor.value;
+    const accKey    = (el.acc.value    === "random") ? pickKey(accMap)    : el.acc.value;
+
+    return { genderKey, moodKey, raceKey, classKey, weaponKey, armorKey, accKey };
+  }
+
+  // ---------- prompt + card ----------
+  function buildPromptAndCard(){
+    const s = selection();
+    const genderStr = genderMap[s.genderKey] || "androgynous";
+    const mood = moodMap[s.moodKey];
+    const race = raceMap[s.raceKey];
+    const cls  = classMap[s.classKey];
+    const wpn  = weaponMap[s.weaponKey];
+    const arm  = armorMap[s.armorKey];
+    const acc  = accMap[s.accKey];
+
+    const name = (el.name.value || "").trim() || "이름 미정";
+    const extra = (el.extra.value || "").trim();
+
+    // card fields
+    el.cardTitle.textContent = name;
+    el.cardLine.textContent = `${safeUpper(s.raceKey)} · ${safeUpper(s.classKey)} · ${safeUpper(s.moodKey)}`;
+    el.trait.textContent = mood.trait;
+    el.keywords.textContent = cls.keyword;
+    el.gear.textContent = `무기: ${wpn.label} / 방어구: ${arm.label} / 악세서리: ${acc.label}`;
+
+    el.bio.textContent =
+      rand(mood.bio) + " " +
+      rand([
+        "등나무 향이 짙어질수록 감각이 예민해진다.",
+        "유적의 문양을 보면 오래된 기억이 스친다.",
+        "숲의 안개는 길을 숨기지만, 때론 답을 드러낸다.",
+        "낡은 부적은 위험을 예고하듯 미세하게 떨린다."
+      ]);
+
+    // prompt
+    const parts = [
+      ...sharedStyle,
+      ...worldStyle,
+      genderStr,
+      ...race.tags,
+      ...cls.tags,
+      ...wpn.tags,
+      ...arm.tags,
+      ...acc.tags,
+      ...mood.tags,
+      "full body standing pose",
+      "portrait crop version included",
+      extra ? extra : null
+    ].filter(Boolean);
+
+    return parts.join(", ");
+  }
+
+  // ---------- dot draw ----------
+  function drawDot(){
+    const ctx = el.dot.getContext("2d");
+    const rng = mulberry32(seed);
+    const s = selection();
+
+    const skin = ["#f1c7a3","#eab58f","#d99f7d","#c78866"][Math.floor(rng()*4)];
+    const hair = ["#2b2b38","#6a3d2a","#7b5b2e","#b8b8c8","#3b2a4a"][Math.floor(rng()*5)];
+    const cloth= ["#2d2d44","#2a3b2f","#3a2a2f","#3a3a3a","#2f2a3a"][Math.floor(rng()*5)];
+    const eye  = ["#b7e3ff","#a8ffcf","#ffd6a8","#c8b6ff"][Math.floor(rng()*4)];
+    const accent=["#9ad59a","#b59cff","#f0d28a","#8fd0c6"][Math.floor(rng()*4)];
+
+    ctx.clearRect(0,0,96,96);
+    ctx.fillStyle = "#0f0f14";
+    ctx.fillRect(0,0,96,96);
+
+    // tiny noise
+    ctx.fillStyle = "rgba(255,255,255,.03)";
+    for(let i=0;i<80;i++){
+      ctx.fillRect(Math.floor(rng()*96), Math.floor(rng()*96), 1, 1);
+    }
+
+    // head
+    ctx.fillStyle = skin;
+    ctx.fillRect(34,18,28,26);
+
+    const raceDot = raceMap[s.raceKey]?.dot || "human";
+    if(raceDot === "elf"){ ctx.fillRect(30,26,4,6); ctx.fillRect(62,26,4,6); }
+    if(raceDot === "cat"){ ctx.fillStyle = hair; ctx.fillRect(36,14,6,6); ctx.fillRect(54,14,6,6); }
+    if(raceDot === "tiefling"){ ctx.fillStyle = accent; ctx.fillRect(38,12,4,6); ctx.fillRect(54,12,4,6); }
+    if(raceDot === "dragon"){ ctx.fillStyle = accent; ctx.fillRect(46,10,4,8); ctx.fillRect(44,12,8,4); }
+
+    // hair
+    ctx.fillStyle = hair;
+    ctx.fillRect(34,16,28,10);
+    ctx.fillRect(36,26,24,6);
+
+    // eyes
+    ctx.fillStyle = "#111";
+    ctx.fillRect(42,30,4,4);
+    ctx.fillRect(50,30,4,4);
+    ctx.fillStyle = eye;
+    ctx.fillRect(43,31,2,2);
+    ctx.fillRect(51,31,2,2);
+
+    // mouth (mood)
+    ctx.fillStyle = "#2a1e1e";
+    if(s.moodKey === "gentle") ctx.fillRect(46,37,4,1);
+    else if(s.moodKey === "cool") ctx.fillRect(46,36,4,1);
+    else if(s.moodKey === "mysterious") ctx.fillRect(47,37,2,1);
+    else if(s.moodKey === "royal") ctx.fillRect(46,37,4,1);
+    else ctx.fillRect(45,37,6,1);
+
+    // torso
+    ctx.fillStyle = cloth;
+    ctx.fillRect(36,44,24,22);
+
+    // class hint
+    ctx.fillStyle = accent;
+    if(s.classKey === "wizard" || s.classKey==="sorcerer"){ ctx.fillRect(34,46,4,18); ctx.fillRect(33,46,6,2); }
+    if(s.classKey === "ranger"){ ctx.fillRect(60,46,4,18); ctx.fillRect(59,46,6,2); }
+    if(s.classKey === "fighter" || s.classKey==="paladin"){ ctx.fillRect(62,46,3,18); ctx.fillRect(61,46,5,2); }
+    if(s.classKey === "cleric"){ ctx.fillRect(47,46,2,8); ctx.fillRect(45,48,6,2); }
+    if(s.classKey === "bard"){ ctx.fillRect(58,54,6,8); ctx.fillRect(56,56,10,4); }
+    if(s.classKey === "rogue"){ ctx.fillStyle = "#111"; ctx.fillRect(40,44,16,6); }
+
+    // legs
+    ctx.fillStyle = "#202030";
+    ctx.fillRect(40,66,6,10);
+    ctx.fillRect(50,66,6,10);
+
+    // weapon pixel hint (right side)
+    const w = weaponMap[s.weaponKey]?.dot || "sword";
+    ctx.fillStyle = accent;
+    if(w === "sword" || w === "katana"){ ctx.fillRect(62,56,2,16); ctx.fillRect(60,56,6,2); }
+    else if(w === "dagger"){ ctx.fillRect(62,58,2,10); ctx.fillRect(61,58,4,2); }
+    else if(w === "staff"){ ctx.fillRect(62,52,2,20); ctx.fillRect(60,52,6,2); ctx.fillRect(61,50,4,2); }
+    else if(w === "bow"){ ctx.fillRect(62,54,2,18); ctx.fillRect(60,54,2,18); ctx.fillRect(60,54,4,2); ctx.fillRect(60,70,4,2); }
+    else if(w === "spear"){ ctx.fillRect(62,50,2,24); ctx.fillRect(60,50,6,2); }
+    else if(w === "fan"){ ctx.fillRect(60,60,6,6); ctx.fillRect(60,60,2,10); }
+
+    // frame
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.strokeRect(0.5,0.5,95,95);
+
+    el.seedLabel.textContent = `DOT SEED: ${seed}${locked ? " (LOCKED)" : ""}`;
+  }
+
+  // ---------- generate ----------
+  function generateAll(){
+    if(!locked) seed = (Date.now() >>> 0);
+    el.prompt.value = buildPromptAndCard();
+    drawDot();
+  }
+
+  // ---------- events ----------
+  el.gen.addEventListener("click", generateAll);
+
+  el.reroll.addEventListener("click", () => {
+    el.gender.value="random";
+    el.mood.value="random";
+    el.race.value="random";
+    el.clazz.value="random";
+    el.weapon.value="random";
+    el.armor.value="random";
+    el.acc.value="random";
+    generateAll();
+  });
+
+  el.copy.addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(el.prompt.value || "");
+      alert("프롬프트 복사됨!");
+    }catch(e){
+      el.prompt.focus(); el.prompt.select();
+      alert("복사 실패하면 텍스트 길게 눌러서 '복사' 해줘!");
+    }
+  });
+
+  el.dotReroll.addEventListener("click", () => {
+    seed = (Math.random() * 0xffffffff) >>> 0;
+    drawDot();
+  });
+
+  el.seedLock.addEventListener("click", () => {
+    locked = !locked;
+    drawDot();
+    alert(locked ? "도트 시드 고정됨" : "도트 시드 고정 해제됨");
+  });
+
+  el.applyImg.addEventListener("click", () => {
+    const url = (el.imgUrl.value || "").trim();
+    if(!url) { alert("이미지 URL을 붙여넣어줘!"); return; }
+    el.cardImg.src = url;
+  });
+
+  // 자동 반영
+  [el.gender, el.mood, el.race, el.clazz, el.weapon, el.armor, el.acc, el.name, el.extra]
+    .forEach(x => x.addEventListener("change", generateAll));
+
+  // init
+  generateAll();
+})();
+</script>
+<!-- CHAR STUDIO (ONE BLOCK) END -->
 <div id="app">
   <header>
     <div>
