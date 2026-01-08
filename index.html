@@ -375,6 +375,35 @@ body{
     radial-gradient(1100px 800px at 50% 90%, rgba(210,180,255,.14), transparent 65%) !important;
   color: var(--txt) !important;
 }
+    /* ===============================
+   iOS PWA Touch Fix (Everbloom)
+   =============================== */
+
+/* 배경 레이어는 터치 무시 */
+.bg, .fx, .fog, .overlay, .decor {
+  pointer-events: none !important;
+}
+
+/* 버튼/링크는 무조건 터치 가능 */
+button, a, input, select {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+/* 유리효과로 인한 터치 버그 방지 */
+button {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* PWA 단독모드 안정화 */
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
   </style>
 </head>
 
