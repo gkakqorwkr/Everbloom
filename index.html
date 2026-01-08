@@ -5,81 +5,79 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Everbloom</title>
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2fc6b2">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#2fc6b2">
 
 <style>
-/* ===============================
-   Everbloom Peacock Green Theme
-   =============================== */
+/* ================= BASE ================= */
 :root{
-  --bg:#16302e;
-  --panel:rgba(40,90,84,.82);
-  --panel2:rgba(32,70,66,.74);
-  --stroke:rgba(140,220,205,.28);
-
+  --bg:#0e2422;
+  --glass:rgba(40,110,100,.55);
+  --stroke:rgba(120,230,210,.35);
   --txt:#eafffb;
   --muted:rgba(234,255,251,.65);
-
   --accent:#2fc6b2;
-  --accent2:#b8a8ff;
-  --good:#3fe2a8;
-  --bad:#ff6f8f;
-
+  --ruins:#b8a8ff;
   --r:18px;
 }
-
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
   color:var(--txt);
   background:
-    radial-gradient(800px 500px at 20% 10%, rgba(47,198,178,.25), transparent 60%),
-    radial-gradient(800px 500px at 80% 20%, rgba(184,168,255,.18), transparent 60%),
+    radial-gradient(900px 600px at 20% 0%, rgba(47,198,178,.25), transparent 60%),
+    radial-gradient(900px 600px at 80% 10%, rgba(184,168,255,.18), transparent 60%),
     var(--bg);
+  touch-action:manipulation;
 }
-
-header{
-  padding:16px;
-  font-size:22px;
-  font-weight:900;
-}
-
-main{
-  padding:16px;
-  display:grid;
-  gap:16px;
-}
-
+header{padding:18px;font-size:22px;font-weight:900}
+main{padding:16px;display:grid;gap:16px}
 .panel{
-  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),var(--panel);
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),var(--glass);
   border:1px solid var(--stroke);
   border-radius:var(--r);
   padding:14px;
-  backdrop-filter:blur(14px);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  position:relative;
 }
-
-h2{margin:0 0 8px;font-size:18px}
-
-/* buttons */
+.panel::before{content:"";position:absolute;inset:0;pointer-events:none}
 button{
-  padding:12px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background:rgba(47,198,178,.28);
-  color:var(--txt);
-  font-weight:800;
-  touch-action:manipulation;
+  padding:12px;border-radius:14px;border:1px solid var(--stroke);
+  background:rgba(255,255,255,.06);
+  color:inherit;font-weight:800;
+  cursor:pointer;touch-action:manipulation;
+}
+button:active{transform:translateY(1px)}
+h2{margin:0 0 10px;font-size:16px;color:var(--muted)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.action-btn{
+  padding:16px;border-radius:16px;border:1px solid var(--stroke);
+  background:rgba(40,110,100,.6);
+  font-weight:900;cursor:pointer;text-align:center;
 }
 
-/* ===============================
-   iOS PWA CLICK FIX
-   =============================== */
-button{position:relative;z-index:5}
-document{touch-action:manipulation}
+/* ================= CHAR STUDIO ================= */
+#charStudio{margin-top:8px}
+#charStudio select,#charStudio input,#charStudio textarea{
+  width:100%;padding:10px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04);color:inherit
+}
+#csDot{
+  width:220px;height:220px;
+  image-rendering:pixelated;
+  background:#0f0f14;border-radius:14px;
+  display:block;margin:auto
+}
+.csGrid{display:grid;grid-template-columns:220px 1fr;gap:12px}
+@media(max-width:720px){.csGrid{grid-template-columns:1fr}}
+.csMiniGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:720px){.csMiniGrid{grid-template-columns:1fr}}
+.csMiniBox{padding:10px;border-radius:12px;background:rgba(255,255,255,.04)}
+#csIllust{width:260px;height:360px;object-fit:cover;border-radius:14px;background:#111}
+@media(max-width:720px){#csIllust{width:100%;height:320px}}
 </style>
 </head>
 
@@ -88,153 +86,224 @@ document{touch-action:manipulation}
 
 <main>
 
-<!-- CHARACTER -->
 <section class="panel">
-<h2>🧙 캐릭터</h2>
-<div id="charInfo"></div>
-<button id="genChar">캐릭터 생성</button>
+  <h2>📜 진행</h2>
+  <div id="log">시작 준비 완료.</div>
 </section>
 
-<!-- PET -->
 <section class="panel">
-<h2>🐾 펫</h2>
-<div id="petInfo"></div>
-<button id="feedPet">먹이 주기</button>
-<button id="breedPet">교배</button>
+  <div class="actions">
+    <div class="action-btn">🗺 이동</div>
+    <div class="action-btn">🔍 탐험</div>
+    <div class="action-btn">🐾 펫 (미구현)</div>
+    <div class="action-btn">💞 관계 (미구현)</div>
+  </div>
 </section>
 
-<!-- RELATION -->
-<section class="panel">
-<h2>💞 관계</h2>
-<div id="relationInfo"></div>
-<button id="interactNpc">교류</button>
-</section>
+<section class="panel" id="charStudio">
+<h2>🃏 캐릭터 스튜디오</h2>
 
-<!-- CHILD -->
-<section class="panel">
-<h2>👶 육아</h2>
-<div id="childInfo"></div>
-<button id="raiseChild">양육</button>
-</section>
+<div class="csGrid">
+  <div>
+    <canvas id="csDot" width="128" height="128"></canvas>
+    <button id="dotReroll" style="width:100%;margin-top:8px">도트 리롤</button>
+  </div>
 
-<!-- MONSTER -->
-<section class="panel">
-<h2>👾 몬스터 일러스트 프롬프트</h2>
-<textarea id="monsterPrompt" rows="4" style="width:100%"></textarea>
-<button id="genMonster">생성</button>
+  <div>
+    <div class="csMiniGrid">
+      <select id="gender"><option>랜덤</option><option>여성</option><option>남성</option></select>
+      <select id="race"><option>랜덤</option><option>인간</option><option>엘프</option><option>고양이</option><option>티플링</option></select>
+      <select id="job"><option>랜덤</option><option>파이터</option><option>레인저</option><option>위저드</option><option>로그</option></select>
+      <select id="weapon">
+        <option>랜덤</option>
+        <option>카타나</option><option>나기나타</option><option>유미</option>
+        <option>롱소드</option><option>그레이트소드</option><option>레이피어</option>
+        <option>대거</option><option>워해머</option><option>메이스</option>
+        <option>지팡이</option><option>크로스보우</option>
+      </select>
+    </div>
+
+    <input id="name" placeholder="이름(선택)" style="margin-top:8px">
+
+    <button id="gen" style="margin-top:8px;width:100%">카드 생성</button>
+
+    <textarea id="prompt" rows="5" style="margin-top:8px"></textarea>
+    <button id="copy" style="margin-top:6px;width:100%">프롬프트 복사</button>
+  </div>
+</div>
+
+<div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
+  <img id="csIllust">
+  <div>
+    <div id="cardTitle" style="font-size:18px;font-weight:900">이름 미정</div>
+    <div id="cardLine" style="opacity:.8"></div>
+    <div class="csMiniBox" style="margin-top:8px">
+      <div>배경</div>
+      <div id="bio"></div>
+    </div>
+  </div>
+</div>
+   <section class="panel" id="petPanel">
+  <h2>🐾 펫</h2>
+
+  <div id="petInfo" style="margin-bottom:10px;opacity:.9">
+    펫이 없습니다.
+  </div>
+
+  <div class="actions">
+    <div class="action-btn" id="petCreate">🌱 펫 생성</div>
+    <div class="action-btn" id="petFeed">🍖 먹이 주기</div>
+    <div class="action-btn" id="petBreed">🧬 교배</div>
+    <div class="action-btn" id="petEvolve">✨ 진화</div>
+  </div>
+</section>
 </section>
 
 </main>
 
 <script>
-/* ===============================
-   CORE DATA
-   =============================== */
-function rand(arr){return arr[Math.floor(Math.random()*arr.length)]}
-function uid(){return Math.random().toString(36).slice(2)}
+/* ================= CORE ================= */
+const $=id=>document.getElementById(id)
+const rand=a=>a[Math.floor(Math.random()*a.length)]
 
-const S={
-  char:null,
-  pet:null,
-  npc:{ affection:0, married:false },
-  child:{ age:0, stats:0 }
+const canvas=$("csDot"),ctx=canvas.getContext("2d")
+function drawDot(){
+  ctx.clearRect(0,0,128,128)
+  ctx.fillStyle="#0f0f14";ctx.fillRect(0,0,128,128)
+  ctx.fillStyle=["#f1c7a3","#d99f7d","#c78866"][Math.floor(Math.random()*3)]
+  ctx.fillRect(44,28,40,40)
+  ctx.fillStyle="#222";ctx.fillRect(56,46,6,6);ctx.fillRect(66,46,6,6)
+  ctx.fillStyle="#333";ctx.fillRect(44,70,40,38)
+}
+drawDot()
+
+$("dotReroll").onclick=drawDot
+
+$("gen").onclick=()=>{
+  const name=$("name").value||"이름 미정"
+  $("cardTitle").textContent=name
+  $("cardLine").textContent=`${$("race").value} · ${$("job").value}`
+  $("bio").textContent=rand([
+    "등나무 숲과 유적 사이를 떠도는 여행자.",
+    "고대 유물의 부름을 듣는 자.",
+    "숲이 숨을 쉴 때 마법이 강해진다."
+  ])
+  $("prompt").value=[
+    "Japanese anime style",
+    "fantasy key visual",
+    "cel shading",
+    "forest ruins wisteria",
+    $("job").value,$("weapon").value
+  ].join(", ")
+}
+
+$("copy").onclick=async()=>{
+  try{await navigator.clipboard.writeText($("prompt").value);alert("복사됨")}
+  catch{alert("길게 눌러 복사")}
+}
+   <script>
+/* ===============================
+   PET SYSTEM (EVERBLOOM)
+   =============================== */
+
+const PET_KEY = "everbloom_pet_v1";
+
+const PetDB = {
+  species:["flora","beast","spirit","drake","fae"],
+  traits:["온순함","호기심","야성","영리함","신비"],
+  evolve:{
+    flora:"ancient flora",
+    beast:"alpha beast",
+    spirit:"elder spirit",
+    drake:"ancient drake",
+    fae:"fae lord"
+  }
 };
 
-/* ===============================
-   CHARACTER
-   =============================== */
-function genCharacter(){
-  S.char={
-    name:rand(["이리안","세리아","노바","린"]),
-    job:rand(["위저드","레인저","나이트"]),
-    mood:rand(["온화","냉정","신비"])
-  };
-  render();
+let pet = null;
+
+function savePet(){
+  localStorage.setItem(PET_KEY, JSON.stringify(pet));
+}
+function loadPet(){
+  const d = localStorage.getItem(PET_KEY);
+  if(d) pet = JSON.parse(d);
 }
 
-/* ===============================
-   PET SYSTEM (무한)
-   =============================== */
-function newPet(parentA,parentB){
+function newPet(parentA=null,parentB=null){
   return{
-    id:uid(),
-    species:(parentA?.species||"seed")+"-"+(parentB?.species||rand(["beast","spirit","flora"])),
-    stage:(parentA?.stage||1),
-    affinity:0
+    id: Math.random().toString(36).slice(2),
+    species: parentA && parentB
+      ? rand([parentA.species,parentB.species,rand(PetDB.species)])
+      : rand(PetDB.species),
+    stage: 1,
+    affinity: 0,
+    trait: rand(PetDB.traits),
+    seed: (Math.random()*0xffffffff)>>>0
+  };
+}
+
+function petInfo(){
+  if(!pet) return "펫이 없습니다.";
+  return `
+종족: ${pet.species}
+단계: ${pet.stage}
+호감도: ${pet.affinity}
+성향: ${pet.trait}
+`;
+}
+
+function renderPet(){
+  $("petInfo").textContent = petInfo();
+  savePet();
+}
+
+/* ===============================
+   PET ACTIONS
+   =============================== */
+$("petCreate").addEventListener("pointerup", ()=>{
+  pet = newPet();
+  renderPet();
+});
+
+$("petFeed").addEventListener("pointerup", ()=>{
+  if(!pet){ alert("펫이 없어!"); return; }
+  pet.affinity += 20;
+  if(pet.affinity >= 100){
+    pet.affinity = 0;
+    pet.stage++;
+    alert("✨ 펫이 성장했다!");
   }
-}
+  renderPet();
+});
 
-function feedPet(){
-  S.pet.affinity+=20;
-  if(S.pet.affinity>=100){
-    S.pet.stage++;
-    S.pet.affinity=0;
+$("petBreed").addEventListener("pointerup", ()=>{
+  if(!pet){ alert("펫이 없어!"); return; }
+  const child = newPet(pet, newPet());
+  pet = child;
+  alert("🧬 새로운 펫이 태어났다!");
+  renderPet();
+});
+
+$("petEvolve").addEventListener("pointerup", ()=>{
+  if(!pet){ alert("펫이 없어!"); return; }
+  if(pet.stage < 3){
+    alert("아직 진화할 수 없어.");
+    return;
   }
-  render();
-}
-
-function breedPet(){
-  S.pet=newPet(S.pet,newPet());
-  render();
-}
-
-/* ===============================
-   RELATION / FAMILY
-   =============================== */
-function interact(){
-  S.npc.affection+=20;
-  if(S.npc.affection>=100) S.npc.married=true;
-  render();
-}
-
-function raiseChild(){
-  S.child.age++;
-  S.child.stats+=rand([1,2,3]);
-  render();
-}
+  pet.species = PetDB.evolve[pet.species] || pet.species;
+  pet.stage = 1;
+  pet.affinity = 0;
+  alert("✨ 펫이 진화했다!");
+  renderPet();
+});
 
 /* ===============================
-   MONSTER PROMPT
+   INIT
    =============================== */
-function genMonster(){
-  document.getElementById("monsterPrompt").value=[
-    "Japanese fantasy monster illustration",
-    rand(["ancient","mystic","forest","ruins"]),
-    rand(["dragon","beast","spirit"]),
-    "high detail, no text"
-  ].join(", ");
-}
-
-/* ===============================
-   RENDER
-   =============================== */
-function render(){
-  document.getElementById("charInfo").textContent=
-    S.char ? `${S.char.name} / ${S.char.job} / ${S.char.mood}` : "없음";
-
-  document.getElementById("petInfo").textContent=
-    S.pet ? `${S.pet.species} | 단계 ${S.pet.stage} | 호감 ${S.pet.affinity}` : "없음";
-
-  document.getElementById("relationInfo").textContent=
-    `호감도 ${S.npc.affection} ${S.npc.married?"(결혼)":""}`;
-
-  document.getElementById("childInfo").textContent=
-    `나이 ${S.child.age} / 성장 ${S.child.stats}`;
-}
-
-/* ===============================
-   EVENTS (pointerup only)
-   =============================== */
-document.getElementById("genChar").addEventListener("pointerup",genCharacter);
-document.getElementById("feedPet").addEventListener("pointerup",feedPet);
-document.getElementById("breedPet").addEventListener("pointerup",breedPet);
-document.getElementById("interactNpc").addEventListener("pointerup",interact);
-document.getElementById("raiseChild").addEventListener("pointerup",raiseChild);
-document.getElementById("genMonster").addEventListener("pointerup",genMonster);
-
-/* init */
-S.pet=newPet();
-render();
+loadPet();
+renderPet();
+</script>
 </script>
 </body>
 </html>
