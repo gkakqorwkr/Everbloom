@@ -1702,6 +1702,66 @@ body{
 
   render();
 })();
+  <script>
+/* ===============================
+   Everblom Theme Switcher (지역 테마 자동)
+   - S.area(지역) 값으로 테마 바꿈
+   - 없으면 기본 forest
+   =============================== */
+
+(function(){
+  // 네 게임에서 지역이 어디에 저장되는지 케이스별로 대응
+  // 1) S.area (너가 쓰던 패턴)
+  // 2) localStorage('everblom_save') 같은 저장본
+  // 3) 화면에 찍힌 텍스트(#uiArea)에서 읽기
+  function getAreaText(){
+    try{
+      if (window.S && typeof S.area === "string") return S.area;
+    }catch(e){}
+
+    // 저장본에서 area 찾기(있으면)
+    try{
+      const raw = localStorage.getItem("everblom_save") || localStorage.getItem("save") || "";
+      if(raw){
+        const obj = JSON.parse(raw);
+        if(obj && typeof obj.area === "string") return obj.area;
+        if(obj && obj.S && typeof obj.S.area === "string") return obj.S.area;
+      }
+    }catch(e){}
+
+    // UI에서 읽기(너 화면에 '지역 숲' 같은 pill 있던거)
+    const ui = document.getElementById("uiArea");
+    if(ui) return (ui.textContent || "").trim();
+
+    return "숲";
+  }
+
+  function areaToTheme(area){
+    // 한국어/영어 섞여도 대충 매핑되게
+    const a = (area || "").toLowerCase();
+    if (a.includes("유적") || a.includes("ruin")) return "ruins";
+    if (a.includes("안개") || a.includes("mist") || a.includes("fog")) return "mist";
+    if (a.includes("밤") || a.includes("night")) return "night";
+    // 기본은 숲
+    return "forest";
+  }
+
+  function applyTheme(){
+    const area = getAreaText();
+    const theme = areaToTheme(area);
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+
+  // 최초 1회
+  applyTheme();
+
+  // 턴 진행/이동 등으로 area가 바뀔 수 있으니 주기적으로 체크
+  // (너 코드 구조 모르는 상태에서 가장 안전한 방법)
+  setInterval(applyTheme, 800);
+
+  // 수동 테스트용(콘솔에서 setTheme('mist') 가능)
+  window.setTheme = (t)=>document.documentElement.setAttribute("data-theme", t);
+})();
 </script>
 </body>
 </html>
