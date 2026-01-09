@@ -3,87 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Everbloom: Transcendence</title>
+    <title>Everbloom: Forge & Familiar</title>
     <style>
         :root {
             --bg: #0a0a09; --panel: #161614; --accent: #d4a373; --text: #e0dcd3;
             --border: #3d3d34; --safe-top: env(safe-area-inset-top); --safe-bottom: env(safe-area-inset-bottom);
+            --rarity-ur: #ff4500; --rarity-sr: #da70d6; --rarity-s: #ffd700; --rarity-r: #1e90ff; --rarity-c: #aaaaaa;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* 종족 선택 레이어 */
-        #origin-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; flex-direction: column; padding: calc(var(--safe-top) + 20px) 20px; overflow-y: auto; }
-        .race-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
-        .race-card:active { border-color: var(--accent); background: #1f1f1c; }
-        .race-card img { width: 50px; height: 50px; border-radius: 8px; border: 1px solid var(--accent); }
+        /* 배경 및 캐릭터 비주얼 */
+        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+        .visual-frame { width: 100%; height: 28vh; position: relative; background: #000; border-bottom: 2px solid var(--accent); overflow: hidden; }
+        #ui-bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: 0.5s; }
+        .char-sprite { position: absolute; bottom: 0; left: 5%; height: 85%; z-index: 5; filter: drop-shadow(0 0 10px black); }
 
-        /* 메인 상단 */
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .visual-frame { width: 100%; height: 28vh; position: relative; background: #000; border-bottom: 2px solid var(--accent); }
-        .visual-frame img.bg { width: 100%; height: 100%; object-fit: cover; opacity: 0.4; }
-        .char-sprite { position: absolute; bottom: 0; left: 10%; height: 80%; z-index: 5; }
-
-        /* 탭 및 컨텐츠 */
+        /* 탭 시스템 */
         .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; font-size: 14px; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        .content { flex: 1; overflow-y: auto; padding: 20px; }
+        .content { flex: 1; overflow-y: auto; padding: 20px; background: linear-gradient(to bottom, #111, #000); }
         .log-entry { margin-bottom: 10px; font-size: 15px; line-height: 1.6; border-left: 2px solid var(--border); padding-left: 12px; animation: fadeIn 0.3s; }
         
-        /* 스탯 업그레이드 UI */
-        .stat-row { display: flex; justify-content: space-between; align-items: center; background: #1c1c1a; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #333; }
-        .up-btn { background: var(--accent); color: #000; border: none; padding: 5px 15px; border-radius: 5px; font-weight: bold; }
-        .up-btn:disabled { background: #444; color: #888; }
+        /* 스탯 및 펫 UI */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: #1c1c1a; padding: 15px; border-radius: 12px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .up-btn { background: var(--accent); color: #000; border: none; width: 30px; height: 30px; border-radius: 5px; font-weight: bold; }
+        .up-btn:disabled { background: #444; opacity: 0.5; }
 
+        .pet-card { background: #252522; padding: 12px; border-radius: 10px; border-left: 4px solid var(--rarity-c); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .pet-card.UR { border-color: var(--rarity-ur); }
+        .pet-card.SR { border-color: var(--rarity-sr); }
+
+        /* 하단 버튼 */
         footer { padding: 15px 15px calc(var(--safe-bottom) + 20px); background: var(--panel); border-top: 1px solid var(--border); }
         .btn-stack { display: flex; flex-direction: column; gap: 8px; }
         .action-btn { background: #2a2a26; color: white; padding: 18px; border-radius: 12px; border: 1px solid #444; font-weight: bold; text-align: center; }
         .action-btn:active { background: var(--accent); color: #000; }
 
-        #ending-screen { display: none; position: fixed; inset: 0; z-index: 2000; background: #000; padding: 40px 20px; flex-direction: column; justify-content: center; text-align: center; }
+        /* 가챠 결과 팝업 */
+        #gacha-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.95); flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .gacha-box { border: 2px solid var(--accent); padding: 40px; border-radius: 20px; background: #111; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 초기 화면 */
+        #origin-screen { position: fixed; inset: 0; z-index: 3000; background: var(--bg); padding: 20px; overflow-y: auto; }
+        .race-btn { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; width: 100%; text-align: left; color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="origin-screen">
-        <h2 style="text-align:center; margin-bottom:20px; color:var(--accent);">당신의 종족을 정하십시오</h2>
+        <h2 style="text-align:center; margin-bottom:20px; color:var(--accent);">종족을 선택하고 여정을 시작하십시오</h2>
         <div id="race-list"></div>
     </div>
 
-    <div id="ending-screen">
-        <h1 id="end-title" style="color:var(--accent); font-size: 2.2rem; margin-bottom:20px;"></h1>
-        <p id="end-desc" style="line-height:1.8; margin-bottom:40px; color:#ccc;"></p>
-        <button class="action-btn" onclick="location.reload()">운명의 수레바퀴를 다시 돌리기</button>
+    <div id="gacha-overlay">
+        <div class="gacha-box">
+            <h2 id="g-grade" style="margin-bottom:10px;">등급</h2>
+            <h1 id="g-name" style="color:#fff; margin-bottom:20px;">펫 이름</h1>
+            <p id="g-desc" style="color:#aaa; margin-bottom:30px;"></p>
+            <button class="action-btn" style="width:100%" onclick="game.closeGacha()">수령하기</button>
+        </div>
     </div>
 
     <div id="game-ui" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div><span id="ui-race" style="color:var(--accent)"></span> Lv.<span id="ui-lv">1</span></div>
-            <div>Day <span id="ui-day">1</span> / 500</div>
+            <div id="ui-day">Day 1 / 500</div>
         </header>
 
         <div class="visual-frame">
-            <img class="bg" id="ui-bg" src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000">
+            <img id="ui-bg" src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000">
             <img class="char-sprite" id="ui-char" src="">
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" id="tab-log" onclick="game.tab('log')">탐험</button>
-            <button class="tab-btn" id="tab-stat" onclick="game.tab('stat')">캐릭터</button>
+            <button class="tab-btn active" id="tab-l" onclick="game.tab('log')">EXPLORE</button>
+            <button class="tab-btn" id="tab-s" onclick="game.tab('stat')">CHARACTER</button>
         </div>
 
         <div id="pane-log" class="content"></div>
         <div id="pane-stat" class="content" style="display:none;">
-            <div style="margin-bottom:15px; color:var(--accent); font-weight:bold;">남은 포인트: <span id="ui-point">0</span></div>
-            <div id="stat-list"></div>
-            <div style="margin-top:20px; padding:10px; background:#222; border-radius:10px; font-size:13px; line-height:1.6;">
-                <p>❤️ HP: <span id="st-hp"></span></p>
-                <p>💰 GOLD: <span id="st-gold"></span></p>
-                <p>✨ EXP: <span id="st-exp"></span> / <span id="st-maxexp"></span></p>
-            </div>
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:10px;">남은 포인트: <span id="ui-pt">0</span></div>
+            <div class="stat-grid" id="stat-grid"></div>
+            <div id="base-stats" style="background:#222; padding:15px; border-radius:10px; font-size:13px; margin-bottom:20px;"></div>
+            <h3 style="margin-bottom:10px; color:var(--accent);">나의 펫 (<span id="pet-count">0</span>)</h3>
+            <div id="pet-list"></div>
         </div>
 
         <footer>
@@ -93,162 +103,168 @@
 
 <script>
 const RACES = [
-    { id:'Human', name:'인간', img:'https://i.ibb.co/vYm6p0v/hero-pixel.png', str:10, agi:10, int:10, luk:10, hp:100, desc:'모든 능력치가 고르고 성장이 빠릅니다.' },
-    { id:'Elf', name:'엘프', img:'https://i.ibb.co/qY7v6p0/thief-pixel.png', str:5, agi:15, int:15, luk:5, hp:80, desc:'민첩과 지력이 높지만 체력이 낮습니다.' },
-    { id:'Orc', name:'오크', img:'https://i.ibb.co/vXy6p0v/golem-pixel.png', str:18, agi:5, int:2, luk:5, hp:160, desc:'강력한 근력과 체력을 타고났습니다.' },
-    { id:'Halfling', name:'하플링', img:'https://i.ibb.co/3W6f9fP/slime-pixel.png', str:4, agi:12, int:8, luk:16, hp:70, desc:'행운이 매우 높아 특별한 이벤트를 잘 찾습니다.' },
-    { id:'Beast', name:'수인', img:'https://i.ibb.co/6P0f9X8/lizard-pixel.png', str:12, agi:14, int:4, luk:10, hp:110, desc:'전투에 특화된 신체 능력을 보유합니다.' },
-    { id:'Angel', name:'천사', img:'https://img.freepik.com/free-photo/mystical-ancient-ruins-forest-digital-art_23-2151121014.jpg', str:8, agi:8, int:12, luk:12, hp:100, desc:'고결한 존재. 높은 지력과 명성을 가집니다.' },
-    { id:'Demon', name:'악마', img:'https://img.freepik.com/free-photo/fierce-warrior-confronting-monster-forest-digital-art_23-2151121050.jpg', str:15, agi:10, int:10, luk:5, hp:120, desc:'파괴적인 힘을 추구하는 심연의 존재입니다.' }
+    { id:'Human', name:'인간', img:'https://i.ibb.co/vYm6p0v/hero-pixel.png', str:10, agi:10, int:10, luk:10, hp:100 },
+    { id:'Elf', name:'엘프', img:'https://i.ibb.co/qY7v6p0/thief-pixel.png', str:5, agi:15, int:15, luk:5, hp:80 },
+    { id:'Orc', name:'오크', img:'https://i.ibb.co/vXy6p0v/golem-pixel.png', str:20, agi:5, int:2, luk:3, hp:180 },
+    { id:'Halfling', name:'하플링', img:'https://i.ibb.co/3W6f9fP/slime-pixel.png', str:4, agi:12, int:8, luk:20, hp:70 },
+    { id:'Beast', name:'수인', img:'https://i.ibb.co/6P0f9X8/lizard-pixel.png', str:14, agi:14, int:4, luk:8, hp:110 },
+    { id:'Angel', name:'천사', str:8, agi:8, int:15, luk:15, hp:100, img:'https://img.freepik.com/free-photo/mystical-ancient-ruins-forest-digital-art_23-2151121014.jpg' },
+    { id:'Demon', name:'악마', str:18, agi:10, int:10, luk:2, hp:130, img:'https://img.freepik.com/free-photo/fierce-warrior-confronting-monster-forest-digital-art_23-2151121050.jpg' }
+];
+
+const PET_DATA = [
+    { name: "길고양이", grade: "COMMON", bonus: {luk:2}, desc: "어디선가 따라온 평범한 고양이입니다." },
+    { name: "강철 멧돼지", grade: "RARE", bonus: {str:5}, desc: "단단한 가죽을 가진 멧돼지입니다." },
+    { name: "은빛 여우", grade: "SUPER", bonus: {agi:8, int:4}, desc: "매우 민첩하고 영리한 여우입니다." },
+    { name: "화염 드래곤", grade: "SUPER RARE", bonus: {str:15, hp:50}, desc: "강력한 화염을 내뿜는 어린 용입니다." },
+    { name: "심연의 베헤모스", grade: "ULTRA RARE", bonus: {str:30, agi:10, int:10, luk:10, hp:100}, desc: "전설 속의 괴수입니다. 당신을 신의 영역으로 이끕니다." }
 ];
 
 const game = {
-    p: { 
-        race:null, day:1, lv:1, exp:0, maxExp:100, pt:0, hp:100, maxHp:100, gold:100, karma:0,
-        str:0, agi:0, int:0, luk:0, started:false
-    },
+    p: { race:null, day:1, lv:1, exp:0, maxExp:100, pt:0, hp:100, maxHp:100, gold:500, str:0, agi:0, int:0, luk:0, pets:[] },
 
     init() {
         const list = document.getElementById('race-list');
         RACES.forEach(r => {
-            const d = document.createElement('div');
-            d.className = 'race-card';
-            d.innerHTML = `<img src="${r.img}"><div><b>${r.name}</b><p style="font-size:11px; opacity:0.6;">${r.desc}</p></div>`;
-            d.onclick = () => this.start(r);
-            list.appendChild(d);
+            const b = document.createElement('button');
+            b.className = 'race-btn';
+            b.innerHTML = `<img src="${r.img}" style="width:40px;"> <b>${r.name}</b>`;
+            b.onclick = () => this.start(r);
+            list.appendChild(b);
         });
     },
 
     start(race) {
-        this.p.race = race;
-        this.p.str = race.str; this.p.agi = race.agi; this.p.int = race.int; this.p.luk = race.luk;
+        this.p.race = race; this.p.str = race.str; this.p.agi = race.agi; this.p.int = race.int; this.p.luk = race.luk;
         this.p.hp = race.hp; this.p.maxHp = race.hp;
         document.getElementById('origin-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
         document.getElementById('ui-race').innerText = race.name;
         document.getElementById('ui-char').src = race.img;
-        this.log(`${race.name}으로서 새로운 삶을 시작합니다. 500일의 시간이 주어집니다.`);
         this.renderActions();
+        this.log("에버블룸의 숲에 첫 발을 내디뎠습니다. 500일의 시간이 주어집니다.");
     },
 
     tab(t) {
         document.getElementById('pane-log').style.display = t==='log'?'block':'none';
         document.getElementById('pane-stat').style.display = t==='stat'?'block':'none';
-        document.getElementById('tab-log').className = t==='log'?'tab-btn active':'tab-btn';
-        document.getElementById('tab-stat').className = t==='stat'?'tab-btn active':'tab-btn';
+        document.getElementById('tab-l').className = t==='log'?'tab-btn active':'tab-btn';
+        document.getElementById('tab-s').className = t==='stat'?'tab-btn active':'tab-btn';
         if(t==='stat') this.renderStats();
     },
 
     renderStats() {
-        const list = document.getElementById('stat-list');
-        list.innerHTML = '';
-        document.getElementById('ui-point').innerText = this.p.pt;
-        const stats = [
-            {id:'str', n:'💪 근력 (공격력)', v:this.p.str},
-            {id:'agi', n:'🏃 민첩 (회피/속도)', v:this.p.agi},
-            {id:'int', n:'🧠 지력 (마법/사건)', v:this.p.int},
-            {id:'luk', n:'🍀 행운 (보상/운)', v:this.p.luk}
-        ];
-        stats.forEach(s => {
-            const row = document.createElement('div');
-            row.className = 'stat-row';
-            row.innerHTML = `<span>${s.n}: <b>${s.v}</b></span>
-                <button class="up-btn" ${this.p.pt<=0?'disabled':''} onclick="game.upgrade('${s.id}')">+1</button>`;
-            list.appendChild(row);
+        const grid = document.getElementById('stat-grid'); grid.innerHTML = '';
+        ['str', 'agi', 'int', 'luk'].forEach(s => {
+            const card = document.createElement('div'); card.className = 'stat-card';
+            card.innerHTML = `<span>${s.toUpperCase()}: <b>${this.p[s]}</b></span>
+            <button class="up-btn" onclick="game.upgrade('${s}')" ${this.p.pt<=0?'disabled':''}>+</button>`;
+            grid.appendChild(card);
         });
-        document.getElementById('st-hp').innerText = `${this.p.hp} / ${this.p.maxHp}`;
-        document.getElementById('st-gold').innerText = this.p.gold;
-        document.getElementById('st-exp').innerText = this.p.exp;
-        document.getElementById('st-maxexp').innerText = this.p.maxExp;
+        document.getElementById('ui-pt').innerText = this.p.pt;
+        document.getElementById('base-stats').innerHTML = `HP: ${this.p.hp}/${this.p.maxHp} | GOLD: ${this.p.gold}G | EXP: ${this.p.exp}/${this.p.maxExp}`;
+        
+        const plist = document.getElementById('pet-list'); plist.innerHTML = '';
+        document.getElementById('pet-count').innerText = this.p.pets.length;
+        this.p.pets.forEach(pet => {
+            const pc = document.createElement('div'); pc.className = `pet-card ${pet.grade.split(' ').join('')}`;
+            pc.innerHTML = `<div><b>${pet.name}</b> <small>(${pet.grade})</small><br><small>${pet.desc}</small></div>`;
+            plist.appendChild(pc);
+        });
     },
 
-    upgrade(id) {
-        if(this.p.pt > 0) {
-            this.p[id]++; this.p.pt--;
-            if(id === 'str') this.p.maxHp += 5;
-            this.renderStats();
-            this.checkStatEnding();
-        }
+    upgrade(s) {
+        if(this.p.pt > 0) { this.p[s]++; this.p.pt--; if(s==='str') this.p.maxHp += 10; this.renderStats(); this.checkEnding(); }
     },
 
     renderActions() {
         const area = document.getElementById('action-area'); area.innerHTML = '';
-        this.addBtn("🌲 미지의 숲 탐험 (Day +1)", () => this.explore());
-        this.addBtn("⛺ 휴식과 명상", () => {
-            this.p.hp = Math.min(this.p.maxHp, this.p.hp + 20);
-            this.log("휴식을 통해 체력을 회복했습니다.");
-            this.nextDay();
-        });
+        this.addBtn("🌲 깊은 숲 탐험 (Day +1)", () => this.explore());
+        this.addBtn("⛺ 휴식 및 명상", () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+30); this.nextDay(); this.log("휴식을 통해 기력을 회복했습니다."); });
         this.updateUI();
     },
 
     explore() {
-        this.p.exp += 25 + (this.p.int * 2);
-        this.checkLvUp();
-        
+        this.p.exp += (20 + this.p.int); this.checkLvUp();
         const roll = Math.random();
-        if(roll < 0.3) this.battle();
-        else if(roll < 0.6) this.event();
-        else this.log("숲은 평화로웠습니다. 별다른 일 없이 하루가 지났습니다.");
-        
+        if(roll < 0.2) this.enterForge();
+        else if(roll < 0.5) this.battle();
+        else this.log("숲을 수색했으나 별다른 일은 없었습니다.");
         this.nextDay();
     },
 
-    battle() {
-        this.log("<b style='color:red'>[전투]</b> 위험한 맹수를 만났습니다!");
-        let dmg = Math.max(5, 20 - this.p.agi);
-        this.p.hp -= dmg;
-        this.p.gold += (10 + this.p.luk);
-        this.log(`전투 승리! 체력 -${dmg}, 골드 +${10 + this.p.luk}.`);
+    enterForge() {
+        this.log("안개 속에서 신비로운 대장간을 발견했습니다!");
+        document.getElementById('ui-bg').src = "https://i.ibb.co/3sX8s8D/forge.png";
+        const area = document.getElementById('action-area'); area.innerHTML = '';
+        this.addBtn("💎 펫 가챠 (300G 소모)", () => this.gacha());
+        this.addBtn("⚒️ 장비 강화 (100G / STR+2)", () => {
+            if(this.p.gold >= 100) { this.p.gold -= 100; this.p.str += 2; this.log("무기를 강화하여 근력이 상승했습니다!"); this.updateUI(); }
+            else this.log("골드가 부족합니다.");
+        });
+        this.addBtn("🌲 숲으로 돌아가기", () => { document.getElementById('ui-bg').src = "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000"; this.renderActions(); });
     },
 
-    event() {
-        const evs = ["고대 유적 발견", "상인과의 만남", "정령의 샘터", "버려진 상자"];
-        const picked = evs[Math.floor(Math.random()*evs.length)];
-        this.log(`<b style='color:cyan'>[사건]</b> ${picked}을(를) 겪었습니다.`);
-        this.p.gold += this.p.luk * 2;
+    gacha() {
+        if(this.p.gold < 300) { this.log("골드가 부족합니다! (300G 필요)"); return; }
+        this.p.gold -= 300;
+        const r = Math.random() * 100;
+        let p;
+        if(r < 1) p = PET_DATA[4]; // UR 1%
+        else if(r < 5) p = PET_DATA[3]; // SR 4%
+        else if(r < 15) p = PET_DATA[2]; // S 10%
+        else if(r < 40) p = PET_DATA[1]; // R 25%
+        else p = PET_DATA[0]; // C 60%
+
+        this.p.pets.push(p);
+        for(let s in p.bonus) { this.p[s] += p.bonus[s]; if(s==='hp') this.p.maxHp += p.bonus[s]; }
+        
+        document.getElementById('g-grade').innerText = p.grade;
+        document.getElementById('g-grade').style.color = `var(--rarity-${p.grade.toLowerCase().split(' ').join('')})`;
+        document.getElementById('g-name').innerText = p.name;
+        document.getElementById('g-desc').innerText = p.desc;
+        document.getElementById('gacha-overlay').style.display = 'flex';
+    },
+
+    closeGacha() { document.getElementById('gacha-overlay').style.display = 'none'; this.updateUI(); },
+
+    battle() {
+        let dmg = Math.max(5, 20 - this.p.agi);
+        this.p.hp -= dmg; this.p.gold += (30 + this.p.luk);
+        this.log(`몬스터와의 전투! HP -${dmg}, 골드 +${30 + this.p.luk}G.`);
+        if(this.p.hp <= 0) { alert("사망하였습니다..."); location.reload(); }
     },
 
     checkLvUp() {
         while(this.p.exp >= this.p.maxExp) {
-            this.p.lv++;
-            this.p.exp -= this.p.maxExp;
-            this.p.maxExp = Math.floor(this.p.maxExp * 1.3);
-            this.p.pt += 5;
-            this.log(`<b style='color:yellow'>[Level Up!]</b> 레벨 ${this.p.lv} 달성! 스탯 포인트 5개를 얻었습니다.`);
+            this.p.lv++; this.p.exp -= this.p.maxExp; this.p.maxExp = Math.floor(this.p.maxExp * 1.3);
+            this.p.pt += 5; this.log(`레벨 업! ${this.p.lv}이 되었습니다. 포인트 +5.`);
         }
     },
 
-    nextDay() {
-        this.p.day++;
-        if(this.p.day >= 500) this.end("시간의 끝", "500일의 긴 여정이 끝났습니다. 당신은 평범한 모험가로 기억될 것입니다.");
-        this.updateUI();
-    },
-
-    checkStatEnding() {
-        // 능력치 가중 돌파 엔딩 (순수 스탯 100 기준)
-        if(this.p.str >= 100) this.end("투신(鬪神)의 탄생", "당신의 육체는 이미 필멸자의 한계를 넘어섰습니다. 전설적인 투신으로 추앙받습니다.");
-        if(this.p.int >= 100) this.end("진리의 탐구자", "세상의 모든 섭리를 깨달았습니다. 당신은 육신을 벗어던지고 순수한 지성의 존재가 되었습니다.");
-        if(this.p.agi >= 100) this.end("바람의 그림자", "당신의 움직임은 빛보다 빨라졌습니다. 이제 누구도 당신을 포착할 수 없습니다.");
-        if(this.p.luk >= 100) this.end("운명의 지배자", "세상의 모든 행운이 당신을 향합니다. 당신이 걷는 길은 곧 황금의 길이 됩니다.");
-    },
-
-    end(title, desc) {
-        document.getElementById('ending-screen').style.display = 'flex';
-        document.getElementById('end-title').innerText = title;
-        document.getElementById('end-desc').innerText = desc;
-    },
+    nextDay() { this.p.day++; if(this.p.day >= 500) this.end("방랑의 끝", "500일의 여정이 끝났습니다."); },
 
     updateUI() {
-        document.getElementById('ui-day').innerText = this.p.day;
         document.getElementById('ui-lv').innerText = this.p.lv;
-        if(this.p.hp <= 0) this.end("종말", "당신의 여정은 여기서 멈췄습니다. 숲의 흙으로 돌아갑니다.");
+        document.getElementById('ui-day').innerText = `Day ${this.p.day} / 500`;
+    },
+
+    checkEnding() {
+        if(this.p.str >= 100) this.end("투신 강림", "근력이 100을 돌파했습니다. 당신은 대륙 최강의 전사가 되었습니다.");
+        if(this.p.int >= 100) this.end("진리의 눈", "지력이 100을 돌파했습니다. 세상의 모든 섭리를 깨달았습니다.");
+    },
+
+    end(t, d) {
+        document.body.innerHTML = `<div style="padding:50px; text-align:center; height:100vh; display:flex; flex-direction:column; justify-content:center; background:#000;">
+            <h1 style="color:var(--accent); font-size:2.5rem; margin-bottom:20px;">${t}</h1>
+            <p style="line-height:1.8; margin-bottom:40px;">${d}</p>
+            <button class="action-btn" onclick="location.reload()">새로운 전설 시작</button>
+        </div>`;
     },
 
     log(m) {
         const pane = document.getElementById('pane-log');
-        const div = document.createElement('div'); div.className = 'log-entry';
-        div.innerHTML = `> ${m}`;
+        const div = document.createElement('div'); div.className = 'log-entry'; div.innerHTML = `> ${m}`;
         pane.prepend(div);
     },
 
@@ -256,9 +272,7 @@ const game = {
         const b = document.createElement('button'); b.className = 'action-btn'; b.innerText = t;
         b.onclick = (e) => { e.stopPropagation(); f(); };
         document.getElementById('action-area').appendChild(b);
-    },
-
-    btn(t, f) { this.addBtn(t, f); }
+    }
 };
 
 game.init();
