@@ -12,79 +12,77 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Apple SD Gothic Neo', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* 시작 화면 */
-        #start-screen { position: fixed; inset: 0; z-index: 5000; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://image.lexica.art/full_webp/cc2057ae-e069-450f-a2e6-a94b595bb919'); background-size: cover; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .start-title { font-size: 28px; font-weight: bold; color: var(--accent); margin-bottom: 40px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-        .tap-msg { font-size: 16px; animation: blink 1.5s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        /* 시작 및 선택 화면 */
+        #start-screen { position: fixed; inset: 0; z-index: 5000; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)), url('https://image.lexica.art/full_webp/cc2057ae-e069-450f-a2e6-a94b595bb919'); background-size: cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #origin-screen { position: fixed; inset: 0; z-index: 4000; background: var(--bg); padding: 20px; overflow-y: auto; display: none; }
+        .race-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 12px; cursor: pointer; }
 
-        /* 레이아웃 */
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; z-index: 10; }
-        .visual-area { width: 100%; height: 30vh; position: relative; background: #000; border-bottom: 2px solid var(--accent); overflow: hidden; flex-shrink: 0; }
-        #char-img { position: absolute; bottom: -5%; left: 50%; transform: translateX(-50%); height: 105%; z-index: 5; object-fit: contain; pointer-events: none; }
-        #bg-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.4); transition: 0.5s; }
+        /* 메인 레이아웃 */
+        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; }
+        .visual-area { width: 100%; height: 35vh; position: relative; overflow: hidden; border-bottom: 2px solid var(--accent); }
+        #bg-img { width: 100%; height: 100%; object-fit: cover; transition: 1s ease-in-out; }
+        .location-tag { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--accent); font-size: 12px; color: var(--accent); }
 
-        .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: #777; font-weight: bold; font-size: 13px; }
+        .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab-btn { flex: 1; min-width: 80px; padding: 12px; border: none; background: none; color: #777; font-weight: bold; font-size: 12px; white-space: nowrap; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
         /* 메인 콘텐츠 */
         .main-content { flex: 1; overflow-y: auto; padding: 15px; background: #111; }
-        .log-line { margin-bottom: 6px; font-size: 14px; color: #ccc; border-left: 2px solid var(--border); padding-left: 10px; animation: slideIn 0.2s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        .log-line { margin-bottom: 6px; font-size: 14px; color: #ccc; border-left: 2px solid var(--border); padding-left: 10px; }
         
-        /* 아이템/펫 슬롯 */
-        .slot { background: #1c1c1a; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        /* 도감 및 인벤토리 슬롯 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .slot { background: #1c1c1a; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 13px; position: relative; }
         .slot.selected { border-color: var(--accent); background: #2a2a22; }
-        .rarity-tag { font-size: 10px; padding: 2px 5px; border-radius: 4px; background: var(--accent); color: #000; font-weight: bold; margin-right: 5px; }
+        .slot.locked { opacity: 0.4; filter: grayscale(1); }
+        .type-tag { font-size: 9px; padding: 2px 4px; border-radius: 3px; background: #444; margin-right: 4px; }
 
-        /* 하단 액션 버튼 */
-        footer { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); max-height: 35vh; display: flex; flex-direction: column; }
-        .action-container { overflow-y: auto; padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; }
-        .btn { background: var(--btn-bg); color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; text-align: center; cursor: pointer; transition: 0.1s; }
-        .btn:active { background: var(--accent); color: #000; transform: scale(0.98); }
-        .btn:disabled { opacity: 0.3; pointer-events: none; }
-
-        /* 종족 선택 화면 */
-        #origin-screen { position: fixed; inset: 0; z-index: 4000; background: var(--bg); padding: 20px; overflow-y: auto; display: none; }
-        .race-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 15px; transition: 0.2s; }
-        .race-box:active { border-color: var(--accent); background: #222; }
+        /* 하단 버튼 */
+        footer { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); }
+        .action-container { max-height: 25vh; overflow-y: auto; padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; }
+        .btn { background: var(--btn-bg); color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; text-align: center; cursor: pointer; }
+        .btn:active { background: var(--accent); color: #000; }
     </style>
 </head>
 <body>
 
     <div id="start-screen" onclick="game.showOrigin()">
-        <div class="start-title">Everbloom Chronicles</div>
-        <div class="tap-msg">탭 하여 시작하세요</div>
+        <h1 class="start-title" style="color:var(--accent); font-size:32px; margin-bottom:10px;">Everbloom</h1>
+        <p style="color:#aaa; margin-bottom:30px;">기록되지 않은 연대기</p>
+        <div class="tap-msg" style="color:white; font-weight:bold;">탭 하여 시작하세요</div>
     </div>
 
     <div id="origin-screen">
-        <h2 style="text-align:center; color:var(--accent); margin-bottom:20px;">출신 종족을 선택하십시오</h2>
+        <h2 style="text-align:center; color:var(--accent); margin-bottom:20px;">출신 성분을 결정하십시오</h2>
         <div id="race-list"></div>
     </div>
 
     <div id="game-ui" style="display:none; flex-direction:column; height:100%;">
         <header>
-            <div><span id="ui-race" style="color:var(--accent)"></span> Lv.<span id="ui-lv">1</span></div>
-            <div id="ui-day">Day 1 / 500</div>
+            <div>Lv.<span id="ui-lv">1</span> <span id="ui-race" style="color:var(--accent)"></span></div>
+            <div id="ui-day">Day 1</div>
         </header>
 
         <div class="visual-area">
-            <img id="bg-img" src="https://image.lexica.art/full_webp/51351532-3580-4963-8a9d-b8733b1e967a">
-            <img id="char-img" src="">
+            <div id="loc-tag" class="location-tag">신비로운 숲</div>
+            <img id="bg-img" src="">
         </div>
 
         <div class="tab-bar">
-            <button id="tab-log" class="tab-btn active" onclick="game.tab('log')">탐험 로그</button>
-            <button id="tab-inv" class="tab-btn" onclick="game.tab('inv')">인벤토리/펫</button>
+            <button class="tab-btn active" onclick="game.tab('log', this)">로그</button>
+            <button class="tab-btn" onclick="game.tab('inv', this)">가방</button>
+            <button class="tab-btn" onclick="game.tab('book_item', this)">장비도감</button>
+            <button class="tab-btn" onclick="game.tab('book_pet', this)">펫도감</button>
         </div>
 
         <div id="pane-log" class="main-content"></div>
         <div id="pane-inv" class="main-content" style="display:none;">
-            <div id="stat-info" style="margin-bottom:15px; font-size:13px; color:var(--accent); line-height:1.6; background:#1c1c1a; padding:10px; border-radius:8px;"></div>
-            <h4 style="margin-bottom:10px; font-size:14px; border-bottom:1px solid #333; padding-bottom:5px;">보유 물품 (<span id="inv-count">0</span>/12)</h4>
-            <div id="inv-list"></div>
+            <div id="stat-info" style="margin-bottom:15px; font-size:13px; border-bottom:1px solid #333; padding-bottom:10px;"></div>
+            <div id="inv-list" class="grid"></div>
         </div>
+        <div id="pane-book_item" class="main-content" style="display:none;"><div id="book-item-list" class="grid"></div></div>
+        <div id="pane-book_pet" class="main-content" style="display:none;"><div id="book-pet-list" class="grid"></div></div>
 
         <footer>
             <div id="action-list" class="action-container"></div>
@@ -92,150 +90,156 @@
     </div>
 
 <script>
-// 장비 및 펫 데이터베이스
-const DB = {
+const DATA = {
+    locs: {
+        forest: { name: "신비로운 숲", img: "https://image.lexica.art/full_webp/cc2057ae-e069-450f-a2e6-a94b595bb919" },
+        sea: { name: "창공의 바다", img: "https://image.lexica.art/full_webp/1271317e-9777-4402-8611-37d3637e3d1c" },
+        ruin: { name: "잊혀진 유적", img: "https://image.lexica.art/full_webp/7376c968-07e3-4770-bc0f-903429215096" },
+        cave: { name: "심연의 동굴", img: "https://image.lexica.art/full_webp/4594c798-1755-4672-8884-60ff868b1ee4" },
+        village: { name: "안식의 마을", img: "https://image.lexica.art/full_webp/51351532-3580-4963-8a9d-b8733b1e967a" }
+    },
     items: [
-        { name: "녹슨 단검", type: "장비", stat: "ATK+5", price: 40 },
-        { name: "가죽 갑옷", type: "장비", stat: "DEF+3", price: 60 },
-        { name: "강철 검", type: "장비", stat: "ATK+12", price: 200 },
-        { name: "기사의 갑옷", type: "장비", stat: "DEF+10", price: 350 },
-        { name: "행운의 금화", type: "장비", stat: "LUK+5", price: 500 }
+        { id:0, name: "녹슨 단검", stat: "ATK+5", price: 40 },
+        { id:1, name: "강철 장검", stat: "ATK+15", price: 200 },
+        { id:2, name: "가죽 마법보", stat: "DEF+8", price: 150 },
+        { id:3, name: "영광의 갑옷", stat: "DEF+30", price: 800 },
+        { id:4, name: "현자의 지팡이", stat: "INT+25", price: 1200 }
     ],
     pets: [
-        { name: "초보 햄스터", type: "펫", stat: "LUK+2", price: 100 },
-        { name: "아기 늑대", type: "펫", stat: "ATK+4", price: 250 },
-        { name: "푸른 요정", type: "펫", stat: "INT+8", price: 600 }
+        { id:0, name: "바람 다람쥐", stat: "AGI+5", price: 100 },
+        { id:1, name: "화염 슬라임", stat: "ATK+8", price: 300 },
+        { id:2, name: "고대 뺘뺘", stat: "LUK+15", price: 1000 },
+        { id:3, name: "그림자 표범", stat: "AGI+20", price: 2500 }
     ]
 };
 
 const game = {
-    p: { race:null, day:1, lv:1, exp:0, gold:300, hp:100, maxHp:100, str:10, agi:10, luk:5, inv:[] },
-    mode: 'forest', selectedIdx: -1,
+    p: { race:null, day:1, lv:1, exp:0, gold:500, hp:100, maxHp:100, inv:[], discoveredItems:[], discoveredPets:[] },
+    loc: 'forest', mode: 'explore', selectedIdx: -1,
 
     showOrigin() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('origin-screen').style.display = 'block';
         const list = document.getElementById('race-list');
-        // 수인, 하플링, 천사, 악마 종족 데이터 추가
-        const races = [
-            { id:'beast', name:'수인', hp:130, str:14, agi:12, img:'https://image.lexica.art/full_webp/6e22f281-705b-4395-8884-60ff868b1ee4' },
-            { id:'halfling', name:'하플링', hp:90, str:8, agi:13, img:'https://image.lexica.art/full_webp/26253907-f377-497d-b14e-b830d1e39a58' },
-            { id:'angel', name:'천사', hp:110, str:11, agi:11, img:'https://image.lexica.art/full_webp/60183021-d779-4447-b50a-e373449c2505' }, // 엘프 소스를 천사로 활용
-            { id:'demon', name:'악마', hp:140, str:16, agi:9, img:'https://image.lexica.art/full_webp/01017b2b-6d65-4f35-9c88-12d770512803' }  // 오크 소스를 악마로 활용
-        ];
-        races.forEach(r => {
-            const div = document.createElement('div'); div.className = 'race-box';
-            div.innerHTML = `<img src="${r.img}" style="width:65px; height:65px; object-fit:cover; border-radius:10px; border:1px solid #444;"> 
-                             <div><b>${r.name}</b><br><small style="color:#aaa;">체력:${r.hp} 근력:${r.str} 민첩:${r.agi}</small></div>`;
-            div.onclick = () => { this.p.race = r; this.start(); };
-            list.appendChild(div);
+        [{n:'수인', h:140}, {n:'하플링', h:90}, {n:'천사', h:110}, {n:'악마', h:150}].forEach(r => {
+            const d = document.createElement('div'); d.className = 'race-box';
+            d.innerHTML = `<b>${r.n}</b><br><small>초기 HP: ${r.h}</small>`;
+            d.onclick = () => { this.p.race = r; this.start(); };
+            list.appendChild(d);
         });
     },
 
     start() {
-        this.p.hp = this.p.race.hp; this.p.maxHp = this.p.race.hp;
-        this.p.str = this.p.race.str; this.p.agi = this.p.race.agi;
+        this.p.hp = this.p.race.h; this.p.maxHp = this.p.race.h;
         document.getElementById('origin-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
-        document.getElementById('ui-race').innerText = this.p.race.name;
-        document.getElementById('char-img').src = this.p.race.img;
+        document.getElementById('ui-race').innerText = this.p.race.n;
+        this.updateLoc('forest');
         this.renderActions();
-        this.log(`${this.p.race.name}의 혈통이 깨어났습니다. 모험을 시작합니다.`);
+        this.log("세상의 끝에서 당신의 기록이 시작됩니다.");
     },
 
-    tab(type) {
+    updateLoc(key) {
+        this.loc = key;
+        const info = DATA.locs[key];
+        document.getElementById('loc-tag').innerText = info.name;
+        document.getElementById('bg-img').src = info.img;
+    },
+
+    tab(t, el) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab-${type}`).classList.add('active');
-        document.getElementById('pane-log').style.display = type === 'log' ? 'block' : 'none';
-        document.getElementById('pane-inv').style.display = type === 'inv' ? 'block' : 'none';
-        if(type === 'inv') this.renderInv();
+        el.classList.add('active');
+        ['log','inv','book_item','book_pet'].forEach(p => document.getElementById('pane-'+p).style.display = 'none');
+        document.getElementById('pane-'+t).style.display = 'block';
+        if(t === 'inv') this.renderInv();
+        if(t.startsWith('book')) this.renderBook(t.split('_')[1]);
     },
 
     renderInv() {
-        document.getElementById('stat-info').innerHTML = `❤️ HP: ${this.p.hp}/${this.p.maxHp} | ⚔️ STR: ${this.p.str}<br>💰 GOLD: ${this.p.gold}G | 🍀 LUK: ${this.p.luk}`;
+        document.getElementById('stat-info').innerHTML = `❤️ HP: ${this.p.hp}/${this.p.maxHp} | 💰 GOLD: ${this.p.gold}G`;
         const list = document.getElementById('inv-list'); list.innerHTML = '';
-        document.getElementById('inv-count').innerText = this.p.inv.length;
-        this.p.inv.forEach((item, i) => {
-            const div = document.createElement('div');
-            div.className = `slot ${this.selectedIdx === i ? 'selected' : ''}`;
-            div.innerHTML = `<div><span class="rarity-tag">${item.type}</span><b>${item.name}</b><br><small style="color:#888;">${item.stat} | 가치:${Math.floor(item.price*0.6)}G</small></div>`;
-            div.onclick = () => { this.selectedIdx = (this.selectedIdx === i) ? -1 : i; this.renderInv(); };
-            list.appendChild(div);
+        this.p.inv.forEach((it, i) => {
+            const d = document.createElement('div'); d.className = `slot ${this.selectedIdx === i ? 'selected' : ''}`;
+            d.innerHTML = `<b>${it.name}</b><br><small>${it.stat}</small>`;
+            d.onclick = () => { this.selectedIdx = (this.selectedIdx === i) ? -1 : i; this.renderInv(); };
+            list.appendChild(d);
+        });
+    },
+
+    renderBook(type) {
+        const list = document.getElementById(`book-${type}-list`); list.innerHTML = '';
+        const dataArr = type === 'item' ? DATA.items : DATA.pets;
+        const discoveredArr = type === 'item' ? this.p.discoveredItems : this.p.discoveredPets;
+
+        dataArr.forEach(obj => {
+            const isFound = discoveredArr.includes(obj.id);
+            const d = document.createElement('div'); d.className = `slot ${isFound ? '' : 'locked'}`;
+            d.innerHTML = isFound ? `<b>${obj.name}</b><br><small>${obj.stat}</small>` : `<b>???</b><br><small>미발견</small>`;
+            list.appendChild(d);
         });
     },
 
     renderActions() {
         const area = document.getElementById('action-list'); area.innerHTML = '';
-        if(this.mode === 'forest') {
-            this.addBtn("🌲 깊은 숲 탐험 (Day+1)", () => this.explore());
-            this.addBtn("🏕️ 캠핑 (체력 +30)", () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+30); this.p.day++; this.update(); this.log("모닥불 곁에서 휴식을 취했습니다."); });
-        } else if(this.mode === 'village') {
-            this.addBtn("⚒️ 대장간 (장비 구매)", () => { this.mode = 'forge'; this.renderActions(); });
-            this.addBtn("🐾 펫 샵 (동료 영입)", () => { this.mode = 'petshop'; this.renderActions(); });
-            this.addBtn("🛒 잡화점 (판매/정비)", () => { this.mode = 'shop'; this.renderActions(); });
-            this.addBtn("🌲 마을 떠나기", () => { this.mode = 'forest'; this.renderActions(); });
-        } else if(this.mode === 'forge' || this.mode === 'petshop') {
-            const currentPool = this.mode === 'forge' ? DB.items : DB.pets;
-            this.addBtn(this.mode === 'forge' ? "📦 무작위 장비 상자 (150G)" : "🥚 무작위 펫 알 (200G)", () => {
-                const price = this.mode === 'forge' ? 150 : 200;
-                if(this.p.gold >= price && this.p.inv.length < 12) {
-                    this.p.gold -= price;
-                    const res = currentPool[Math.floor(Math.random() * currentPool.length)];
-                    this.p.inv.push({...res});
-                    this.log(`${res.name}을(를) 손에 넣었습니다!`); this.update();
-                } else if(this.p.inv.length >= 12) { this.log("가방이 가득 찼습니다."); }
-            });
-            this.addBtn("↩️ 마을 광장", () => { this.mode = 'village'; this.renderActions(); });
-        } else if(this.mode === 'shop') {
-            this.addBtn("💰 선택한 항목 판매", () => {
-                if(this.selectedIdx > -1) {
-                    const price = Math.floor(this.p.inv[this.selectedIdx].price * 0.6);
-                    this.p.gold += price;
-                    this.log(`${this.p.inv[this.selectedIdx].name} 판매 완료. (+${price}G)`);
-                    this.p.inv.splice(this.selectedIdx, 1);
-                    this.selectedIdx = -1;
-                    this.renderInv(); this.update();
-                } else { this.log("인벤토리에서 판매할 물품을 선택하세요."); }
-            });
-            this.addBtn("↩️ 마을 광장", () => { this.mode = 'village'; this.renderActions(); });
+        if(this.loc !== 'village') {
+            this.addBtn("🧭 주변 탐사 (Day+1)", () => this.explore());
+            this.addBtn("⛺ 휴식 (HP+30)", () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+30); this.nextDay(); this.log("안전한 곳을 찾아 휴식했습니다."); });
+        } else {
+            this.addBtn("⚒️ 대장간 (장비 구매)", () => this.buy('item'));
+            this.addBtn("🐾 펫 상점 (동료 영입)", () => this.buy('pet'));
+            this.addBtn("💰 소지품 판매", () => this.sell());
+            this.addBtn("🌲 마을 떠나기", () => { this.updateLoc('forest'); this.renderActions(); });
         }
-        area.scrollTop = 0;
     },
 
     explore() {
-        this.p.day++;
-        if(Math.random() < 0.25) {
-            this.mode = 'village';
-            this.log("🏰 안개 너머로 마을의 불빛이 보입니다.");
-        } else {
-            this.p.exp += 25;
-            if(this.p.exp >= 100) { this.p.lv++; this.p.exp=0; this.log("✨ 한계를 돌파하여 레벨이 올랐습니다!"); }
-            this.log("숲을 수색하며 경험을 쌓았습니다.");
+        const rand = Math.random();
+        if(rand < 0.2) { this.updateLoc('village'); this.log("🏰 안식의 마을에 도착했습니다."); }
+        else {
+            const locs = ['forest','sea','ruin','cave'];
+            this.updateLoc(locs[Math.floor(Math.random()*locs.length)]);
+            if(Math.random() < 0.3) this.log("전투가 발생했지만 무사히 넘겼습니다.");
+            else this.log(`${DATA.locs[this.loc].name}의 깊은 곳을 발견했습니다.`);
         }
-        this.update(); this.renderActions();
+        this.nextDay();
     },
 
-    update() {
-        document.getElementById('ui-lv').innerText = this.p.lv;
-        document.getElementById('ui-day').innerText = `Day ${this.p.day} / 500`;
-        const bg = document.getElementById('bg-img');
-        if(this.mode === 'forest') bg.src = "https://image.lexica.art/full_webp/cc2057ae-e069-450f-a2e6-a94b595bb919";
-        else bg.src = "https://image.lexica.art/full_webp/51351532-3580-4963-8a9d-b8733b1e967a";
+    buy(type) {
+        const pool = type === 'item' ? DATA.items : DATA.pets;
+        const res = pool[Math.floor(Math.random()*pool.length)];
+        const price = type === 'item' ? 150 : 300;
+        if(this.p.gold >= price) {
+            this.p.gold -= price;
+            this.p.inv.push({...res, type});
+            if(type === 'item' && !this.p.discoveredItems.includes(res.id)) this.p.discoveredItems.push(res.id);
+            if(type === 'pet' && !this.p.discoveredPets.includes(res.id)) this.p.discoveredPets.push(res.id);
+            this.log(`${res.name}을(를) 획득했습니다.`);
+        } else { this.log("골드가 부족합니다."); }
     },
 
+    sell() {
+        if(this.selectedIdx > -1) {
+            const it = this.p.inv[this.selectedIdx];
+            const price = Math.floor(it.price * 0.6);
+            this.p.gold += price;
+            this.p.inv.splice(this.selectedIdx, 1);
+            this.selectedIdx = -1;
+            this.log(`${it.name}을(를) 판매하여 ${price}G를 얻었습니다.`);
+            this.renderInv();
+        } else { this.log("판매할 물품을 가방에서 먼저 선택하세요."); }
+    },
+
+    nextDay() { this.p.day++; document.getElementById('ui-day').innerText = `Day ${this.p.day}`; this.renderActions(); },
     log(m) {
         const p = document.getElementById('pane-log');
         const d = document.createElement('div'); d.className = 'log-line';
         d.innerText = `> ${m}`; p.prepend(d);
     },
-
     addBtn(t, f) {
         const b = document.createElement('div'); b.className = 'btn'; b.innerText = t; b.onclick = f;
         document.getElementById('action-list').appendChild(b);
     }
 };
-
-game.init = () => { /* 초기화 로직이 필요하다면 여기에 */ };
 </script>
 </body>
 </html>
