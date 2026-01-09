@@ -3,234 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>EVERBLOOM</title>
+<title>EVERBLOOM: EryStart</title>
 
 <style>
 :root{
-    --bg:#2e2624;
+    --bg:#3b3331;
     --panel:#4a3e3b;
     --border:#7a6a67;
     --text:#f7e7d6;
     --accent:#c08d4b;
     --btn:#6a5e5c;
-    --btn-active:#8a7e7c;
 }
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'DotGothic16','Apple SD Gothic Neo',sans-serif;}
-body{background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
-
 @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
 
-#splash{
-    position:fixed;inset:0;z-index:99;
-    display:flex;flex-direction:column;justify-content:center;align-items:center;
-    background:#000;
+body{
+    background:var(--bg);
+    color:var(--text);
+    height:100vh;
+    display:flex;
+    flex-direction:column;
 }
-.start-btn{margin-top:40px;animation:blink 1.4s infinite;}
 
-@keyframes blink{50%{opacity:.4}}
-
-#game{display:none;height:100%;padding:10px;display:flex;flex-direction:column;}
-
-.header{
+header{
     background:var(--panel);
     border:2px solid var(--border);
-    padding:8px 12px;
-    display:flex;justify-content:space-between;
-    margin-bottom:8px;
+    padding:10px;
+    margin:8px;
+    display:flex;
+    justify-content:space-between;
 }
 
-.main{
-    flex:1;
-    display:grid;
-    grid-template-columns:2fr 1fr;
+main{
+    margin:0 8px;
+    display:flex;
+    flex-direction:column;
     gap:8px;
 }
 
+/* 🔹 도트 화면 */
+.scene-box{
+    background:#567e6a;
+    border:2px solid var(--border);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:8px;
+}
+
+canvas{
+    width:160px;
+    height:160px;
+    image-rendering:pixelated;
+}
+
+/* 🔹 로그 */
 .log{
     background:var(--panel);
     border:2px solid var(--border);
     padding:8px;
+    height:110px;
     overflow-y:auto;
-    font-size:12px;
-    display:flex;
-    flex-direction:column-reverse;
+    font-size:13px;
 }
 
-.log div{margin-bottom:4px;}
+.log p{margin-bottom:4px;}
 .log .event{color:var(--accent);font-weight:bold;}
 
-.canvas-box{
-    background:var(--panel);
-    border:2px solid var(--border);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-canvas{
-    width:100%;
-    height:100%;
-    image-rendering:pixelated;
-}
-
+/* 🔹 버튼 */
 .controls{
-    background:var(--panel);
-    border:2px solid var(--border);
-    padding:8px;
-    margin-top:8px;
-}
-
-.actions{
+    margin:8px;
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:6px;
+    gap:8px;
 }
 
 button{
     background:var(--btn);
-    color:var(--text);
     border:1px solid var(--border);
-    padding:10px;
+    color:var(--text);
+    padding:14px;
     font-weight:bold;
 }
-button:active{background:var(--btn-active);}
 </style>
 </head>
 
-<body onclick="startGame()">
+<body>
 
-<div id="splash">
-    <h1>EVERBLOOM</h1>
-    <div class="start-btn">화면을 터치하여 시작</div>
-</div>
+<header>
+    <div>EVERBLOOM: EryStart</div>
+    <div id="turn">턴 1</div>
+</header>
 
-<div id="game">
-    <div class="header">
-        <div>EVERBLOOM</div>
-        <div id="turn">턴 1</div>
+<main>
+    <div class="scene-box">
+        <canvas id="scene" width="160" height="160"></canvas>
     </div>
 
-    <div class="main">
-        <div class="log" id="log">
-            <div class="event">모험이 시작되었습니다.</div>
-        </div>
-
-        <div class="canvas-box">
-            <canvas id="scene" width="192" height="192"></canvas>
-        </div>
+    <div class="log" id="log">
+        <p class="event">모험이 시작되었습니다!</p>
+        <p>에버블룸의 고대 숲이 당신을 맞이합니다.</p>
     </div>
+</main>
 
-    <div class="controls">
-        <div class="actions">
-            <button onclick="act('explore')">탐험</button>
-            <button onclick="act('town')">마을</button>
-            <button onclick="act('battle')">사건</button>
-            <button onclick="act('pet')">펫</button>
-        </div>
-    </div>
+<div class="controls">
+    <button onclick="act('explore')">🔍 탐험</button>
+    <button onclick="act('town')">🏠 마을</button>
+    <button onclick="act('battle')">⚔️ 사건</button>
+    <button onclick="act('pet')">🐾 펫</button>
 </div>
 
 <script>
-let started=false,turn=1;
+let turn=1;
 
-/* =========================
-   픽셀 팔레트 (첨부 이미지 기준)
-========================= */
+/* 팔레트 */
 const P={
-    o:"#1a1a1a",
+    o:"#1b1b1b",
     skin:"#d7b38c", skinS:"#b38b65",
     cloth:"#7c2f2f", clothS:"#551f1f",
     grass:"#3e6b3e", grassS:"#2b4d2b",
     slime:"#9bbfb2", slimeS:"#6e9f8e",
-    steel:"#cfcfcf", steelS:"#9a9a9a"
+    hair:"#3a2a20"
 };
 
-/* =========================
-   픽셀 드로잉 유틸
-========================= */
 function px(c,x,y,w,h,col){
     c.fillStyle=col;
-    c.fillRect(x|0,y|0,w|0,h|0);
+    c.fillRect(x,y,w,h);
 }
 
-/* =========================
-   레이어
-========================= */
+/* 배경 */
 function bg(c){
-    px(c,0,0,192,192,"#2a3b2a");
-}
-
-function ground(c){
-    for(let y=120;y<192;y+=4)
-        for(let x=0;x<192;x+=4)
+    for(let y=0;y<160;y+=4)
+        for(let x=0;x<160;x+=4)
             px(c,x,y,4,4,Math.random()>.5?P.grass:P.grassS);
 }
 
-/* =========================
-   캐릭터 (고퀄 190px 대응)
-========================= */
+/* 캐릭터 (사람처럼 보이게) */
 function hero(c,x,y){
-    // outline
-    px(c,x-1,y-25,18,26,P.o);
+    // 머리
+    px(c,x+4,y,8,8,P.skin);
+    px(c,x+4,y+5,8,3,P.skinS);
+    px(c,x+6,y+3,1,2,P.o);
+    px(c,x+9,y+3,1,2,P.o);
 
-    // body
-    px(c,x,y-24,16,24,P.cloth);
-    px(c,x,y-10,16,10,P.clothS);
+    // 몸
+    px(c,x+3,y+8,10,10,P.cloth);
+    px(c,x+3,y+14,10,4,P.clothS);
 
-    // head
-    px(c,x+2,y-32,12,8,P.skin);
-    px(c,x+2,y-28,12,4,P.skinS);
-
-    // sword
-    px(c,x+14,y-24,3,18,P.steel);
-    px(c,x+14,y-10,3,6,P.steelS);
+    // 다리
+    px(c,x+4,y+18,3,8,P.hair);
+    px(c,x+9,y+18,3,8,P.hair);
 }
 
+/* 슬라임 */
 function slime(c,x,y){
-    px(c,x-1,y-11,18,12,P.o);
-    px(c,x,y-10,16,10,P.slime);
-    px(c,x,y-6,16,6,P.slimeS);
-
-    px(c,x+4,y-6,2,2,P.o);
-    px(c,x+10,y-6,2,2,P.o);
+    px(c,x,y+6,16,10,P.slime);
+    px(c,x,y+10,16,6,P.slimeS);
+    px(c,x+4,y+10,2,2,P.o);
+    px(c,x+10,y+10,2,2,P.o);
 }
 
-function pet(c,x,y){
-    px(c,x-1,y-9,14,10,P.o);
-    px(c,x,y-8,12,8,"#eab308");
-}
-
-/* =========================
-   씬 렌더
-========================= */
 function draw(type){
     const c=document.getElementById("scene").getContext("2d");
     c.imageSmoothingEnabled=false;
-    c.clearRect(0,0,192,192);
-
-    bg(c); ground(c);
+    c.clearRect(0,0,160,160);
+    bg(c);
 
     if(type==="battle"){
-        hero(c,40,130);
-        slime(c,120,135);
-    }
-    if(type==="explore"){
-        hero(c,80,130);
-    }
-    if(type==="pet"){
-        hero(c,60,130);
-        pet(c,120,140);
+        hero(c,40,70);
+        slime(c,90,80);
+    }else{
+        hero(c,70,70);
     }
 }
 
-/* ========================= */
 function log(msg,event=false){
     const l=document.getElementById("log");
-    const d=document.createElement("div");
-    if(event)d.className="event";
-    d.innerText=msg;
-    l.prepend(d);
+    const p=document.createElement("p");
+    if(event)p.className="event";
+    p.innerText=msg;
+    l.appendChild(p);
+    l.scrollTop=l.scrollHeight;
 }
 
 function act(t){
@@ -240,13 +194,7 @@ function act(t){
     log("행동: "+t,true);
 }
 
-function startGame(){
-    if(started)return;
-    started=true;
-    document.getElementById("splash").style.display="none";
-    document.getElementById("game").style.display="flex";
-    draw("explore");
-}
+draw("explore");
 </script>
 
 </body>
