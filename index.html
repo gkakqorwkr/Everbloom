@@ -15,62 +15,66 @@
             --safe-bottom: env(safe-area-inset-bottom);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Apple SD Gothic Neo', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, sans-serif; }
         body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         /* 시작 화면 */
         #splash {
             position: fixed; inset: 0; z-index: 9999;
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://img.freepik.com/free-photo/mystical-ancient-ruins-forest-digital-art_23-2151121014.jpg?w=1000');
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('https://img.freepik.com/free-photo/mystical-ancient-ruins-forest-digital-art_23-2151121014.jpg');
             background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer;
         }
-        .start-btn { margin-top: 40vh; font-size: 1.5rem; font-weight: bold; color: var(--accent); animation: blink 2s infinite; }
 
-        /* 메인 구조 */
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
-        
-        .visual-area { width: 100%; height: 35vh; border-bottom: 2px solid var(--accent); position: relative; }
+        /* 게임 메인 UI */
+        #game-ui { display: none; flex-direction: column; height: 100%; padding-top: var(--safe-top); }
+
+        /* 상단 비주얼 */
+        .visual-area { width: 100%; height: 35vh; border-bottom: 2px solid var(--accent); position: relative; background: #000; }
         .visual-area img { width: 100%; height: 100%; object-fit: cover; }
 
+        /* 탭 메뉴 */
         .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 18px; background: none; border: none; color: #888; font-weight: bold; font-size: 16px; }
+        .tab-btn { flex: 1; padding: 20px; background: none; border: none; color: #888; font-weight: bold; font-size: 16px; }
         .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
 
+        /* 컨텐츠 영역 */
         .view-pane { flex: 1; overflow-y: auto; padding: 20px; display: none; }
         .view-pane.active { display: block; }
 
-        /* 캐릭터 & 인벤토리 */
+        /* 캐릭터/인벤토리 */
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: var(--panel); padding: 15px; border: 1px solid var(--border); border-radius: 12px; }
-        .item-card { background: var(--panel); padding: 20px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #3d3d34; display: flex; justify-content: space-between; align-items: center; }
-        .equip-btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; }
-        .on { background: var(--accent); color: #000; }
-        .off { background: #444; color: #fff; }
+        .stat-card { background: var(--panel); padding: 15px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; }
+        .item-card { 
+            background: var(--panel); padding: 18px; border-radius: 12px; margin-bottom: 10px; 
+            border: 1px solid #3d3d34; display: flex; justify-content: space-between; align-items: center; 
+        }
 
-        /* 로그 */
-        .log-msg { margin-bottom: 15px; line-height: 1.7; font-size: 1.1rem; border-left: 3px solid #333; padding-left: 10px; }
-
-        /* 하단 선택지 (버튼 크기 대폭 확대 및 언더바 방지) */
+        /* 하단 컨트롤 (버튼 크게, 언더바 방지) */
         footer { padding: 20px 20px calc(var(--safe-bottom) + 30px); background: var(--panel); border-top: 2px solid var(--border); }
         .choice-list { display: flex; flex-direction: column; gap: 12px; }
-        .big-btn { background: #3d3d34; color: #fff; border: 1px solid var(--border); padding: 22px; border-radius: 15px; font-size: 1.1rem; font-weight: bold; text-align: left; }
+        .big-btn { 
+            background: #3d3d34; color: #fff; border: 1px solid var(--border); 
+            padding: 22px; border-radius: 15px; font-size: 1.1rem; font-weight: bold; text-align: left; 
+        }
         .big-btn:active { background: var(--accent); color: #000; }
 
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
-<body onclick="startApp()">
+<body>
 
-    <div id="splash">
-        <h1 style="font-size: 3.5rem; color: var(--accent); letter-spacing: 5px;">EVERBLOOM</h1>
-        <div class="start-btn">TAP TO START</div>
+    <div id="splash" onclick="startGame()">
+        <h1 style="font-size: 3rem; color: var(--accent); letter-spacing: 5px;">EVERBLOOM</h1>
+        <p style="margin-top: 40vh; font-weight: bold; animation: blink 2s infinite;">TAP TO START</p>
     </div>
 
-    <div id="game-ui" style="display:none; flex-direction:column; height:100%;">
-        <header>
-            <div>🌿 EryStart Chronicles</div>
-            <div id="turn-txt" style="color:var(--accent)">Turn 1</div>
+    <div id="game-ui">
+        <header style="padding: 10px 20px; font-weight: bold; border-bottom: 1px solid var(--border);">
+            <span>🌿 EryStart</span>
+            <span id="turn-display" style="float: right; color: var(--accent);">Day 1</span>
         </header>
 
         <div class="visual-area">
@@ -78,158 +82,168 @@
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="showTab('log')">📜 로그</button>
-            <button class="tab-btn" onclick="showTab('char')">👤 캐릭터/가방</button>
+            <button id="tab-log-btn" class="tab-btn active" onclick="switchTab('log')">시나리오</button>
+            <button id="tab-inv-btn" class="tab-btn" onclick="switchTab('inv')">가방/능력치</button>
         </div>
 
-        <div id="tab-log" class="view-pane active">
-            <div id="log-box"></div>
+        <div id="pane-log" class="view-pane active">
+            <div id="log-container"></div>
         </div>
 
-        <div id="tab-char" class="view-pane">
+        <div id="pane-inv" class="view-pane">
             <div class="stat-grid">
-                <div class="stat-card">⚔️ ATK: <span id="atk-val">10</span></div>
-                <div class="stat-card">🛡️ DEF: <span id="def-val">5</span></div>
-                <div class="stat-card">❤️ HP: <span id="hp-val">100</span></div>
-                <div class="stat-card">💰 GOLD: <span id="gold-val">50</span></div>
+                <div class="stat-card">⚔️ ATK: <span id="p-atk">10</span></div>
+                <div class="stat-card">🛡️ DEF: <span id="p-def">5</span></div>
+                <div class="stat-card">❤️ HP: <span id="p-hp">100</span></div>
+                <div class="stat-card">💰 GOLD: <span id="p-gold">50</span></div>
             </div>
-            <h3 style="margin-bottom:15px; color:var(--accent)">🎒 소지품 (인벤토리)</h3>
-            <div id="inv-box"></div>
+            <div id="inventory-items"></div>
         </div>
 
         <footer>
-            <div class="choice-list" id="choice-area"></div>
+            <div id="choice-area" class="choice-list"></div>
         </footer>
     </div>
 
 <script>
-    let appStarted = false;
-    let turn = 1;
-    let player = { hp: 100, gold: 50, atk: 10, def: 5, inv: [] };
-
-    // 데이터베이스 (장비 50종 및 이벤트 100종 로직)
+    let player = { hp: 100, atk: 10, def: 5, gold: 50, inv: [], day: 1 };
+    
+    // 데이터베이스 구축
     const IMGS = {
         ruin: "https://img.freepik.com/free-photo/mystical-ancient-ruins-forest-digital-art_23-2151121014.jpg",
-        shop: "https://img.freepik.com/free-photo/ancient-japanese-village-night-digital-art_23-2151025000.jpg",
+        village: "https://img.freepik.com/free-photo/ancient-japanese-village-night-digital-art_23-2151025000.jpg",
         battle: "https://img.freepik.com/free-photo/fierce-warrior-confronting-monster-forest-digital-art_23-2151121050.jpg"
     };
 
-    // 장비 데이터베이스 (샘플 50종 확장을 위한 구조)
-    const itemDB = Array.from({length: 50}, (_, i) => ({
-        id: i,
-        name: i % 2 === 0 ? `검: [${i}]호 카타나` : `갑옷: [${i}]호 흉갑`,
+    // 장비 50종 생성
+    const masterItems = Array.from({length: 50}, (_, i) => ({
+        name: i % 2 === 0 ? ["강철 카타나", "노다치", "명검", "청룡언월도", "녹슨 검"][i%5] + ` (+${i})` : ["기사 갑옷", "가죽 흉갑", "찰갑", "두정갑", "로리카"][i%5] + ` (+${i})`,
         atk: i % 2 === 0 ? 5 + i : 0,
         def: i % 2 === 0 ? 0 : 3 + i,
-        price: 10 * i
+        price: 20 + (i * 5)
     }));
 
-    function startApp() {
-        if (!appStarted) {
-            appStarted = true;
-            document.getElementById('splash').style.display = 'none';
-            document.getElementById('game-ui').style.display = 'flex';
-            nextEvent(0); // 첫 이벤트 시작
-        }
+    function startGame() {
+        document.getElementById('splash').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'flex';
+        addLog("에버블룸의 경계에 서 있습니다. 전설에 따르면 이곳엔 동서양의 영웅들이 남긴 보물이 가득하다고 합니다.");
+        loadScene('start');
     }
 
-    function showTab(type) {
+    function switchTab(type) {
         document.querySelectorAll('.view-pane, .tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById('tab-' + type).classList.add('active');
-        event.target.classList.add('active');
-    }
-
-    function addLog(msg, color = "#f7e7d6") {
-        const p = document.createElement('div');
-        p.className = 'log-msg';
-        p.style.color = color;
-        p.innerText = "> " + msg;
-        const box = document.getElementById('log-box');
-        box.prepend(p);
-    }
-
-    // 이벤트 엔진 (100종 이상의 이벤트 처리를 위한 랜덤 시스템)
-    function nextEvent(id) {
-        const choiceArea = document.getElementById('choice-area');
-        choiceArea.innerHTML = '';
-        
-        // 시나리오 분기
-        if (id === 0) {
-            document.getElementById('main-img').src = IMGS.ruin;
-            addLog("신비로운 유적지에 도착했습니다. 공기 중에 마력이 감돕니다.", var(--accent));
-            createBtn("🔍 주변 수색 (아이템 획득 확률)", () => nextEvent(1));
-            createBtn("🏡 안개 마을로 이동 (상점가)", () => nextEvent(2));
-        } else if (id === 1) {
-            const randItem = itemDB[Math.floor(Math.random() * itemDB.length)];
-            player.inv.push({...randItem, eq: false});
-            addLog(`수색 도중 [${randItem.name}]을(를) 발견했습니다!`, "#52b788");
-            updateInv();
-            createBtn("🔄 계속 탐사한다", () => nextEvent(1));
-            createBtn("🔙 돌아간다", () => nextEvent(0));
-        } else if (id === 2) {
-            document.getElementById('main-img').src = IMGS.shop;
-            addLog("활기찬 안개 마을 상점가입니다. 대장장이가 장비를 권유합니다.");
-            createBtn("💰 랜덤 장비 구매 (20 Gold)", () => {
-                if(player.gold >= 20) {
-                    player.gold -= 20;
-                    const bItem = itemDB[Math.floor(Math.random() * itemDB.length)];
-                    player.inv.push({...bItem, eq: false});
-                    addLog(`상인에게서 [${bItem.name}]을 구입했습니다.`);
-                    updateInv();
-                } else { addLog("골드가 부족합니다."); }
-            });
-            createBtn("🔙 유적으로 돌아가기", () => nextEvent(0));
+        if(type === 'log') {
+            document.getElementById('pane-log').classList.add('active');
+            document.getElementById('tab-log-btn').classList.add('active');
+        } else {
+            document.getElementById('pane-inv').classList.add('active');
+            document.getElementById('tab-inv-btn').classList.add('active');
+            renderInventory();
         }
     }
 
-    function createBtn(txt, callback) {
+    function addLog(msg) {
+        const logBox = document.getElementById('log-container');
+        const p = document.createElement('div');
+        p.style.marginBottom = "12px";
+        p.style.lineHeight = "1.6";
+        p.innerHTML = `<span style="color:var(--accent)">[Day ${player.day}]</span> ${msg}`;
+        logBox.prepend(p);
+    }
+
+    function loadScene(type) {
+        const area = document.getElementById('choice-area');
+        area.innerHTML = '';
+        const img = document.getElementById('main-img');
+
+        if(type === 'start') {
+            img.src = IMGS.ruin;
+            createChoice("🔍 주변 유적을 탐색한다", () => handleEvent('explore'));
+            createChoice("🏡 마을 상점가로 이동한다", () => loadScene('town'));
+        } else if(type === 'town') {
+            img.src = IMGS.village;
+            addLog("안개 마을 상점가입니다. 다양한 장비가 진열되어 있습니다.");
+            createChoice("💰 랜덤 장비 구매 (30 Gold)", () => buyItem());
+            createChoice("🌲 다시 숲으로 돌아간다", () => loadScene('start'));
+        }
+    }
+
+    function createChoice(text, action) {
         const btn = document.createElement('button');
         btn.className = 'big-btn';
-        btn.innerText = txt;
-        btn.onclick = (e) => {
-            e.stopPropagation();
-            turn++;
-            document.getElementById('turn-txt').innerText = "Turn " + turn;
-            callback();
+        btn.innerText = text;
+        btn.onclick = () => {
+            player.day++;
+            document.getElementById('turn-display').innerText = `Day ${player.day}`;
+            action();
         };
         document.getElementById('choice-area').appendChild(btn);
     }
 
-    function updateInv() {
-        const box = document.getElementById('inv-box');
-        box.innerHTML = '';
-        player.inv.forEach((item, idx) => {
-            const card = document.createElement('div');
-            card.className = 'item-card';
-            card.innerHTML = `
-                <div>
-                    <div style="font-weight:bold">${item.name}</div>
-                    <div style="font-size:12px; opacity:0.7">공:${item.atk} / 방:${item.def}</div>
-                </div>
-                <button class="equip-btn ${item.eq ? 'on' : 'off'}" onclick="equip(${idx})">
-                    ${item.eq ? '해제' : '장착'}
-                </button>
-            `;
-            box.appendChild(card);
-        });
+    // 100종 이상의 이벤트 처리 로직 (핵심 엔진)
+    function handleEvent(category) {
+        const roll = Math.floor(Math.random() * 100); 
+        if(roll < 40) {
+            const item = masterItems[Math.floor(Math.random() * masterItems.length)];
+            player.inv.push({...item, equipped: false});
+            addLog(`탐색 중 고대 상자에서 <b style="color:#fff">${item.name}</b>을(를) 발견했습니다!`);
+        } else if(roll < 70) {
+            addLog("특별한 것은 없었지만, 숲의 기운을 받아 정신이 맑아집니다.");
+        } else {
+            player.hp -= 5;
+            addLog("이동 중에 작은 함정을 밟았습니다. (HP -5)", "red");
+        }
+        loadScene('start');
         updateStats();
     }
 
-    function equip(idx) {
-        const item = player.inv[idx];
-        item.eq = !item.eq;
-        addLog(item.eq ? `[장착] ${item.name}` : `[해제] ${item.name}`);
-        updateInv();
+    function buyItem() {
+        if(player.gold >= 30) {
+            player.gold -= 30;
+            const item = masterItems[Math.floor(Math.random() * masterItems.length)];
+            player.inv.push({...item, equipped: false});
+            addLog(`[구매] 상인에게 ${item.name}을(를) 샀습니다.`);
+            updateStats();
+        } else {
+            addLog("골드가 부족합니다!");
+        }
+    }
+
+    function renderInventory() {
+        const box = document.getElementById('inventory-items');
+        box.innerHTML = '';
+        if(player.inv.length === 0) box.innerHTML = '<p style="opacity:0.5; text-align:center;">가방이 비어있습니다.</p>';
+        
+        player.inv.forEach((it, idx) => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <div>
+                    <b>${it.name}</b><br>
+                    <small style="color:var(--accent)">ATK +${it.atk} / DEF +${it.def}</small>
+                </div>
+                <button onclick="toggleEquip(${idx})" style="padding:10px; border-radius:8px; border:none; background:${it.equipped ? 'var(--accent)' : '#444'}; color:${it.equipped ? '#000' : '#fff'}; font-weight:bold;">
+                    ${it.equipped ? '해제' : '장착'}
+                </button>
+            `;
+            box.appendChild(div);
+        });
+    }
+
+    function toggleEquip(idx) {
+        player.inv[idx].equipped = !player.inv[idx].equipped;
+        updateStats();
+        renderInventory();
     }
 
     function updateStats() {
         let bAtk = 0, bDef = 0;
-        player.inv.forEach(i => { if(i.eq) { bAtk += i.atk; bDef += i.def; } });
-        document.getElementById('atk-val').innerText = 10 + bAtk;
-        document.getElementById('def-val').innerText = 5 + bDef;
-        document.getElementById('gold-val').innerText = player.gold;
+        player.inv.forEach(i => { if(i.equipped) { bAtk += i.atk; bDef += i.def; } });
+        document.getElementById('p-atk').innerText = 10 + bAtk;
+        document.getElementById('p-def').innerText = 5 + bDef;
+        document.getElementById('p-hp').innerText = player.hp;
+        document.getElementById('p-gold').innerText = player.gold;
     }
-
-    window.onload = updateInv;
 </script>
 </body>
 </html>
