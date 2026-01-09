@@ -1,386 +1,228 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Everbloom</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Everbloom</title>
+    <style>
+        :root {
+            /* 피코크 그린 & 신비로운 숲 테마 */
+            --bg-color: #0a1f1c;
+            --panel-bg: rgba(20, 45, 40, 0.7);
+            --accent-color: #2d6a4f;
+            --text-color: #e9ecef;
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --button-bg: #40916c;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#2fc6b2">
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1f1c 0%, #1b4332 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
 
-<style>
-/* ================= BASE ================= */
-:root{
-  --bg:#142c2a;
-  --panel:rgba(40,90,84,.88);
-  --stroke:rgba(140,220,205,.28);
-  --txt:#eafffb;
-  --muted:rgba(234,255,251,.65);
-  --accent:#2fc6b2;
-  --radius:18px;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;
-  color:var(--txt);
-  background:
-    radial-gradient(800px 500px at 20% 10%, rgba(47,198,178,.25), transparent 60%),
-    radial-gradient(800px 500px at 80% 20%, rgba(184,168,255,.18), transparent 60%),
-    var(--bg);
-  touch-action:manipulation;
-}
+        header {
+            padding: calc(var(--safe-top) + 20px) 20px 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-/* ================= HEADER ================= */
-header{
-  padding:16px;
-  font-size:22px;
-  font-weight:900;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-button{
-  padding:10px 14px;
-  border-radius:14px;
-  border:1px solid var(--stroke);
-  background:rgba(255,255,255,.08);
-  color:inherit;
-  font-weight:800;
-  touch-action:manipulation;
-}
-button:active{transform:translateY(1px)}
+        main {
+            flex: 1;
+            padding: 10px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: calc(var(--safe-bottom) + 80px);
+        }
 
-/* ================= LAYOUT ================= */
-main{
-  padding:16px;
-  display:grid;
-  gap:16px;
-}
-.panel{
-  background:var(--panel);
-  border:1px solid var(--stroke);
-  border-radius:var(--radius);
-  padding:14px;
-  backdrop-filter: blur(14px);
-}
-.actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-.action-btn{
-  padding:14px;
-  border-radius:14px;
-  text-align:center;
-  font-weight:900;
-  background:rgba(47,198,178,.28);
-  border:1px solid var(--stroke);
-}
+        /* 글래스모피즘 패널 스타일 */
+        .system-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
 
-/* ================= SETTINGS SLIDE ================= */
-#settings{
-  position:fixed;
-  left:0;right:0;bottom:0;
-  height:90vh;
-  background:rgba(20,50,48,.96);
-  border-top-left-radius:22px;
-  border-top-right-radius:22px;
-  border:1px solid var(--stroke);
-  transform:translateY(100%);
-  transition:.35s ease;
-  z-index:100;
-  overflow-y:auto;
-}
-#settings.open{transform:translateY(0)}
-#settings header{
-  padding:14px;
-  font-size:18px;
-  display:flex;
-  justify-content:space-between;
-}
+        .panel-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-/* ================= CHAR STUDIO ================= */
-#charStudio select,#charStudio input,#charStudio textarea{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-  color:inherit;
-}
-#csDot{
-  width:220px;height:220px;
-  image-rendering:pixelated;
-  background:#0f0f14;
-  border-radius:14px;
-  display:block;margin:auto;
-}
-.csGrid{display:grid;grid-template-columns:220px 1fr;gap:12px}
-@media(max-width:720px){.csGrid{grid-template-columns:1fr}}
-.csMiniGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:720px){.csMiniGrid{grid-template-columns:1fr}}
-.csMiniBox{padding:10px;border-radius:12px;background:rgba(255,255,255,.04)}
-#csIllust{width:260px;height:360px;object-fit:cover;border-radius:14px;background:#111}
-@media(max-width:720px){#csIllust{width:100%;height:320px}}
-</style>
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            background: var(--button-bg);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s;
+            touch-action: manipulation; /* iOS 줌 방지 및 터치 최적화 */
+        }
+
+        button:active { transform: scale(0.96); opacity: 0.8; }
+
+        /* 캐릭터 스튜디오 분리 구조 */
+        #charStudio {
+            display: none; /* 필요 시 JS로 제어 */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 100;
+            padding: var(--safe-top) 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0; width: 100%;
+            background: rgba(10, 31, 28, 0.9);
+            padding-bottom: var(--safe-bottom);
+            border-top: 1px solid var(--glass-border);
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-  🌿 Everbloom
-  <button id="openSettings">⚙️</button>
-</header>
+    <header>🌿 Everbloom</header>
 
-<main>
-  <section class="panel">
-    <b>📜 진행</b><br>
-    <span id="log">시작 준비 완료.</span>
-  </section>
+    <main id="gameplay">
+        <section class="system-panel">
+            <div class="panel-title">🧙 캐릭터</div>
+            <div id="charStatus">없음</div>
+            <div class="btn-group">
+                <button id="btnOpenStudio">캐릭터 생성</button>
+            </div>
+        </section>
 
-  <section class="panel actions">
-    <div class="action-btn" id="moveBtn">🗺 이동</div>
-    <div class="action-btn" id="exploreBtn">🔍 탐험</div>
-    <div class="action-btn" id="eventBtn">📖 사건</div>
-    <div class="action-btn" id="restBtn">😴 휴식</div>
-  </section>
+        <section class="system-panel">
+            <div class="panel-title">🐾 펫</div>
+            <div id="petInfo">seed-beast | 단계 1 | 호감 0</div>
+            <div class="btn-group">
+                <button id="btnFeedPet">먹이 주기</button>
+                <button id="btnBreedPet">교배</button>
+            </div>
+        </section>
 
-  <section class="panel">
-    <b>🐾 펫</b><br>
-    <span id="petInfo">없음</span>
-  </section>
+        <section class="system-panel">
+            <div class="panel-title">💕 관계</div>
+            <div id="relStatus">호감도 0</div>
+            <div class="btn-group">
+                <button id="btnInteract">교류</button>
+            </div>
+        </section>
 
-  <section class="panel">
-    <b>📌 상태</b><br>
-    캐릭터 준비됨
-  </section>
-</main>
+        <section class="system-panel">
+            <div class="panel-title">👶 육아 (Princess Maker Style)</div>
+            <div id="childStatus">나이 0 / 성장 0</div>
+            <div class="btn-group">
+                <button id="btnRaise">양육</button>
+            </div>
+        </section>
 
-<!-- ================= SETTINGS ================= -->
-<div id="settings">
-  <header>
-    ⚙️ 설정
-    <button id="closeSettings">닫기</button>
-  </header>
+        <section class="system-panel">
+            <div class="panel-title">👾 몬스터 일러스트 프롬프트</div>
+            <textarea class="input-field" rows="3" readonly>Japanese fantasy monster illustration, forest, beast, high detail, no text</textarea>
+            <button style="width:100%" id="btnGenMonster">프롬프트 생성</button>
+        </section>
+    </main>
 
-  <!-- CHAR STUDIO -->
-  <section class="panel" id="charStudio">
-    <b>🃏 캐릭터 스튜디오</b>
-
-    <div class="csGrid">
-      <div>
-        <canvas id="csDot" width="128" height="128"></canvas>
-        <button id="dotReroll" style="width:100%;margin-top:8px">도트 리롤</button>
-      </div>
-
-      <div>
-        <div class="csMiniGrid">
-          <select id="job">
-            <option>랜덤</option>
-            <option>파이터</option>
-            <option>레인저</option>
-            <option>위저드</option>
-            <option>로그</option>
-          </select>
-          <select id="weapon">
-            <option>랜덤</option>
-            <option>카타나</option>
-            <option>롱소드</option>
-            <option>그레이트소드</option>
-            <option>레이피어</option>
-            <option>대거</option>
-            <option>워해머</option>
-            <option>메이스</option>
-            <option>지팡이</option>
-            <option>크로스보우</option>
-          </select>
+    <div id="charStudio">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>캐릭터 스튜디오</h2>
+            <button id="btnCloseStudio">닫기</button>
         </div>
-
-        <input id="name" placeholder="이름(선택)" style="margin-top:8px">
-        <button id="genChar" style="margin-top:8px;width:100%">카드 생성</button>
-
-        <textarea id="prompt" rows="4" style="margin-top:8px"></textarea>
-        <button id="copyPrompt" style="margin-top:6px;width:100%">프롬프트 복사</button>
-      </div>
+        <div id="dotCanvasContainer" style="width:200px; height:200px; background:#000; margin: 0 auto 20px; border-radius:15px;">
+            </div>
+        <input type="text" class="input-field" placeholder="이름(선택)">
+        <select class="input-field">
+            <option>종족 선택</option>
+            <option>엘프</option>
+            <option>티플링</option>
+        </select>
+        <button style="width:100%" id="btnSaveChar">카드 생성 및 저장</button>
     </div>
 
-    <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
-      <img id="csIllust">
-      <div>
-        <b id="cardTitle">이름 미정</b><br>
-        <span id="cardLine"></span>
-        <div class="csMiniBox" style="margin-top:8px">
-          <span id="bio"></span>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
+    <script>
+        // 상태 관리
+        const state = {
+            char: JSON.parse(localStorage.getItem('eb_char')) || null,
+            pet: { level: 1, exp: 0 },
+            // 기타 시스템 상태들...
+        };
 
-<script>
-/* ================= UTIL ================= */
-const $=id=>document.getElementById(id);
-const rand=a=>a[Math.floor(Math.random()*a.length)];
+        // UI 요소
+        const studio = document.getElementById('charStudio');
 
-/* ================= SETTINGS ================= */
-$("openSettings").onclick=()=>settings.classList.add("open");
-$("closeSettings").onclick=()=>settings.classList.remove("open");
+        // pointerup 기반 이벤트 바인딩 (iOS 최적화)
+        function bindEvent(id, handler) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('pointerup', (e) => {
+                    e.preventDefault();
+                    handler();
+                });
+            }
+        }
 
-/* ================= HUB ================= */
-$("moveBtn").onclick=()=>log("이동했다.");
-$("exploreBtn").onclick=()=>log("탐험 중...");
-$("eventBtn").onclick=()=>log("사건 발생.");
-$("restBtn").onclick=()=>log("휴식했다.");
-function log(t){$("log").textContent=t}
+        // 스튜디오 열기/닫기
+        bindEvent('btnOpenStudio', () => studio.style.display = 'block');
+        bindEvent('btnCloseStudio', () => studio.style.display = 'none');
 
-/* ================= CHAR STUDIO ================= */
-const ctx=$("csDot").getContext("2d");
-function drawDot(){
-  ctx.clearRect(0,0,128,128);
-  ctx.fillStyle="#0f0f14";ctx.fillRect(0,0,128,128);
-  ctx.fillStyle=["#f1c7a3","#d99f7d","#c78866"][Math.floor(Math.random()*3)];
-  ctx.fillRect(44,28,40,40);
-  ctx.fillStyle="#222";
-  ctx.fillRect(56,46,6,6);ctx.fillRect(66,46,6,6);
-  ctx.fillStyle="#333";
-  ctx.fillRect(44,70,40,38);
-}
-drawDot();
-$("dotReroll").onclick=drawDot;
+        // 저장 로직
+        bindEvent('btnSaveChar', () => {
+            alert('캐릭터가 저장되었습니다!');
+            localStorage.setItem('eb_char', JSON.stringify({name: 'Hero'}));
+            studio.style.display = 'none';
+        });
 
-$("genChar").onclick=()=>{
-  const name=$("name").value||"이름 미정";
-  $("cardTitle").textContent=name;
-  $("cardLine").textContent=$("job").value+" · "+$("weapon").value;
-  $("bio").textContent=rand([
-    "숲과 유적 사이를 떠도는 여행자.",
-    "고대 유물의 부름을 듣는다.",
-    "에버블룸의 숨결을 느낀다."
-  ]);
-  $("prompt").value=[
-    "Japanese anime style","fantasy character",
-    $("job").value,$("weapon").value,
-    "forest ruins","no text"
-  ].join(", ");
-};
+        // 펫 양육 예시
+        bindEvent('btnFeedPet', () => {
+            state.pet.exp += 10;
+            document.getElementById('petInfo').innerText = `seed-beast | 단계 1 | 호감 ${state.pet.exp}`;
+        });
 
-/* ================= PET ================= */
-let pet={species:"beast",stage:1,aff:0};
-function renderPet(){
-  $("petInfo").textContent=`${pet.species} | 단계 ${pet.stage} | 호감 ${pet.aff}`;
-}
-renderPet();
-
-  /* ===============================
-   CHAR STUDIO DOT ENGINE (FIX)
-   =============================== */
-
-const csDot = document.getElementById("csDot");
-const csCtx = csDot.getContext("2d");
-
-let csSeed = Math.floor(Math.random() * 1e9);
-
-/* seeded RNG */
-function csRand(){
-  csSeed ^= csSeed << 13;
-  csSeed ^= csSeed >> 17;
-  csSeed ^= csSeed << 5;
-  return Math.abs(csSeed) / 0xffffffff;
-}
-
-function drawDot(){
-  const S = csDot.width; // 192
-  const r = csRand;
-
-  // palette
-  const skin = r() > 0.5 ? "#e6b899" : "#d9a57c";
-  const hair = ["#1c1c28","#3b2a1a","#6b4b2a","#c8c8d8"][Math.floor(r()*4)];
-  const cloth= ["#2a3f3a","#2f2a3a","#3a2a2f","#3a3a3a"][Math.floor(r()*4)];
-  const eye  = ["#9ad5ff","#9affc3","#ffd59a","#c5b3ff"][Math.floor(r()*4)];
-
-  csCtx.clearRect(0,0,S,S);
-
-  // background
-  csCtx.fillStyle = "#0f1218";
-  csCtx.fillRect(0,0,S,S);
-
-  // head
-  csCtx.fillStyle = skin;
-  csCtx.fillRect(64,40,64,64);
-
-  // hair
-  csCtx.fillStyle = hair;
-  csCtx.fillRect(64,30,64,24);
-  csCtx.fillRect(56,40,80,16);
-
-  // eyes
-  csCtx.fillStyle = "#111";
-  csCtx.fillRect(82,72,8,8);
-  csCtx.fillRect(102,72,8,8);
-  csCtx.fillStyle = eye;
-  csCtx.fillRect(84,74,4,4);
-  csCtx.fillRect(104,74,4,4);
-
-  // mouth
-  csCtx.fillStyle = "#2a1e1e";
-  csCtx.fillRect(92,96,8,2);
-
-  // body
-  csCtx.fillStyle = cloth;
-  csCtx.fillRect(72,112,48,48);
-
-  // arms
-  csCtx.fillRect(56,116,16,40);
-  csCtx.fillRect(120,116,16,40);
-
-  // legs
-  csCtx.fillStyle = "#1a1a24";
-  csCtx.fillRect(80,160,16,24);
-  csCtx.fillRect(96,160,16,24);
-}
-
-/* ====== EVENTS ====== */
-
-// 도트 리롤 버튼
-const rerollBtn = document.getElementById("dotReroll");
-if(rerollBtn){
-  rerollBtn.addEventListener("pointerup", () => {
-    csSeed = Math.floor(Math.random() * 1e9);
-    drawDot();
-  });
-}
-
-// 최초 1회 그리기
-drawDot();
-
-  // ===== FORCE DOT TEST =====
-window.addEventListener("load", ()=>{
-  const c = document.getElementById("csDot");
-  if(!c){
-    alert("❌ csDot 캔버스 없음");
-    return;
-  }
-
-  const ctx = c.getContext("2d");
-  if(!ctx){
-    alert("❌ context 못 가져옴");
-    return;
-  }
-
-  // 테스트용 강제 그림
-  ctx.fillStyle = "#ffd966";
-  ctx.fillRect(20,20,40,40);
-
-  console.log("✅ 캔버스 테스트 성공");
-});
-
-/* ================= COPY ================= */
-$("copyPrompt").onclick=async()=>{
-  try{await navigator.clipboard.writeText($("prompt").value);alert("복사됨")}
-  catch{alert("길게 눌러 복사")}
-};
-</script>
-
+        // 초기화 시 safe-area 높이 보정 등 처리
+        window.addEventListener('load', () => {
+            console.log("Everbloom Engine Started");
+        });
+    </script>
 </body>
 </html>
