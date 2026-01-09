@@ -7,76 +7,62 @@
     <style>
         :root {
             --bg: #0d0d0c; --panel: #1a1a17; --accent: #d4a373; --text: #e0dcd3;
-            --border: #3d3d34; --safe-top: env(safe-area-inset-top);
+            --border: #3d3d34; --safe-bottom: env(safe-area-inset-bottom);
             --rarity-ur: #ff4500; --rarity-sr: #da70d6; --rarity-s: #ffd700; --rarity-r: #1e90ff; --rarity-c: #aaaaaa;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Apple SD Gothic Neo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* 시작 화면 (탭 투 스타트) */
-        #start-screen { position: fixed; inset: 0; z-index: 5000; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000') center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; transition: 0.5s; }
-        #start-screen h1 { font-size: 3rem; color: var(--accent); text-shadow: 0 0 20px rgba(212, 163, 115, 0.5); margin-bottom: 10px; }
-        .blink { animation: blink 2s infinite; color: #fff; font-weight: bold; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* 종족 선택 & 리롤 */
-        #origin-screen { position: fixed; inset: 0; z-index: 4000; background: var(--bg); padding: 20px; overflow-y: auto; display: none; }
-        .race-card { background: var(--panel); border: 1px solid var(--border); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
-        .race-img { width: 70px; height: 70px; border-radius: 10px; object-fit: cover; border: 1px solid var(--accent); }
-        .reroll-section { background: #222; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px dashed var(--accent); }
-
-        /* 메인 UI */
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
-        .visual-frame { width: 100%; height: 32vh; position: relative; background: #000; border-bottom: 3px solid var(--accent); overflow: hidden; }
-        #ui-bg { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; filter: brightness(0.7); }
-        #ui-char { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 5; transition: 0.3s; filter: drop-shadow(0 0 15px black); }
+        /* 하단 잘림 방지 레이아웃 */
+        header { padding: calc(env(safe-area-inset-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-weight: bold; }
+        .visual-frame { width: 100%; height: 30vh; position: relative; background: #000; border-bottom: 3px solid var(--accent); overflow: hidden; }
+        #ui-bg { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        #ui-char { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); height: 90%; z-index: 5; filter: drop-shadow(0 0 10px black); }
 
         .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 18px; border: none; background: none; color: #666; font-weight: bold; font-size: 15px; }
-        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; color: #666; font-weight: bold; }
+        .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        .content { flex: 1; overflow-y: auto; padding: 20px; }
-        .log-entry { margin-bottom: 12px; font-size: 15px; line-height: 1.6; border-left: 3px solid var(--border); padding-left: 12px; animation: slideIn 0.3s forwards; }
-        @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 40px; }
+        .log-entry { margin-bottom: 10px; font-size: 14px; line-height: 1.6; border-left: 2px solid var(--border); padding-left: 10px; }
 
-        /* 펫 합성 UI */
-        .pet-item { background: #1c1c1a; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid #333; display: flex; align-items: center; gap: 12px; position: relative; }
-        .pet-item.selected { border-color: var(--accent); background: #2a2a24; }
-        .pet-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #000; }
+        /* 펫 카드 스타일 */
+        .pet-item { background: #1c1c1a; padding: 12px; border-radius: 10px; margin-bottom: 8px; border: 1px solid #333; display: flex; align-items: center; gap: 10px; }
+        .pet-item.selected { border-color: var(--accent); background: #262622; }
+        .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; color: #000; }
 
-        footer { padding: 15px 15px calc(env(safe-area-inset-bottom) + 15px); background: var(--panel); border-top: 1px solid var(--border); }
-        .action-btn { background: #2a2a26; color: white; padding: 16px; border-radius: 12px; border: 1px solid #444; font-weight: bold; font-size: 16px; width: 100%; margin-bottom: 8px; transition: 0.2s; }
-        .action-btn:active { transform: scale(0.98); background: var(--accent); color: #000; }
-        .action-btn:disabled { opacity: 0.5; }
+        /* 푸터 및 버튼 (안전 영역 확보) */
+        footer { padding: 10px 15px calc(var(--safe-bottom) + 15px); background: var(--panel); border-top: 1px solid var(--border); z-index: 100; }
+        .btn-stack { display: flex; flex-direction: column; gap: 8px; }
+        .action-btn { background: #2a2a26; color: white; padding: 16px; border-radius: 12px; border: 1px solid #444; font-weight: bold; font-size: 15px; width: 100%; }
+        .action-btn:active { background: var(--accent); color: #000; }
+        .action-btn:disabled { opacity: 0.4; pointer-events: none; }
 
-        #gacha-overlay { display: none; position: fixed; inset: 0; z-index: 6000; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
-        .gacha-card { border: 2px solid var(--accent); padding: 30px; border-radius: 20px; background: #111; text-align: center; max-width: 300px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* 오버레이 창 */
+        .overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; padding: 20px; }
+        .popup { background: #111; border: 2px solid var(--accent); border-radius: 20px; padding: 25px; width: 100%; max-width: 320px; text-align: center; }
+        
+        #origin-screen { position: fixed; inset: 0; z-index: 2000; background: var(--bg); padding: 20px; overflow-y: auto; display: block; }
+        .race-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 15px; }
     </style>
 </head>
 <body>
 
-    <div id="start-screen" onclick="game.showOrigin()">
-        <h1>EVERBLOOM</h1>
-        <p style="color: var(--accent); margin-bottom: 30px;">Chronicles</p>
-        <p class="blink">TAP TO START</p>
-    </div>
-
     <div id="origin-screen">
-        <h2 style="text-align:center; color:var(--accent); margin-bottom:20px;">모험의 시작</h2>
+        <h2 style="text-align:center; color:var(--accent); margin-bottom:20px;">모험가 등록</h2>
         <div id="race-list"></div>
-        <div class="reroll-section" id="reroll-box" style="display:none;">
-            <p id="temp-stats" style="margin-bottom:10px;"></p>
-            <button class="action-btn" onclick="game.rerollStats()">🎲 보너스 스탯 리롤</button>
-            <button class="action-btn" style="background:var(--accent); color:#000;" onclick="game.confirmStart()">선택 완료</button>
+        <div id="reroll-box" style="display:none; background:#222; padding:15px; border-radius:12px; text-align:center;">
+            <p id="temp-stats" style="margin-bottom:12px;"></p>
+            <button class="action-btn" onclick="game.reroll()" style="margin-bottom:8px;">🎲 보너스 리롤 (50G)</button>
+            <button class="action-btn" style="background:var(--accent); color:#000;" onclick="game.start()">선택 완료</button>
         </div>
     </div>
 
-    <div id="gacha-overlay" onclick="this.style.display='none'">
-        <div class="gacha-card">
-            <h3 id="g-grade">등급</h3>
-            <h2 id="g-name" style="margin: 15px 0;">이름</h2>
-            <p id="g-desc" style="font-size:14px; color:#aaa;"></p>
+    <div id="msg-overlay" class="overlay" onclick="this.style.display='none'">
+        <div class="popup" onclick="event.stopPropagation()">
+            <h3 id="msg-title" style="color:var(--accent); margin-bottom:10px;">알림</h3>
+            <p id="msg-body" style="margin-bottom:20px; font-size:14px; color:#ccc;"></p>
+            <button class="action-btn" onclick="document.getElementById('msg-overlay').style.display='none'">확인</button>
         </div>
     </div>
 
@@ -98,10 +84,10 @@
 
         <div id="pane-log" class="content"></div>
         <div id="pane-stat" class="content" style="display:none;">
-            <div id="basic-info" style="margin-bottom:15px; padding:15px; background:#222; border-radius:12px;"></div>
+            <div id="stat-info" style="margin-bottom:15px; padding:15px; background:#222; border-radius:12px; font-size:13px; line-height:1.6;"></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="color:var(--accent);">보유 펫 (<span id="pet-cnt">0</span>)</h3>
-                <button id="merge-btn" class="action-btn" style="width:auto; padding:5px 15px; font-size:12px;" onclick="game.tryMerge()" disabled>합성 실행 (2마리 선택)</button>
+                <h3 style="color:var(--accent);">나의 펫 (<span id="pet-cnt">0</span>)</h3>
+                <button id="merge-btn" class="action-btn" style="width:auto; padding:5px 12px; font-size:12px;" onclick="game.merge()" disabled>합성</button>
             </div>
             <div id="pet-list"></div>
         </div>
@@ -112,86 +98,81 @@
     </div>
 
 <script>
-// 이미지 소스 정의 (깨짐 방지용 고정 경로)
 const IMGS = {
     forest: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1000",
+    village: "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=1000",
     forge: "https://i.ibb.co/3sX8s8D/forge.png",
-    battle: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000", // 어두운 숲 전경
+    battle: "https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000",
     races: {
-        Human: "https://i.ibb.co/vYm6p0v/hero-pixel.png",
-        Elf: "https://i.ibb.co/qY7v6p0/thief-pixel.png",
         Orc: "https://i.ibb.co/vXy6p0v/golem-pixel.png",
-        Beast: "https://i.ibb.co/6P0f9X8/lizard-pixel.png",
-        Angel: "https://i.ibb.co/pXWdGqM/angel.png",
-        Demon: "https://i.ibb.co/B2v8Z7t/demon.png"
+        Halfling: "https://i.ibb.co/3W6f9fP/slime-pixel.png",
+        Elf: "https://i.ibb.co/qY7v6p0/thief-pixel.png",
+        Human: "https://i.ibb.co/vYm6p0v/hero-pixel.png",
+        Beast: "https://i.ibb.co/6P0f9X8/lizard-pixel.png"
     }
 };
 
 const RACES = [
+    { id:'Orc', name:'오크', str:18, agi:5, int:2, luk:5, hp:160 },
+    { id:'Halfling', name:'하플링', str:4, agi:12, int:8, luk:16, hp:70 },
+    { id:'Elf', name:'엘프', str:6, agi:14, int:16, luk:4, hp:85 },
     { id:'Human', name:'인간', str:10, agi:10, int:10, luk:10, hp:100 },
-    { id:'Elf', name:'엘프', str:5, agi:15, int:15, luk:5, hp:80 },
-    { id:'Orc', name:'오크', str:20, agi:5, int:2, luk:3, hp:180 },
-    { id:'Beast', name:'수인', str:14, agi:14, int:4, luk:8, hp:110 },
-    { id:'Angel', name:'천사', str:8, agi:8, int:15, luk:15, hp:100 },
-    { id:'Demon', name:'악마', str:18, agi:10, int:10, luk:2, hp:130 }
+    { id:'Beast', name:'수인', str:13, agi:13, int:6, luk:8, hp:115 }
 ];
 
-const PETS = [
-    { id:1, name:"길고양이", grade:"COMMON", bonus:{luk:2}, desc:"작은 행운을 주는 고양이" },
-    { id:2, name:"꼬마 돌골렘", grade:"COMMON", bonus:{str:2}, desc:"작지만 단단한 바위" },
-    { id:3, name:"파란 포링", grade:"RARE", bonus:{hp:30, luk:5}, desc:"말랑말랑한 정령" },
-    { id:4, name:"바람 다람쥐", grade:"RARE", bonus:{agi:10}, desc:"눈에 보이지 않을 만큼 빠름" },
-    { id:5, name:"지옥견", grade:"SUPER", bonus:{str:15, agi:5}, desc:"심연에서 온 사냥개" },
-    { id:6, name:"마나 버섯", grade:"SUPER", bonus:{int:20}, desc:"지능을 높여주는 신비한 버섯" },
-    { id:7, name:"베이비 드래곤", grade:"SUPER RARE", bonus:{str:25, hp:100}, desc:"잠재력이 엄청난 용" },
-    { id:8, name:"시간의 정령", grade:"ULTRA RARE", bonus:{all:15}, desc:"모든 스탯을 비약적으로 상승" }
+const PET_DB = [
+    { name:"초보 햄스터", grade:"COMMON", bonus:{luk:2}, desc:"행운+2" },
+    { name:"돌멩이 골렘", grade:"COMMON", bonus:{str:2}, desc:"근력+2" },
+    { name:"깜빡 박쥐", grade:"COMMON", bonus:{agi:2}, desc:"민첩+2" },
+    { name:"지식 버섯", grade:"COMMON", bonus:{int:2}, desc:"지능+2" },
+    { name:"푸른 요정", grade:"RARE", bonus:{hp:30, int:5}, desc:"HP+30, 지능+5" },
+    { name:"강철 멧돼지", grade:"RARE", bonus:{str:8}, desc:"근력+8" },
+    { name:"날쌘 다람쥐", grade:"RARE", bonus:{agi:8}, desc:"민첩+8" },
+    { name:"행운의 고양이", grade:"RARE", bonus:{luk:8}, desc:"행운+8" },
+    { name:"숲의 파수꾼", grade:"SUPER", bonus:{str:15, hp:50}, desc:"근력+15, HP+50" },
+    { name:"지혜로운 올빼미", grade:"SUPER", bonus:{int:15, exp:1.2}, desc:"지능+15, 경험치+20%" },
+    { name:"그림자 표범", grade:"SUPER", bonus:{agi:15, luk:5}, desc:"민첩+15, 행운+5" },
+    { name:"황금 알", grade:"SUPER", bonus:{luk:20}, desc:"행운+20" },
+    { name:"화염 드래곤", grade:"SUPER RARE", bonus:{str:30, hp:100}, desc:"근력+30, HP+100" },
+    { name:"서리 늑대", grade:"SUPER RARE", bonus:{agi:25, str:10}, desc:"민첩+25, 근력+10" },
+    { name:"고대 유령", grade:"SUPER RARE", bonus:{int:40}, desc:"지능+40" },
+    { name:"베헤모스", grade:"ULTRA RARE", bonus:{str:50, hp:200, all:10}, desc:"압도적인 파괴신" },
+    { name:"피닉스", grade:"ULTRA RARE", bonus:{all:20, hp:100}, desc:"불사의 영웅" },
+    { name:"시간의 군주", grade:"ULTRA RARE", bonus:{all:30}, desc:"모든 능력치 +30" }
 ];
 
 const game = {
-    p: { race:null, day:1, lv:1, exp:0, maxExp:100, gold:300, hp:100, maxHp:100, str:0, agi:0, int:0, luk:0, pets:[], selectedRace: null, tempBonus:{} },
-    selectedPets: [],
+    p: { race:null, day:1, lv:1, exp:0, gold:300, hp:100, maxHp:100, str:0, agi:0, int:0, luk:0, pets:[], bonus:{} },
+    selected: [], mode: 'forest', forgeDone: false,
 
-    showOrigin() {
-        document.getElementById('start-screen').style.opacity = '0';
-        setTimeout(() => {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('origin-screen').style.display = 'block';
-            this.renderRaceList();
-        }, 500);
-    },
-
-    renderRaceList() {
-        const list = document.getElementById('race-list'); list.innerHTML = '';
+    init() {
+        const list = document.getElementById('race-list');
         RACES.forEach(r => {
-            const card = document.createElement('div'); card.className = 'race-card';
-            card.innerHTML = `<img src="${IMGS.races[r.id]}" class="race-img"><div><b>${r.name}</b><br><small>STR:${r.str} AGI:${r.agi} INT:${r.int}</small></div>`;
-            card.onclick = () => this.selectRace(r);
-            list.appendChild(card);
+            const d = document.createElement('div'); d.className = 'race-card';
+            d.innerHTML = `<img src="${IMGS.races[r.id]}" style="width:50px; height:50px; border-radius:8px;">
+            <div><b>${r.name}</b><br><small>STR:${r.str} HP:${r.hp}</small></div>`;
+            d.onclick = () => { this.p.race = r; this.reroll(); document.getElementById('reroll-box').style.display='block'; };
+            list.appendChild(d);
         });
     },
 
-    selectRace(race) {
-        this.p.selectedRace = race;
-        document.getElementById('reroll-box').style.display = 'block';
-        this.rerollStats();
+    reroll() {
+        if(this.p.gold < 50 && this.p.race) { this.log("골드가 부족합니다."); return; }
+        if(this.p.race) this.p.gold -= 50;
+        this.p.bonus = { str:rand(1,5), agi:rand(1,5), int:rand(1,5), luk:rand(1,5) };
+        document.getElementById('temp-stats').innerHTML = `보너스: STR+${this.p.bonus.str} AGI+${this.p.bonus.agi} INT+${this.p.bonus.int} LUK+${this.p.bonus.luk}`;
     },
 
-    rerollStats() {
-        const bonus = { str: rand(1,5), agi: rand(1,5), int: rand(1,5), luk: rand(1,5) };
-        this.p.tempBonus = bonus;
-        document.getElementById('temp-stats').innerHTML = `<span style="color:var(--accent)">초기 보너스:</span> STR+${bonus.str}, AGI+${bonus.agi}, INT+${bonus.int}, LUK+${bonus.luk}`;
-    },
-
-    confirmStart() {
-        const r = this.p.selectedRace; const b = this.p.tempBonus;
+    start() {
+        const r = this.p.race; const b = this.p.bonus;
         this.p.str = r.str + b.str; this.p.agi = r.agi + b.agi; this.p.int = r.int + b.int; this.p.luk = r.luk + b.luk;
         this.p.hp = r.hp; this.p.maxHp = r.hp;
-        document.getElementById('origin-screen').style.display = 'none';
-        document.getElementById('game-ui').style.display = 'flex';
+        document.getElementById('origin-screen').style.display='none';
+        document.getElementById('game-ui').style.display='flex';
         document.getElementById('ui-race').innerText = r.name;
         document.getElementById('ui-char').src = IMGS.races[r.id];
         this.renderActions();
-        this.log("에버블룸의 숲에 첫 발을 내디뎠습니다.");
+        this.log("모험이 시작되었습니다.");
     },
 
     tab(t) {
@@ -203,122 +184,96 @@ const game = {
     },
 
     renderStats() {
-        document.getElementById('basic-info').innerHTML = `❤️ HP: ${this.p.hp}/${this.p.maxHp} | 💰 GOLD: ${this.p.gold}G | ✨ EXP: ${this.p.exp}/${this.p.maxExp}<br>⚔️ STR: ${this.p.str} | 🏃 AGI: ${this.p.agi} | 🧠 INT: ${this.p.int} | 🍀 LUK: ${this.p.luk}`;
+        document.getElementById('stat-info').innerHTML = `❤️ HP: ${this.p.hp}/${this.p.maxHp} | 💰 GOLD: ${this.p.gold}G<br>⚔️ STR: ${this.p.str} | 🏃 AGI: ${this.p.agi} | 🧠 INT: ${this.p.int} | 🍀 LUK: ${this.p.luk}`;
         const list = document.getElementById('pet-list'); list.innerHTML = '';
         document.getElementById('pet-cnt').innerText = this.p.pets.length;
-        
-        this.p.pets.forEach((pet, idx) => {
-            const item = document.createElement('div');
-            item.className = `pet-item ${this.selectedPets.includes(idx) ? 'selected' : ''}`;
-            const gradeColor = `var(--rarity-${pet.grade.toLowerCase().split(' ').join('')})`;
-            item.innerHTML = `
-                <div style="background:${gradeColor}" class="pet-badge">${pet.grade}</div>
-                <div><b>${pet.name}</b><br><small>${pet.desc}</small></div>
-            `;
-            item.onclick = () => this.togglePetSelect(idx);
-            list.appendChild(item);
+        this.p.pets.forEach((p, i) => {
+            const d = document.createElement('div'); d.className = `pet-item ${this.selected.includes(i)?'selected':''}`;
+            const color = `var(--rarity-${p.grade.toLowerCase().replace(' ','')})`;
+            d.innerHTML = `<span class="badge" style="background:${color}">${p.grade}</span><div><b>${p.name}</b><br><small>${p.desc}</small></div>`;
+            d.onclick = () => {
+                if(this.selected.includes(i)) this.selected = this.selected.filter(x=>x!==i);
+                else if(this.selected.length < 2) this.selected.push(i);
+                document.getElementById('merge-btn').disabled = this.selected.length !== 2;
+                this.renderStats();
+            };
+            list.appendChild(d);
         });
     },
 
-    togglePetSelect(idx) {
-        const pos = this.selectedPets.indexOf(idx);
-        if(pos > -1) this.selectedPets.splice(pos, 1);
-        else if(this.selectedPets.length < 2) this.selectedPets.push(idx);
-        document.getElementById('merge-btn').disabled = this.selectedPets.length !== 2;
-        this.renderStats();
-    },
-
-    tryMerge() {
-        const p1 = this.p.pets[this.selectedPets[0]];
-        const p2 = this.p.pets[this.selectedPets[1]];
-        
-        // 합성 로직: 같은 등급이면 상위 등급 확률 증가
-        this.log(`펫 합성을 시도합니다: ${p1.name} + ${p2.name}`);
-        
-        // 높은 인덱스의 펫을 먼저 지워야 배열 꼬임 방지
-        const indices = [...this.selectedPets].sort((a,b) => b-a);
-        indices.forEach(i => this.p.pets.splice(i, 1));
-        this.selectedPets = [];
-
-        // 결과 결정 (60% 상위 등급, 40% 동일 등급 랜덤)
-        const luck = Math.random();
-        let resultPet;
-        if(luck < 0.6) resultPet = PETS[Math.min(PETS.length-1, Math.max(p1.id, p2.id))];
-        else resultPet = PETS[rand(0, PETS.length-1)];
-
-        this.p.pets.push(resultPet);
-        this.applyPetBonus(resultPet);
-        this.showPopup("합성 성공!", resultPet);
+    merge() {
+        const p1 = this.p.pets[this.selected[0]], p2 = this.p.pets[this.selected[1]];
+        this.selected.sort((a,b)=>b-a).forEach(i => this.p.pets.splice(i,1));
+        this.selected = [];
+        const grades = ["COMMON","RARE","SUPER","SUPER RARE","ULTRA RARE"];
+        const nextGrade = grades[Math.min(4, Math.max(grades.indexOf(p1.grade), grades.indexOf(p2.grade)) + (Math.random()<0.4?1:0))];
+        const res = PET_DB.filter(x=>x.grade===nextGrade)[rand(0, PET_DB.filter(x=>x.grade===nextGrade).length-1)];
+        this.p.pets.push(res); this.apply(res);
+        this.pop("합성 결과", `${res.name}(${res.grade})를 획득했습니다!`);
         this.renderStats();
     },
 
     renderActions() {
         const area = document.getElementById('action-area'); area.innerHTML = '';
-        this.addBtn("🌲 깊은 숲 탐험 (Day +1)", () => this.explore());
-        this.addBtn("⛺ 휴식 및 명상", () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+40); this.nextDay(); this.log("기력을 회복했습니다."); });
-        this.updateUI();
+        if(this.mode === 'forest') {
+            this.addBtn("🌲 숲 탐험 (Day+1)", () => this.explore());
+            this.addBtn("🏕️ 캠핑 (HP+30)", () => { this.p.hp=Math.min(this.p.maxHp, this.p.hp+30); this.next(); this.log("휴식을 취했습니다."); });
+        } else if(this.mode === 'village') {
+            this.addBtn("⚒️ 대장간 방문", () => this.visit('forge'));
+            this.addBtn("🛌 여관 (HP회복/50G)", () => { if(this.p.gold>=50){this.p.gold-=50; this.p.hp=this.p.maxHp; this.log("완전히 회복했습니다."); this.update();} });
+            this.addBtn("🔮 점술집 (스탯+1/100G)", () => { if(this.p.gold>=100){this.p.gold-=100; const s=['str','agi','int','luk'][rand(0,3)]; this.p[s]++; this.log(`${s}가 상승했습니다.`); this.update();} });
+            this.addBtn("🛒 잡화점 (EXP+50/100G)", () => { if(this.p.gold>=100){this.p.gold-=100; this.p.exp+=50; this.log("경험치를 쌓았습니다."); this.checkLv();} });
+            this.addBtn("🌲 마을 떠나기", () => { this.mode='forest'; this.renderActions(); document.getElementById('ui-bg').src=IMGS.forest; });
+        } else if(this.mode === 'forge') {
+            const btn = this.addBtn("🐾 펫 가챠 (300G/1회)", () => {
+                if(this.p.gold>=300 && !this.forgeDone){
+                    this.p.gold-=300; this.forgeDone=true;
+                    const r=Math.random()*100; let p;
+                    if(r<2) p=7; else if(r<10) p=12; else if(r<30) p=8; else if(r<60) p=4; else p=0;
+                    const res = PET_DB[p+rand(0,3)]; this.p.pets.push(res); this.apply(res);
+                    this.pop("가챠 결과", `${res.name} 등장!`); this.update(); this.renderActions();
+                }
+            });
+            if(this.forgeDone) btn.disabled = true;
+            this.addBtn("⚒️ 무기 강화 (STR+2/100G)", () => { if(this.p.gold>=100){this.p.gold-=100; this.p.str+=2; this.log("강해졌습니다."); this.update();} });
+            this.addBtn("↩️ 광장으로", () => this.visit('village'));
+        }
     },
 
     explore() {
-        this.p.exp += (15 + Math.floor(this.p.int/2));
-        this.checkLvUp();
-        const roll = Math.random();
-        if(roll < 0.25) this.enterForge();
-        else if(roll < 0.55) this.battle();
-        else this.log("숲은 조용합니다. 무사히 하루가 지났습니다.");
-        this.nextDay();
+        this.p.exp += 20; this.checkLv();
+        const r = Math.random();
+        if(r < 0.1) { this.visit('village'); this.pop("마을 발견", "안개 너머 마을에 도착했습니다."); }
+        else if(r < 0.4) this.battle();
+        else this.log("조용한 하루였습니다.");
+        this.next();
     },
+
+    visit(m) { this.mode = m; this.renderActions(); document.getElementById('ui-bg').src = IMGS[m] || IMGS.village; if(m==='village') this.forgeDone=false; },
 
     battle() {
         document.getElementById('ui-bg').src = IMGS.battle;
-        let dmg = Math.max(5, 25 - Math.floor(this.p.agi/2));
-        this.p.hp -= dmg; this.p.gold += (50 + this.p.luk);
-        this.log(`<span style="color:#ff5555">⚔️ 전투 돌입!</span> HP -${dmg}, 골드 +${50+this.p.luk}G`);
-        if(this.p.hp <= 0) { alert("사망하셨습니다..."); location.reload(); }
-        setTimeout(() => { document.getElementById('ui-bg').src = IMGS.forest; }, 1000);
+        let dmg = Math.max(5, 20-this.p.agi); this.p.hp -= dmg; this.p.gold += (50+this.p.luk);
+        this.log(`전투 발생! HP -${dmg}, 골드 +${50+this.p.luk}`);
+        if(this.p.hp<=0) { alert("게임 오버"); location.reload(); }
+        setTimeout(()=>document.getElementById('ui-bg').src=IMGS[this.mode]||IMGS.forest, 1000);
     },
 
-    enterForge() {
-        this.log("⚒️ 신비로운 대장간에 도착했습니다.");
-        document.getElementById('ui-bg').src = IMGS.forge;
-        const area = document.getElementById('action-area'); area.innerHTML = '';
-        this.addBtn("🐾 펫 가챠 (300G)", () => this.gacha());
-        this.addBtn("🌲 다시 탐험하러 가기", () => { document.getElementById('ui-bg').src = IMGS.forest; this.renderActions(); });
+    apply(p) {
+        if(p.bonus.all) { ['str','agi','int','luk'].forEach(s=>this.p[s]+=p.bonus.all); }
+        for(let s in p.bonus) { if(s!=='all' && s!=='exp') this.p[s]+=p.bonus[s]; if(s==='hp') this.p.maxHp+=p.bonus[s]; }
     },
 
-    gacha() {
-        if(this.p.gold < 300) { this.log("골드가 부족합니다."); return; }
-        this.p.gold -= 300;
-        const r = Math.random() * 100;
-        let p;
-        if(r < 2) p = PETS[7]; else if(r < 8) p = PETS[6]; else if(r < 20) p = PETS[4]; else if(r < 50) p = PETS[2]; else p = PETS[0];
-
-        this.p.pets.push(p);
-        this.applyPetBonus(p);
-        this.showPopup("펫 획득!", p);
-        this.updateUI();
-    },
-
-    applyPetBonus(p) {
-        if(p.bonus.all) { this.p.str += p.bonus.all; this.p.agi += p.bonus.all; this.p.int += p.bonus.all; this.p.luk += p.bonus.all; }
-        else { for(let s in p.bonus) { this.p[s] += p.bonus[s]; if(s==='hp') this.p.maxHp += p.bonus[s]; } }
-    },
-
-    showPopup(title, pet) {
-        document.getElementById('g-grade').innerText = pet.grade;
-        document.getElementById('g-name').innerText = pet.name;
-        document.getElementById('g-desc').innerText = pet.desc;
-        document.getElementById('gacha-overlay').style.display = 'flex';
-    },
-
-    nextDay() { this.p.day++; this.updateUI(); if(this.p.day > 500) alert("여정이 끝났습니다."); },
-    updateUI() { document.getElementById('ui-lv').innerText = this.p.lv; document.getElementById('ui-day').innerText = `Day ${this.p.day} / 500`; },
-    log(m) { const p = document.getElementById('pane-log'); const d = document.createElement('div'); d.className = 'log-entry'; d.innerHTML = `> ${m}`; p.prepend(d); },
-    addBtn(t, f) { const b = document.createElement('button'); b.className = 'action-btn'; b.innerText = t; b.onclick = f; document.getElementById('action-area').appendChild(b); },
-    checkLvUp() { if(this.p.exp >= this.p.maxExp) { this.p.lv++; this.p.exp = 0; this.p.maxExp = Math.floor(this.p.maxExp * 1.2); this.log("레벨업!"); } }
+    checkLv() { if(this.p.exp>=100){ this.p.lv++; this.p.exp=0; this.p.str+=2; this.p.agi+=2; this.log("레벨업!"); } },
+    next() { this.p.day++; if(this.p.day>500) alert("여정 종료"); this.update(); },
+    update() { document.getElementById('ui-lv').innerText=this.p.lv; document.getElementById('ui-day').innerText=`Day ${this.p.day} / 500`; },
+    log(m) { const p=document.getElementById('pane-log'); const d=document.createElement('div'); d.className='log-entry'; d.innerHTML=`> ${m}`; p.prepend(d); },
+    pop(t, b) { document.getElementById('msg-title').innerText=t; document.getElementById('msg-body').innerText=b; document.getElementById('msg-overlay').style.display='flex'; },
+    addBtn(t, f) { const b=document.createElement('button'); b.className='action-btn'; b.innerText=t; b.onclick=f; document.getElementById('action-area').appendChild(b); return b; }
 };
 
 function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+game.init();
 </script>
 </body>
 </html>
