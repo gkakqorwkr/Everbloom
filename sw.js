@@ -1,4 +1,4 @@
-const CACHE = "everbloom-cache-v7";
+const CACHE = "everbloom-cache-v8";
 const ASSETS = [
   "./",
   "./index.html",
