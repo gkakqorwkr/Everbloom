@@ -272,6 +272,88 @@ function renderPet(){
 }
 renderPet();
 
+  /* ===============================
+   CHAR STUDIO DOT ENGINE (FIX)
+   =============================== */
+
+const csDot = document.getElementById("csDot");
+const csCtx = csDot.getContext("2d");
+
+let csSeed = Math.floor(Math.random() * 1e9);
+
+/* seeded RNG */
+function csRand(){
+  csSeed ^= csSeed << 13;
+  csSeed ^= csSeed >> 17;
+  csSeed ^= csSeed << 5;
+  return Math.abs(csSeed) / 0xffffffff;
+}
+
+function drawDot(){
+  const S = csDot.width; // 192
+  const r = csRand;
+
+  // palette
+  const skin = r() > 0.5 ? "#e6b899" : "#d9a57c";
+  const hair = ["#1c1c28","#3b2a1a","#6b4b2a","#c8c8d8"][Math.floor(r()*4)];
+  const cloth= ["#2a3f3a","#2f2a3a","#3a2a2f","#3a3a3a"][Math.floor(r()*4)];
+  const eye  = ["#9ad5ff","#9affc3","#ffd59a","#c5b3ff"][Math.floor(r()*4)];
+
+  csCtx.clearRect(0,0,S,S);
+
+  // background
+  csCtx.fillStyle = "#0f1218";
+  csCtx.fillRect(0,0,S,S);
+
+  // head
+  csCtx.fillStyle = skin;
+  csCtx.fillRect(64,40,64,64);
+
+  // hair
+  csCtx.fillStyle = hair;
+  csCtx.fillRect(64,30,64,24);
+  csCtx.fillRect(56,40,80,16);
+
+  // eyes
+  csCtx.fillStyle = "#111";
+  csCtx.fillRect(82,72,8,8);
+  csCtx.fillRect(102,72,8,8);
+  csCtx.fillStyle = eye;
+  csCtx.fillRect(84,74,4,4);
+  csCtx.fillRect(104,74,4,4);
+
+  // mouth
+  csCtx.fillStyle = "#2a1e1e";
+  csCtx.fillRect(92,96,8,2);
+
+  // body
+  csCtx.fillStyle = cloth;
+  csCtx.fillRect(72,112,48,48);
+
+  // arms
+  csCtx.fillRect(56,116,16,40);
+  csCtx.fillRect(120,116,16,40);
+
+  // legs
+  csCtx.fillStyle = "#1a1a24";
+  csCtx.fillRect(80,160,16,24);
+  csCtx.fillRect(96,160,16,24);
+}
+
+/* ====== EVENTS ====== */
+
+// 도트 리롤 버튼
+const rerollBtn = document.getElementById("dotReroll");
+if(rerollBtn){
+  rerollBtn.addEventListener("pointerup", () => {
+    csSeed = Math.floor(Math.random() * 1e9);
+    drawDot();
+  });
+}
+
+// 최초 1회 그리기
+drawDot();
+
 /* ================= COPY ================= */
 $("copyPrompt").onclick=async()=>{
   try{await navigator.clipboard.writeText($("prompt").value);alert("복사됨")}
