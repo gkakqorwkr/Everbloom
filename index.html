@@ -1,200 +1,191 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>EVERBLOOM: EryStart</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>EVERBLOOM: Layered</title>
+    <style>
+        :root {
+            --bg: #2e2624;
+            --panel: #4a3e3b;
+            --border: #7a6a67;
+            --text: #f7e7d6;
+            --accent: #c08d4b;
+            --btn: #6a5e5c;
+            --safe-top: env(safe-area-inset-top);
+        }
 
-<style>
-:root{
-    --bg:#3b3331;
-    --panel:#4a3e3b;
-    --border:#7a6a67;
-    --text:#f7e7d6;
-    --accent:#c08d4b;
-    --btn:#6a5e5c;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'DotGothic16', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
 
-*{margin:0;padding:0;box-sizing:border-box;font-family:'DotGothic16','Apple SD Gothic Neo',sans-serif;}
-@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+        body {
+            background: var(--bg); color: var(--text);
+            height: 100vh; display: flex; flex-direction: column;
+            padding-top: var(--safe-top);
+        }
 
-body{
-    background:var(--bg);
-    color:var(--text);
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-}
+        header {
+            background: var(--panel); border-bottom: 2px solid var(--border);
+            padding: 12px 20px; display: flex; justify-content: space-between; font-weight: bold;
+        }
 
-header{
-    background:var(--panel);
-    border:2px solid var(--border);
-    padding:10px;
-    margin:8px;
-    display:flex;
-    justify-content:space-between;
-}
+        /* 🔹 핵심: 로그와 도트를 가로로 배치 (이미지 2번 구조) */
+        .game-main {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr; /* 왼쪽 로그, 오른쪽 도트 */
+            gap: 10px; padding: 10px; flex: 1; min-height: 0;
+        }
 
-main{
-    margin:0 8px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
+        .log-container {
+            background: var(--panel); border: 2px solid var(--border);
+            display: flex; flex-direction: column; overflow: hidden; border-radius: 8px;
+        }
 
-/* 🔹 도트 화면 */
-.scene-box{
-    background:#567e6a;
-    border:2px solid var(--border);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:8px;
-}
+        .log-display {
+            flex: 1; overflow-y: auto; padding: 12px; font-size: 14px; line-height: 1.6;
+        }
 
-canvas{
-    width:160px;
-    height:160px;
-    image-rendering:pixelated;
-}
+        .scene-container {
+            background: #000; border: 2px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 8px; position: relative;
+        }
 
-/* 🔹 로그 */
-.log{
-    background:var(--panel);
-    border:2px solid var(--border);
-    padding:8px;
-    height:110px;
-    overflow-y:auto;
-    font-size:13px;
-}
+        canvas {
+            width: 100%; max-width: 180px; aspect-ratio: 1/1;
+            image-rendering: pixelated;
+        }
 
-.log p{margin-bottom:4px;}
-.log .event{color:var(--accent);font-weight:bold;}
+        /* 🔹 하단 컨트롤 */
+        .footer {
+            background: var(--panel); padding: 15px 10px calc(env(safe-area-inset-bottom) + 10px);
+            border-top: 2px solid var(--border);
+        }
 
-/* 🔹 버튼 */
-.controls{
-    margin:8px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-}
+        .controls {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+        }
 
-button{
-    background:var(--btn);
-    border:1px solid var(--border);
-    color:var(--text);
-    padding:14px;
-    font-weight:bold;
-}
-</style>
+        button {
+            background: var(--btn); border: 1px solid var(--border); color: var(--text);
+            padding: 15px 5px; font-weight: bold; border-radius: 6px; font-size: 12px;
+        }
+        button:active { background: var(--accent); color: #000; }
+
+        .event-txt { color: var(--accent); font-weight: bold; margin-bottom: 5px; }
+        .system-txt { color: #888; font-size: 12px; }
+    </style>
 </head>
-
 <body>
 
 <header>
-    <div>EVERBLOOM: EryStart</div>
-    <div id="turn">턴 1</div>
+    <div>🌿 EVERBLOOM</div>
+    <div id="turn">Turn 1</div>
 </header>
 
-<main>
-    <div class="scene-box">
+<div class="game-main">
+    <div class="log-container">
+        <div class="log-display" id="log">
+            <p class="event-txt">모험의 서막</p>
+            <p>안개 낀 고대 유적의 입구에 도착했습니다. 숲의 숨결이 느껴집니다.</p>
+        </div>
+    </div>
+
+    <div class="scene-container">
         <canvas id="scene" width="160" height="160"></canvas>
+        <div style="position:absolute; bottom:5px; font-size:10px; color:var(--accent)">STATUS: ACTIVE</div>
     </div>
+</div>
 
-    <div class="log" id="log">
-        <p class="event">모험이 시작되었습니다!</p>
-        <p>에버블룸의 고대 숲이 당신을 맞이합니다.</p>
+<div class="footer">
+    <div class="controls">
+        <button onclick="act('explore', '🔍 주변을 탐색하여 유적의 흔적을 찾습니다.')">탐험</button>
+        <button onclick="act('town', '🏡 작은 마을에 도착해 장비를 정비합니다.')">마을</button>
+        <button onclick="act('battle', '⚔️ 덤불 속에서 굶주린 슬라임이 튀어나옵니다!')">전투</button>
+        <button onclick="act('pet', '🐾 펫과 간식을 나누며 유대감을 쌓습니다.')">펫</button>
     </div>
-</main>
-
-<div class="controls">
-    <button onclick="act('explore')">🔍 탐험</button>
-    <button onclick="act('town')">🏠 마을</button>
-    <button onclick="act('battle')">⚔️ 사건</button>
-    <button onclick="act('pet')">🐾 펫</button>
 </div>
 
 <script>
-let turn=1;
+let turn = 1;
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
 
-/* 팔레트 */
-const P={
-    o:"#1b1b1b",
-    skin:"#d7b38c", skinS:"#b38b65",
-    cloth:"#7c2f2f", clothS:"#551f1f",
-    grass:"#3e6b3e", grassS:"#2b4d2b",
-    slime:"#9bbfb2", slimeS:"#6e9f8e",
-    hair:"#3a2a20"
+const P = {
+    o: "#1b1b1b",
+    skin: "#d7b38c", skinS: "#b38b65",
+    cloth: "#7c2f2f", clothS: "#551f1f",
+    grass: "#2d4a3e", grassS: "#1b3329",
+    slime: "#9bbfb2", slimeS: "#6e9f8e",
+    hair: "#3a2a20", white: "#ffffff"
 };
 
-function px(c,x,y,w,h,col){
-    c.fillStyle=col;
-    c.fillRect(x,y,w,h);
+function px(x, y, w, h, col) {
+    ctx.fillStyle = col;
+    ctx.fillRect(x, y, w, h);
 }
 
-/* 배경 */
-function bg(c){
-    for(let y=0;y<160;y+=4)
-        for(let x=0;x<160;x+=4)
-            px(c,x,y,4,4,Math.random()>.5?P.grass:P.grassS);
-}
-
-/* 캐릭터 (사람처럼 보이게) */
-function hero(c,x,y){
-    // 머리
-    px(c,x+4,y,8,8,P.skin);
-    px(c,x+4,y+5,8,3,P.skinS);
-    px(c,x+6,y+3,1,2,P.o);
-    px(c,x+9,y+3,1,2,P.o);
-
-    // 몸
-    px(c,x+3,y+8,10,10,P.cloth);
-    px(c,x+3,y+14,10,4,P.clothS);
-
-    // 다리
-    px(c,x+4,y+18,3,8,P.hair);
-    px(c,x+9,y+18,3,8,P.hair);
-}
-
-/* 슬라임 */
-function slime(c,x,y){
-    px(c,x,y+6,16,10,P.slime);
-    px(c,x,y+10,16,6,P.slimeS);
-    px(c,x+4,y+10,2,2,P.o);
-    px(c,x+10,y+10,2,2,P.o);
-}
-
-function draw(type){
-    const c=document.getElementById("scene").getContext("2d");
-    c.imageSmoothingEnabled=false;
-    c.clearRect(0,0,160,160);
-    bg(c);
-
-    if(type==="battle"){
-        hero(c,40,70);
-        slime(c,90,80);
-    }else{
-        hero(c,70,70);
+function drawBackground() {
+    ctx.fillStyle = P.grass;
+    ctx.fillRect(0, 0, 160, 160);
+    // 무작위 풀잎 도트
+    for(let i=0; i<40; i++) {
+        px(Math.random()*160, Math.random()*160, 2, 2, P.grassS);
     }
 }
 
-function log(msg,event=false){
-    const l=document.getElementById("log");
-    const p=document.createElement("p");
-    if(event)p.className="event";
-    p.innerText=msg;
-    l.appendChild(p);
-    l.scrollTop=l.scrollHeight;
+function drawHero(x, y) {
+    // 머리 & 머리카락
+    px(x+2, y-2, 12, 4, P.hair); // 머리카락 위
+    px(x+4, y, 8, 8, P.skin);   // 얼굴
+    px(x+5, y+3, 2, 2, P.o);    // 눈1
+    px(x+9, y+3, 2, 2, P.o);    // 눈2
+    // 몸체 (갑옷 느낌)
+    px(x+2, y+8, 12, 12, P.cloth);
+    px(x+4, y+10, 8, 2, P.clothS); // 장식
+    // 다리
+    px(x+3, y+20, 4, 6, P.hair);
+    px(x+9, y+20, 4, 6, P.hair);
 }
 
-function act(t){
+function drawSlime(x, y) {
+    px(x, y+10, 20, 14, P.slime);
+    px(x+2, y+18, 16, 6, P.slimeS);
+    px(x+5, y+14, 3, 3, P.o);
+    px(x+12, y+14, 3, 3, P.o);
+    px(x+7, y+15, 1, 1, P.white); // 눈광
+}
+
+function render(type) {
+    ctx.clearRect(0, 0, 160, 160);
+    drawBackground();
+
+    if(type === "battle") {
+        drawHero(30, 70);
+        drawSlime(100, 80);
+    } else if(type === "pet") {
+        drawHero(70, 70);
+        px(100, 90, 10, 10, "#e9c46a"); // 임시 펫
+    } else {
+        drawHero(70, 70);
+    }
+}
+
+function act(type, msg) {
     turn++;
-    document.getElementById("turn").innerText="턴 "+turn;
-    draw(t);
-    log("행동: "+t,true);
+    document.getElementById("turn").innerText = "Turn " + turn;
+    
+    const logBox = document.getElementById("log");
+    const p = document.createElement("p");
+    p.innerHTML = `<span class="event-txt">[${type.toUpperCase()}]</span> ${msg}`;
+    logBox.appendChild(p);
+    logBox.scrollTop = logBox.scrollHeight;
+
+    render(type);
 }
 
-draw("explore");
+// 초기 실행
+render("explore");
 </script>
 
 </body>
