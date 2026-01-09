@@ -5,186 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon.png"> <title>Everbloom Fantasy</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <title>Everbloom</title>
     <style>
         :root {
-            --bg: #0a1f1c;
-            --panel: rgba(20, 45, 40, 0.9);
-            --accent: #40916c;
-            --text: #e9ecef;
+            --forest-dark: #0a1f1c;
+            --forest-glow: #2d6a4f;
+            --accent: #b7e4c7;
+            --glass: rgba(255, 255, 255, 0.08);
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: -apple-system, system-ui, sans-serif;
-            background: var(--bg); color: var(--text);
-            height: 100vh; overflow: hidden; /* 아이폰 화면 고정 */
-        }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--forest-dark); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* 1. 시작 화면 (Splash) */
-        #splashScreen {
+        /* 1. 시작 화면 (유적 숲 테마) */
+        #splash {
             position: fixed; inset: 0; z-index: 1000;
-            background: linear-gradient(to bottom, #0a1f1c, #1b4332);
+            background: linear-gradient(to bottom, rgba(10,31,28,0.7), rgba(10,31,28,0.9)),
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop'); /* 임시 유적숲 배경 */
+            background-size: cover; background-position: center;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.5s;
         }
-        .start-text { margin-top: 40px; animation: blink 1.5s infinite; font-weight: bold; }
+        .title-logo { font-size: 3.5rem; font-weight: 800; color: var(--accent); text-shadow: 0 0 20px rgba(183,228,199,0.5); }
+        .touch-hint { margin-top: 60px; font-weight: bold; animation: pulse 2s infinite; color: #fff; }
 
-        /* 2. 메인 게임 레이아웃 */
-        #gameApp { display: none; height: 100%; display: flex; flex-direction: column; }
+        /* 2. 메인 게임 UI (15 Plus 최적화) */
+        #game-app { display: none; height: 100%; flex-direction: column; padding: var(--safe-top) 20px var(--safe-bottom); }
         
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-
-        main { flex: 1; overflow-y: auto; padding: 10px 20px calc(var(--safe-bottom) + 100px); display: flex; flex-direction: column; gap: 15px; }
-
-        .system-panel { background: var(--panel); border-radius: 20px; padding: 18px; border: 1px solid rgba(255,255,255,0.05); }
-
-        /* 모험 버튼 그리드 */
-        .adventure-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
-        .adv-btn {
-            background: rgba(255,255,255,0.08); border: none; color: white;
-            padding: 22px; border-radius: 16px; font-size: 1rem; font-weight: 600;
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        /* 스크롤 가능한 상세 로그 (5줄 이상) */
+        .log-container {
+            background: var(--glass); border-radius: 15px; padding: 15px;
+            height: 120px; overflow-y: auto; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column-reverse; gap: 5px; margin: 15px 0;
         }
+        .log-entry { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #ccc; }
+        .log-entry.new { color: var(--accent); font-weight: bold; }
 
-        /* 캔버스 및 로그 */
-        .canvas-wrap { width: 190px; height: 190px; margin: 0 auto; background: #000; border-radius: 15px; }
+        /* 액션 버튼 */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .btn { background: var(--glass); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 20px; border-radius: 15px; font-weight: bold; }
+        .btn:active { background: var(--forest-glow); }
+
+        /* 캔버스 및 상태 */
+        .display-box { flex: 1; background: var(--glass); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .canvas-wrap { width: 190px; height: 190px; background: #000; border-radius: 20px; border: 3px solid var(--forest-glow); margin-bottom: 15px; overflow: hidden; }
         canvas { width: 100%; height: 100%; image-rendering: pixelated; }
-        #gameLog { min-height: 50px; font-size: 0.95rem; color: #a0c4b3; }
 
-        /* 하단 바 (아이폰 15+ 최적화) */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            background: rgba(10, 31, 28, 0.95); backdrop-filter: blur(10px);
-            padding: 15px 20px calc(var(--safe-bottom) + 10px);
-            display: flex; justify-content: space-between; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
+        /* 펫 & 호감도 바 */
+        .status-row { width: 100%; display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 10px; opacity: 0.8; }
+        .progress-bar { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); transition: 0.3s; }
 
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
-<body onclick="tryStartGame()">
+<body onclick="handleGlobalClick()">
 
-    <div id="splashScreen">
-        <h1 style="font-size: 3rem; letter-spacing: 4px;">Everbloom</h1>
-        <p style="opacity: 0.6;">Fantasy Life Simulation</p>
-        <div class="start-text">TOUCH TO START</div>
+    <div id="splash">
+        <div class="title-logo">EVERBLOOM</div>
+        <p style="letter-spacing: 3px; opacity: 0.8;">RUINS & FOREST</p>
+        <div class="touch-hint">TOUCH TO START</div>
     </div>
 
-    <div id="gameApp" style="display: none;">
-        <header>
-            <h2 style="font-size: 1.5rem;">🌿 Everbloom</h2>
-            <div id="turnDisplay" style="opacity: 0.7;">Turn 0</div>
+    <div id="game-app">
+        <header style="padding: 10px 0; display: flex; justify-content: space-between; font-weight: bold;">
+            <span>🌿 Forest Studio</span>
+            <span id="turn-display">Turn 1</span>
         </header>
 
-        <main>
-            <section class="system-panel">
-                <div id="gameLog">시작 준비 완료. 모험을 떠나보세요!</div>
-            </section>
+        <div class="log-container" id="game-log">
+            <div class="log-entry">환영합니다. 신비로운 숲의 탐험을 시작하세요.</div>
+        </div>
 
-            <div class="adventure-grid">
-                <button class="adv-btn" onclick="explore('town')">🏡 마을 (장비)</button>
-                <button class="adv-btn" onclick="explore('ruins')">🏺 유물 (강화)</button>
-                <button class="adv-btn" onclick="spawnBattle()">⚔️ 사건 (전투)</button>
-                <button class="adv-btn" onclick="rest()">😴 휴식 (회복)</button>
+        <div class="grid">
+            <button class="btn" onclick="action('explore')">🔍 탐험</button>
+            <button class="btn" onclick="action('town')">🏡 마을</button>
+            <button class="btn" onclick="action('battle')">⚔️ 사건</button>
+            <button class="btn" onclick="action('pet')">🐾 펫 교감</button>
+        </div>
+
+        <div class="display-box">
+            <div class="canvas-wrap"><canvas id="mainCanvas" width="190" height="190"></canvas></div>
+            <h3 id="target-name">탐험 대기 중</h3>
+            <div class="status-row">
+                <span>호감도 (Affection)</span>
+                <span id="love-val">0%</span>
             </div>
-
-            <section class="system-panel" id="displayPanel" style="display:none;">
-                <div class="canvas-wrap"><canvas id="mainCanvas" width="190" height="190"></canvas></div>
-                <p id="targetName" style="text-align:center; margin-top:10px; font-weight:bold;"></p>
-                <textarea id="targetPrompt" style="width:100%; background:transparent; color:#888; border:none; resize:none; font-size:0.8rem;" readonly></textarea>
-            </section>
-
-            <section class="system-panel">
-                <p style="margin-bottom:10px; font-size:0.8rem; opacity:0.6;">🎒 내 인벤토리</p>
-                <div id="inventoryList" style="font-size:0.9rem; display:flex; flex-wrap:wrap; gap:5px;">텅 비어있음</div>
-            </section>
-        </main>
-
-        <nav class="bottom-nav">
-            <div>HP <span style="color:#ff6b6b">100/100</span></div>
-            <button onclick="openStudio()" style="background:var(--accent); color:white; border:none; padding:10px 20px; border-radius:12px; font-weight:bold;">🎴 스튜디오</button>
-        </nav>
+            <div class="progress-bar"><div id="love-fill" class="progress-fill" style="width: 0%"></div></div>
+        </div>
     </div>
 
-    <script>
-        let isStarted = false;
-        let turn = 0;
-        let inventory = [];
+<script>
+    let isStarted = false;
+    let turn = 1;
+    let affection = 0;
 
-        // 장비 데이터베이스 (동양/서양 통합)
-        const items = [
-            { name: "녹슨 카타나", tag: "rusted katana, japanese sword", type: "weapon" },
-            { name: "기사의 롱소드", tag: "knights longsword, western steel", type: "weapon" },
-            { name: "석장의 지팡이", tag: "khakkhara staff, buddhist monk tool", type: "weapon" },
-            { name: "가죽 찰갑", tag: "leather lamellar armor, oriental guard", type: "armor" }
-        ];
-
-        // 몬스터 데이터
-        const monsters = [
-            { name: "레드 오크", tag: "muscular red orc, western fantasy", color: "#a52a2a" },
-            { name: "강철 도깨비", tag: "iron oni, japanese folklore", color: "#444" }
-        ];
-
-        function tryStartGame() {
-            if (!isStarted) {
-                isStarted = true;
-                document.getElementById('splashScreen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('splashScreen').style.display = 'none';
-                    document.getElementById('gameApp').style.display = 'flex';
-                }, 500);
-            }
+    function handleGlobalClick() {
+        if (!isStarted) {
+            isStarted = true;
+            document.getElementById('splash').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('splash').style.display = 'none';
+                document.getElementById('game-app').style.display = 'flex';
+                drawDot('pet'); // 첫 화면 펫 그리기
+            }, 500);
         }
+    }
 
-        function updateLog(msg) {
-            turn++;
-            document.getElementById('turnDisplay').innerText = `Turn ${turn}`;
-            document.getElementById('gameLog').innerText = msg;
+    function addLog(msg) {
+        const logBox = document.getElementById('game-log');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry new';
+        entry.innerText = `> ${msg}`;
+        logBox.prepend(entry);
+        turn++;
+        document.getElementById('turn-display').innerText = `Turn ${turn}`;
+    }
+
+    function action(type) {
+        if(type === 'explore') {
+            addLog("유적 깊은 곳에서 고대의 비석을 발견했습니다.");
+            drawDot('ruin');
+        } else if(type === 'town') {
+            addLog("마을 상인에게서 동양의 신비로운 장비를 구매했습니다.");
+            drawDot('item');
+        } else if(type === 'battle') {
+            addLog("위험한 숲의 수호자가 앞을 가로막습니다!");
+            drawDot('monster');
+        } else if(type === 'pet') {
+            affection = Math.min(100, affection + 10);
+            addLog("펫과 교감하여 유대감이 깊어집니다. (+10%)");
+            document.getElementById('love-val').innerText = affection + "%";
+            document.getElementById('love-fill').style.width = affection + "%";
+            drawDot('pet');
         }
+    }
 
-        function explore(loc) {
-            document.getElementById('displayPanel').style.display = 'block';
-            if (loc === 'town') {
-                const item = items[Math.floor(Math.random() * items.length)];
-                inventory.push(item.name);
-                updateLog(`🏡 마을 상점에서 [${item.name}]을(를) 획득했습니다!`);
-                updateInventory();
-                drawSimple(item.color || '#888');
-            } else {
-                updateLog(`🏺 유적에서 신비한 힘을 느꼈습니다.`);
-            }
+    function drawDot(type) {
+        const ctx = document.getElementById('mainCanvas').getContext('2d');
+        ctx.clearRect(0,0,190,190);
+        ctx.imageSmoothingEnabled = false;
+
+        if(type === 'pet') {
+            ctx.fillStyle = "#b7e4c7";
+            ctx.fillRect(70, 80, 50, 50); // 몸
+            ctx.fillRect(80, 60, 30, 30); // 머리
+            ctx.fillStyle = "#ff4d4d"; ctx.fillRect(75, 55, 10, 15); ctx.fillRect(105, 55, 10, 15); // 귀
+        } else if(type === 'monster') {
+            ctx.fillStyle = "#451a03";
+            ctx.fillRect(50, 70, 90, 80); // 괴수 몸
+            ctx.fillStyle = "#ff0000"; ctx.fillRect(75, 90, 10, 10); ctx.fillRect(105, 90, 10, 10); // 눈
+        } else if(type === 'item') {
+            ctx.fillStyle = "#ffd700";
+            ctx.fillRect(90, 40, 10, 110); // 검신
+            ctx.fillStyle = "#8b4513"; ctx.fillRect(75, 140, 40, 10); // 가드
+        } else {
+            ctx.fillStyle = "#555"; ctx.fillRect(40, 100, 110, 60); // 유적 돌
         }
-
-        function spawnBattle() {
-            const m = monsters[Math.floor(Math.random() * monsters.length)];
-            document.getElementById('displayPanel').style.display = 'block';
-            document.getElementById('targetName').innerText = m.name;
-            document.getElementById('targetPrompt').value = m.tag;
-            drawSimple(m.color);
-            updateLog(`⚔️ 야생의 [${m.name}]이(가) 나타났습니다!`);
-        }
-
-        function updateInventory() {
-            const div = document.getElementById('inventoryList');
-            div.innerHTML = inventory.map(i => `<span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:5px;">${i}</span>`).join('');
-        }
-
-        function drawSimple(color) {
-            const canvas = document.getElementById('mainCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,190,190);
-            ctx.fillStyle = color;
-            ctx.fillRect(60, 50, 70, 90); // 몸체
-            ctx.fillStyle = "white";
-            ctx.fillRect(75, 70, 10, 10); ctx.fillRect(105, 70, 10, 10); // 눈
-        }
-
-        function rest() { updateLog("😴 깊은 잠에 들어 체력을 회복했습니다."); }
-        function openStudio() { alert("캐릭터 스튜디오를 엽니다."); }
-    </script>
+    }
+</script>
 </body>
 </html>
