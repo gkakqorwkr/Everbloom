@@ -3,100 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Everbloom</title>
+    <title>Everbloom Chronicles</title>
     <style>
         :root {
             --bg: #0d0d0c; --panel: #1a1a17; --accent: #d4a373; --text: #e0dcd3;
             --border: #3d3d34; --btn-bg: #2a2a26; --safe-top: env(safe-area-inset-top);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Apple SD Gothic Neo', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* 1. 시작 화면 (탭 투 스타트) */
-        #start-screen {
-            position: fixed; inset: 0; z-index: 9999; background: #000;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-        }
-        .title-main { font-size: 32px; color: var(--accent); font-weight: bold; letter-spacing: 2px; }
-        .title-sub { font-size: 16px; color: #888; margin-top: 10px; margin-bottom: 40px; }
+        /* 시작 및 선택 화면 */
+        #start-screen { position: fixed; inset: 0; z-index: 9999; background: #000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; }
+        .title-main { font-size: 32px; color: var(--accent); font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; }
+        .title-sub { font-size: 16px; color: #888; margin-bottom: 40px; }
         .tap-msg { font-size: 14px; color: #fff; animation: blink 1.5s infinite; }
 
-        /* 2. 레이아웃 구조 */
-        #game-ui { display: none; height: 100%; flex-direction: column; }
-        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; }
-        
-        .visual-area { width: 100%; height: 25vh; position: relative; overflow: hidden; border-bottom: 2px solid var(--accent); }
-        #bg-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.8); image-rendering: pixelated; } /* 도트 느낌 유지 */
+        #origin-screen { position: fixed; inset: 0; z-index: 9000; background: var(--bg); padding: 25px; overflow-y: auto; display: none; }
+        .race-card { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; }
 
-        /* 3. 장비 장착 슬롯 (이미지 2번 반영) */
-        .equip-slots { display: flex; gap: 8px; padding: 10px; background: #111; justify-content: center; }
-        .equip-box { width: 30%; height: 60px; border: 1px solid var(--border); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #666; background: rgba(255,255,255,0.03); }
+        /* 게임 UI 레이아웃 */
+        header { padding: calc(var(--safe-top) + 10px) 20px 10px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 14px; z-index: 100; }
+        .visual-area { width: 100%; height: 28vh; position: relative; overflow: hidden; border-bottom: 2px solid var(--accent); flex-shrink: 0; }
+        #bg-img { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; image-rendering: pixelated; } /* 도트 느낌 */
+        .location-tag { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.8); padding: 5px 12px; border-radius: 4px; border-left: 3px solid var(--accent); font-size: 12px; z-index: 10; }
+
+        .equip-slots { display: flex; gap: 8px; padding: 10px; background: #111; justify-content: center; border-bottom: 1px solid var(--border); }
+        .equip-box { width: 30%; height: 50px; border: 1px solid var(--border); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #666; background: rgba(255,255,255,0.03); }
         .equip-box.active { border-color: var(--accent); color: var(--accent); }
-        .equip-box b { font-size: 11px; margin-bottom: 2px; }
 
-        /* 4. 탭 바 */
-        .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-        .tab-btn { flex: 1; padding: 14px; border: none; background: none; color: #666; font-weight: bold; font-size: 12px; }
+        .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: #666; font-weight: bold; font-size: 12px; cursor: pointer; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        /* 5. 콘텐츠 영역 */
-        .main-content { flex: 1; overflow-y: auto; padding: 15px; position: relative; }
-        .log-line { margin-bottom: 6px; font-size: 13px; color: #ccc; border-left: 2px solid var(--border); padding-left: 8px; }
+        .main-content { flex: 1; overflow-y: auto; padding: 15px; background: #111; }
+        .log-line { margin-bottom: 6px; font-size: 13px; color: #ccc; border-left: 2px solid var(--border); padding-left: 8px; line-height: 1.5; }
+        
+        /* 그리드 및 슬롯 */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-        .slot { background: #1c1c1a; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 12px; }
+        .slot { background: #1c1c1a; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 12px; cursor: pointer; position: relative; }
         .slot.selected { border-color: var(--accent); background: #2a2a22; }
+        .slot.locked { opacity: 0.3; filter: grayscale(1); }
+        .slot .desc { font-size: 11px; color: #888; margin-top: 5px; display: none; }
+        .slot.selected .desc { display: block; }
 
-        /* 6. 하단 버튼 (잘림 방지) */
-        footer { background: var(--panel); border-top: 1px solid var(--border); padding: 10px 15px calc(env(safe-area-inset-bottom) + 10px); }
-        .btn { background: var(--btn-bg); color: #fff; padding: 14px; border-radius: 8px; border: 1px solid #444; font-weight: bold; text-align: center; margin-bottom: 8px; font-size: 14px; cursor: pointer; }
+        /* 하단 액션 */
+        footer { background: var(--panel); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
+        #action-list { padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; }
+        .btn { background: var(--btn-bg); color: #fff; padding: 14px; border-radius: 8px; border: 1px solid #444; font-weight: bold; text-align: center; cursor: pointer; font-size: 13px; }
         .btn:active { background: var(--accent); color: #000; }
+        .btn.choice { background: #3d3d34; border-color: var(--accent); }
 
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
 
-    <div id="start-screen" onclick="game.showRaceSelect()">
+    <div id="start-screen" onclick="game.showOrigin()">
         <div class="title-main">Everbloom</div>
         <div class="title-sub">기록되지 않은 연대기</div>
         <div class="tap-msg">탭 하여 시작하세요</div>
     </div>
 
-    <div id="origin-screen" style="display:none; position:fixed; inset:0; z-index:9000; background:var(--bg); padding:20px; overflow-y:auto;">
-        <h2 style="text-align:center; margin:30px 0; color:var(--accent);">종족을 선택하십시오</h2>
+    <div id="origin-screen">
+        <h2 style="text-align:center; color:var(--accent); margin-bottom:25px;">종족을 선택하십시오</h2>
         <div id="race-list"></div>
     </div>
 
-    <div id="game-ui">
+    <div id="game-ui" style="display:none; flex-direction:column; height:100%;">
         <header>
             <div>Lv.<span id="ui-lv">1</span> <span id="ui-race" style="color:var(--accent)"></span></div>
             <div id="ui-gold">💰 500G</div>
         </header>
 
         <div class="visual-area">
-            <img id="bg-img" src="https://image.lexica.art/full_webp/76508933-289b-433b-8263-547a06655a6d"> </div>
+            <div id="loc-tag" class="location-tag">미지의 유적</div>
+            <img id="bg-img" src="https://image.lexica.art/full_webp/7376c968-07e3-4770-bc0f-903429215096">
+        </div>
 
         <div class="equip-slots">
-            <div class="equip-box" id="slot-weapon"><b>WEAPON</b><span class="val">Empty</span></div>
-            <div class="equip-box" id="slot-armor"><b>ARMOR</b><span class="val">Empty</span></div>
-            <div class="equip-box" id="slot-pet"><b>PET</b><span class="val">Empty</span></div>
+            <div class="equip-box" id="eq-weapon"><b>WEAPON</b><span style="font-size:9px">Empty</span></div>
+            <div class="equip-box" id="eq-armor"><b>ARMOR</b><span style="font-size:9px">Empty</span></div>
+            <div class="equip-box" id="eq-pet"><b>PET</b><span style="font-size:9px">Empty</span></div>
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="game.tab('log', this)">탐험 로그</button>
-            <button class="tab-btn" onclick="game.tab('inv', this)">가방/장비</button>
-            <button class="tab-btn" onclick="game.tab('pet', this)">나의 펫</button>
-            <button class="tab-btn" style="background:#221e1a" onclick="game.tab('ency', this)">백과사전</button>
+            <button class="tab-btn active" onclick="game.tab('log', this)">로그</button>
+            <button class="tab-btn" onclick="game.tab('inv', this)">가방</button>
+            <button class="tab-btn" onclick="game.tab('pet', this)">펫/합성</button>
+            <button class="tab-btn" onclick="game.tab('ency', this)">백과사전</button>
         </div>
 
         <div id="pane-log" class="main-content"></div>
-        <div id="pane-inv" class="main-content" style="display:none;"><div id="inv-list" class="grid"></div></div>
+        <div id="pane-inv" class="main-content" style="display:none;">
+            <div id="inv-list" class="grid"></div>
+        </div>
         <div id="pane-pet" class="main-content" style="display:none;">
-            <div style="font-size:11px; color:var(--accent); margin-bottom:10px;">* 2마리를 선택하여 합성을 진행할 수 있습니다.</div>
+            <div style="font-size:11px; margin-bottom:10px; color:var(--accent)">* 2마리를 선택하여 합성을 시도하세요.</div>
             <div id="pet-list" class="grid"></div>
         </div>
         <div id="pane-ency" class="main-content" style="display:none;">
-            <div id="ency-progress-text" style="font-size:12px; margin-bottom:10px;"></div>
             <div id="ency-list" class="grid"></div>
         </div>
 
@@ -108,33 +113,41 @@
 <script>
 const DB = {
     races: [
-        { id:'human', name:'인간', hp:100, img:'https://image.lexica.art/full_webp/3044a132-680c-4e8c-99d8-8f83060f04c6' },
-        { id:'elf', name:'엘프', hp:80, img:'https://image.lexica.art/full_webp/2a1a8c8e-3298-4228-8742-019d08657603' },
-        { id:'orc', name:'오크', hp:150, img:'https://image.lexica.art/full_webp/f0907e54-5221-4475-9c86-8f3b610c950a' }
+        { id:'human', name:'인간', hp:100, desc:'균형 잡힌 육체와 적응력을 가졌습니다.' },
+        { id:'elf', name:'엘프', hp:80, desc:'자연과 교감하며 민첩함이 뛰어납니다.' },
+        { id:'orc', name:'오크', hp:150, desc:'압도적인 완력과 생존력을 자랑합니다.' }
     ],
-    items: Array.from({length: 100}, (_, i) => ({
+    locs: {
+        ruin: { n: "잊혀진 유적", img: "https://image.lexica.art/full_webp/7376c968-07e3-4770-bc0f-903429215096" },
+        forest: { n: "신비로운 숲", img: "https://image.lexica.art/full_webp/cc2057ae-e069-450f-a2e6-a94b595bb919" },
+        sea: { n: "심해의 해안", img: "https://image.lexica.art/full_webp/1271317e-9777-4402-8611-37d3637e3d1c" },
+        snow: { n: "눈 덮인 고산", img: "https://image.lexica.art/full_webp/76508933-289b-433b-8263-547a06655a6d" },
+        cave: { n: "심연의 동굴", img: "https://image.lexica.art/full_webp/4594c798-1755-4672-8884-60ff868b1ee4" },
+        village: { n: "안식의 마을", img: "https://image.lexica.art/full_webp/51351532-3580-4963-8a9d-b8733b1e967a" }
+    },
+    items: Array.from({length: 105}, (_, i) => ({
         id: i, type: i%2===0?'weapon':'armor',
-        name: `${['녹슨','강철','마법','용사의'][i%4]} ${i%2===0?'검':'갑옷'} +${Math.floor(i/4)}`,
-        stat: (i+1)*2, desc: `기록 #${i+1}: 이 장비는 역사 속에 잠들어 있던 유물입니다.`, price: (i+1)*50
+        name: `${['낡은','날카로운','전설의','빛나는'][i%4]} ${i%2===0?'검':'갑옷'} +${Math.floor(i/4)}`,
+        stat: i+5, desc: `연대기 #${i}에 기록된 장비입니다.`, price: (i+1)*50
     })),
-    pets: Array.from({length: 20}, (_, i) => ({
-        id: i, name: `${['아기','영리한','불타는'][i%3]} ${['슬라임','늑대','고양이'][i%3]}`,
-        stat: (i+1), desc: `당신을 따르는 ${i+1}번째 동료입니다.`, price: 300
-    })),
-    events: ["눈보라가 몰아치는 숲을 수색했습니다.", "대장간의 망치 소리가 들려옵니다.", "오래된 비석에서 고대의 기운이 느껴집니다."]
+    pets: Array.from({length: 25}, (_, i) => ({
+        id: i, name: `${['아기','거대한','신비한'][i%3]} ${['늑대','용','슬라임'][i%3]}`,
+        stat: i+1, desc: `당신을 지키는 동료입니다.`, price: 300
+    }))
 };
 
 const game = {
-    p: { race:null, gold:500, hp:100, inv:[], pets:[], equip:{weapon:null, armor:null, pet:null}, found:new Set() },
-    selIdx: -1,
+    p: { gold:500, hp:100, inv:[], pets:[], equip:{weapon:null, armor:null, pet:null}, found:new Set(), petFound:new Set(), day:1 },
+    loc: 'ruin',
+    selPets: [],
 
-    showRaceSelect() {
+    showOrigin() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('origin-screen').style.display = 'block';
         const list = document.getElementById('race-list');
         DB.races.forEach(r => {
-            const d = document.createElement('div'); d.className = 'btn';
-            d.innerText = r.name;
+            const d = document.createElement('div'); d.className = 'race-card';
+            d.innerHTML = `<h3>${r.name}</h3><p style="font-size:12px; color:#aaa;">${r.desc}</p>`;
             d.onclick = () => { this.p.race = r; this.start(); };
             list.appendChild(d);
         });
@@ -144,7 +157,7 @@ const game = {
         document.getElementById('origin-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'flex';
         document.getElementById('ui-race').innerText = this.p.race.name;
-        this.log("에버블룸의 숲에 첫 발을 내디뎠습니다. 500일의 시간이 주어집니다.");
+        this.log("유적의 부름을 받아 연대기가 시작되었습니다.");
         this.renderActions();
     },
 
@@ -158,77 +171,154 @@ const game = {
         if(t === 'ency') this.renderEncy();
     },
 
-    // 장비 착용/해제 로직
-    toggleEquip(idx) {
-        const item = this.p.inv[idx];
-        const type = item.type;
-        if (this.p.equip[type] === item) {
-            this.p.equip[type] = null;
-            this.log(`${item.name}을(를) 해제했습니다.`);
-        } else {
-            this.p.equip[type] = item;
-            this.log(`${item.name}을(를) 착용했습니다.`);
-        }
+    renderInv() {
+        const list = document.getElementById('inv-list'); list.innerHTML = '';
+        this.p.inv.forEach((it, i) => {
+            const isEq = (this.p.equip.weapon === it || this.p.equip.armor === it);
+            const d = document.createElement('div'); d.className = `slot ${isEq ? 'selected' : ''}`;
+            d.innerHTML = `<b>${it.name}</b><br><small>Stat +${it.stat}</small>`;
+            d.onclick = () => this.toggleEquip(it);
+            list.appendChild(d);
+        });
+    },
+
+    toggleEquip(it) {
+        if(this.p.equip[it.type] === it) this.p.equip[it.type] = null;
+        else this.p.equip[it.type] = it;
         this.updateEquipUI();
         this.renderInv();
     },
 
     updateEquipUI() {
-        document.getElementById('slot-weapon').querySelector('.val').innerText = this.p.equip.weapon?.name || 'Empty';
-        document.getElementById('slot-armor').querySelector('.val').innerText = this.p.equip.armor?.name || 'Empty';
-        document.getElementById('slot-pet').querySelector('.val').innerText = this.p.equip.pet?.name || 'Empty';
-    },
-
-    renderInv() {
-        const list = document.getElementById('inv-list'); list.innerHTML = '';
-        this.p.inv.forEach((it, i) => {
-            const isEquipped = this.p.equip.weapon === it || this.p.equip.armor === it;
-            const d = document.createElement('div'); d.className = `slot ${isEquipped ? 'selected' : ''}`;
-            d.innerHTML = `<b>${it.name}</b><br><small>${it.type.toUpperCase()} / +${it.stat}</small>`;
-            d.onclick = () => this.toggleEquip(i);
-            list.appendChild(d);
-        });
+        document.getElementById('eq-weapon').querySelector('span').innerText = this.p.equip.weapon?.name || 'Empty';
+        document.getElementById('eq-armor').querySelector('span').innerText = this.p.equip.armor?.name || 'Empty';
+        document.getElementById('eq-pet').querySelector('span').innerText = this.p.equip.pet?.name || 'Empty';
     },
 
     renderPets() {
         const list = document.getElementById('pet-list'); list.innerHTML = '';
-        this.p.pets.forEach((p, i) => {
-            const d = document.createElement('div'); d.className = 'slot';
-            d.innerHTML = `<b>${p.name}</b><br><small>합성 가능</small>`;
+        this.p.pets.forEach((pt, i) => {
+            const isSel = this.selPets.includes(i);
+            const d = document.createElement('div'); d.className = `slot ${isSel ? 'selected' : ''}`;
+            d.innerHTML = `<b>${pt.name}</b><br><small>합성 재료</small>`;
+            d.onclick = () => {
+                if(isSel) this.selPets = this.selPets.filter(idx => idx !== i);
+                else if(this.selPets.length < 2) this.selPets.push(i);
+                this.renderPets();
+                this.renderActions();
+            };
             list.appendChild(d);
         });
     },
 
     renderEncy() {
         const list = document.getElementById('ency-list'); list.innerHTML = '';
-        DB.items.slice(0, 50).forEach(it => {
-            const isFound = this.p.found.has(it.id);
-            const d = document.createElement('div'); d.className = `slot ${isFound ? '' : 'locked'}`;
-            d.style.opacity = isFound ? "1" : "0.3";
-            d.innerHTML = isFound ? `<b>${it.name}</b><br><p style="font-size:10px;">${it.desc}</p>` : `<b>???</b>`;
+        DB.items.slice(0, 30).forEach(it => {
+            const found = this.p.found.has(it.id);
+            const d = document.createElement('div'); d.className = `slot ${found ? '' : 'locked'}`;
+            d.innerHTML = found ? `<b>${it.name}</b><br><small>${it.desc}</small>` : `<b>???</b>`;
             list.appendChild(d);
         });
     },
 
-    explore() {
-        const ev = DB.events[Math.floor(Math.random()*DB.events.length)];
-        this.log(ev);
-        if(Math.random() > 0.6) {
-            const it = DB.items[Math.floor(Math.random()*DB.items.length)];
-            this.p.inv.push(it);
-            this.p.found.add(it.id);
-            this.log(`💎 [${it.name}] 획득!`);
+    renderActions() {
+        const area = document.getElementById('action-list'); area.innerHTML = '';
+        
+        if (this.loc === 'village') {
+            this.addBtn("🛏️ 여관 (체력 회복)", () => { this.p.hp = 100; this.log("여관에서 푹 쉬었습니다."); this.p.day++; });
+            this.addBtn("⚒️ 대장간 (무작위 장비 제작)", () => this.forge());
+            this.addBtn("🔮 점술집 (펫 가챠 - 300G)", () => this.petGacha());
+            this.addBtn("🛍️ 잡화점 (판매 전용)", () => this.log("잡화점에서 물건을 둘러봅니다."));
+            this.addBtn("🌲 마을 떠나기 (랜덤 지형 이동)", () => this.moveNext());
+        } else if (this.selPets.length === 2) {
+            this.addBtn("🧬 펫 합성 실행", () => this.petFusion());
+        } else {
+            this.addBtn("🧭 주변 탐사 (Day +1)", () => this.explore());
+            this.addBtn("⛺ 휴식하기", () => { this.p.hp += 10; this.p.day++; this.log("간이 텐트에서 휴식을 취합니다."); });
         }
     },
 
-    renderActions() {
+    explore() {
+        this.p.day++;
+        if(Math.random() < 0.15) { // 마을 발견 확률
+            this.loc = 'village';
+            this.updateLocUI();
+            this.log("🏰 안식의 마을을 발견했습니다.");
+        } else {
+            // 선택지 이벤트 발생 (50종 가정 로직)
+            this.triggerEvent();
+        }
+        this.renderActions();
+    },
+
+    triggerEvent() {
+        const events = [
+            { t: "수상한 상자를 발견했습니다.", c1: "열어본다", c2: "무시한다", r1: () => this.loot(0.1), r2: () => this.log("위험을 피했습니다.") },
+            { t: "지친 여행자가 물을 구합니다.", c1: "물을 준다", c2: "외면한다", r1: () => { this.p.gold += 50; this.log("보답으로 50G를 받았습니다."); }, r2: () => this.log("냉정하게 길을 떠납니다.") }
+        ];
+        const ev = events[Math.floor(Math.random()*events.length)];
+        this.log(`[이벤트] ${ev.t}`);
         const area = document.getElementById('action-list'); area.innerHTML = '';
-        this.addBtn("🌲 깊은 숲 탐험 (Day +1)", () => this.explore());
-        this.addBtn("⚒️ 대장간 방문 (장비 구매)", () => {
-            const it = DB.items[Math.floor(Math.random()*10)];
-            if(this.p.gold >= 100) { this.p.gold -= 100; this.p.inv.push(it); this.log(`⚒️ ${it.name} 제작!`); }
+        this.addBtn(ev.c1, ev.r1, true);
+        this.addBtn(ev.c2, ev.r2, true);
+    },
+
+    moveNext() {
+        const keys = Object.keys(DB.locs).filter(k => k !== 'village');
+        this.loc = keys[Math.floor(Math.random()*keys.length)];
+        this.updateLocUI();
+        this.log(`${DB.locs[this.loc].n}으로 이동했습니다.`);
+        this.renderActions();
+    },
+
+    updateLocUI() {
+        const info = DB.locs[this.loc];
+        document.getElementById('loc-tag').innerText = info.n;
+        document.getElementById('bg-img').src = info.img;
+    },
+
+    loot(chance) {
+        if(Math.random() < chance) { // 낮은 루팅 확률
+            const it = DB.items[Math.floor(Math.random()*DB.items.length)];
+            this.p.inv.push(it);
+            this.p.found.add(it.id);
+            this.log(`✨ 유물 발견: [${it.name}]!`);
+        } else {
+            this.log("아무것도 찾지 못했습니다.");
+        }
+        this.renderActions();
+    },
+
+    forge() {
+        if(this.p.gold >= 200) {
+            this.p.gold -= 200;
+            const it = DB.items[Math.floor(Math.random()*DB.items.length)];
+            this.p.inv.push(it);
+            this.p.found.add(it.id);
+            this.log(`⚒️ 대장장이가 [${it.name}]을 제작했습니다!`);
             document.getElementById('ui-gold').innerText = `💰 ${this.p.gold}G`;
-        });
+        } else { this.log("골드가 부족합니다."); }
+    },
+
+    petGacha() {
+        if(this.p.gold >= 300) {
+            this.p.gold -= 300;
+            const pt = DB.pets[Math.floor(Math.random()*DB.pets.length)];
+            this.p.pets.push(pt);
+            this.log(`🔮 신비한 알에서 [${pt.name}]이 부화했습니다!`);
+            document.getElementById('ui-gold').innerText = `💰 ${this.p.gold}G`;
+        } else { this.log("골드가 부족합니다."); }
+    },
+
+    petFusion() {
+        const p1 = this.p.pets[this.selPets[0]];
+        const p2 = this.p.pets[this.selPets[1]];
+        this.p.pets = this.p.pets.filter((_, i) => !this.selPets.includes(i));
+        const newPet = DB.pets[Math.min(DB.pets.length-1, Math.max(p1.id, p2.id) + 1)];
+        this.p.pets.push(newPet);
+        this.log(`🧬 합성 성공! 새로운 동료 [${newPet.name}] 탄생!`);
+        this.selPets = [];
+        this.tab('pet', document.querySelectorAll('.tab-btn')[2]);
     },
 
     log(m) {
@@ -236,11 +326,15 @@ const game = {
         const d = document.createElement('div'); d.className = 'log-line';
         d.innerText = `> ${m}`; p.prepend(d);
     },
-    addBtn(t, f) {
-        const b = document.createElement('div'); b.className = 'btn'; b.innerText = t; b.onclick = f;
+    addBtn(t, f, isChoice = false) {
+        const b = document.createElement('div'); 
+        b.className = isChoice ? 'btn choice' : 'btn';
+        b.innerText = t; b.onclick = () => { f(); if(isChoice) this.renderActions(); };
         document.getElementById('action-list').appendChild(b);
     }
 };
+
+window.onload = () => { /* 초기 설정 */ };
 </script>
 </body>
 </html>
