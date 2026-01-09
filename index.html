@@ -1,348 +1,160 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Everbloom</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Everbloom: Chronicles</title>
+    <style>
+        :root {
+            --bg: #12141a;
+            --card: #1c1f26;
+            --border: #2d313d;
+            --accent: #52b788;
+            --text-main: #e2e8f0;
+            --text-dim: #94a3b8;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
 
-<style>
-:root{
-  --bg:#121212;
-  --panel:#2a2a2a;
-  --border:#3f3f3f;
-  --accent:#d1a954;
-  --text:#e0e0e0;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{
-  background:var(--bg);
-  color:var(--text);
-  height:100vh;
-  overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-  display:flex;
-  flex-direction:column;
-}
-#game{
-  flex:1;
-  padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-.visual{
-  height:34vh;
-  background:#000;
-  border:2px solid var(--border);
-  border-radius:14px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-canvas{
-  width:100%;
-  height:100%;
-  image-rendering:pixelated;
-}
-.log{
-  flex:1;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:12px;
-  overflow-y:auto;
-}
-.log div{margin-bottom:6px;color:#aaa;}
-.log .event{color:var(--accent);font-weight:600;}
-.hud{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:12px;
-}
-.hud-top{
-  display:flex;
-  justify-content:space-between;
-  font-size:.85rem;
-}
-.bar{
-  height:8px;
-  background:#111;
-  border-radius:4px;
-  overflow:hidden;
-}
-.bar>div{height:100%;background:var(--accent);}
-.buttons{
-  margin-top:10px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-}
-button{
-  padding:16px;
-  border-radius:12px;
-  background:#3a3a3a;
-  border:1px solid #555;
-  color:#fff;
-  font-weight:600;
-}
-</style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: var(--bg); color: var(--text-main); 
+            font-family: -apple-system, 'Apple SD Gothic Neo', sans-serif;
+            height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* 상단 상태바 (이미지 8번 상단 참고) */
+        header {
+            padding: calc(var(--safe-top) + 15px) 20px 15px;
+            background: var(--card); border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-tag { font-size: 12px; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px; }
+
+        /* 메인 비주얼 (도트 대신 분위기 있는 이미지 카드) */
+        .visual-container {
+            width: 100%; height: 35vh; background: #000; position: relative;
+            overflow: hidden; border-bottom: 1px solid var(--border);
+        }
+        .main-img {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0.7; /* 텍스트 집중을 위해 살짝 어둡게 */
+        }
+        .scene-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 20px; background: linear-gradient(transparent, var(--bg));
+            font-size: 1.2rem; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* 로그 영역 (스크롤 가능, 5줄 이상) */
+        .story-container {
+            flex: 1; padding: 20px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+        .story-text { font-size: 1.05rem; line-height: 1.7; color: var(--text-main); animation: fadeIn 0.5s ease-out; }
+        .system-text { font-size: 0.9rem; color: var(--text-dim); font-style: italic; border-left: 2px solid var(--accent); padding-left: 10px; }
+
+        /* 하단 인터랙션 (선택지 버튼) */
+        .action-area {
+            background: var(--card); padding: 20px 20px calc(var(--safe-bottom) + 15px);
+            border-top: 1px solid var(--border);
+        }
+        .stats-row { display: flex; gap: 15px; margin-bottom: 20px; font-size: 13px; }
+        .stat-item { flex: 1; }
+        .stat-bar { height: 4px; background: #333; border-radius: 2px; margin-top: 5px; }
+        .stat-fill { height: 100%; background: var(--accent); transition: 0.5s; }
+
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .choice-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: #fff; padding: 18px 10px; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 600; text-align: center;
+        }
+        .choice-btn:active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-
 <body>
 
-<div id="game">
-  <div class="visual">
-    <canvas id="cv" width="360" height="240"></canvas>
-  </div>
+<header>
+    <div>🌿 EVERBLOOM</div>
+    <div class="status-tag">유적 탐사 중</div>
+</header>
 
-  <div class="log" id="log"></div>
+<div class="visual-container">
+    <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000" class="main-img" id="sceneImg">
+    <div class="scene-overlay" id="sceneTitle">신비로운 고대 숲</div>
+</div>
 
-  <div class="hud">
-    <div class="hud-top">
-      <span>턴 <b id="turn">1</b></span>
-      <span>HP <b id="hp">100</b></span>
+<div class="story-container" id="storyBox">
+    <p class="story-text">당신은 울창한 넝쿨을 헤치고 에버블룸의 심장부에 도달했습니다. 공기 중에 떠다니는 푸른 빛의 포자들이 길을 안내하는 듯합니다.</p>
+    <p class="system-text">주변에서 고대 유물의 공명이 느껴집니다.</p>
+</div>
+
+<div class="action-area">
+    <div class="stats-row">
+        <div class="stat-item">❤️ HP <div class="stat-bar"><div class="stat-fill" style="width: 80%"></div></div></div>
+        <div class="stat-item">🐾 호감도 <div class="stat-bar"><div class="stat-fill" id="loveBar" style="width: 30%"></div></div></div>
     </div>
-    <div class="bar"><div id="hpBar" style="width:100%"></div></div>
-    <div class="buttons">
-      <button onclick="act('explore')">🔍 탐험</button>
-      <button onclick="act('town')">🏡 마을</button>
-      <button onclick="act('battle')">⚔️ 전투</button>
-      <button onclick="act('pet')">🐾 교감</button>
+    <div class="choice-grid">
+        <button class="choice-btn" onclick="next('explore')">🔍 유적 조사</button>
+        <button class="choice-btn" onclick="next('town')">🏡 마을 귀환</button>
+        <button class="choice-btn" onclick="next('battle')">⚔️ 무기 발도</button>
+        <button class="choice-btn" onclick="next('pet')">🐾 펫 교감</button>
     </div>
-  </div>
 </div>
 
 <script>
-/* ================= STATE ================= */
-let turn=1, hp=100, enemyHp=0;
-let inBattle=false;
-let animFrame=0, animTimer=0;
-let animState="idle";
+    const storyBox = document.getElementById('storyBox');
+    const sceneImg = document.getElementById('sceneImg');
+    const sceneTitle = document.getElementById('sceneTitle');
+    let love = 30;
 
-/* ================= CANVAS ================= */
-const cv=document.getElementById("cv");
-const ctx=cv.getContext("2d");
-ctx.imageSmoothingEnabled=false;
+    const data = {
+        explore: {
+            title: "유적의 깊은 곳",
+            text: "돌기둥 사이에서 서양 기사들의 문장이 새겨진 낡은 방패를 발견했습니다. 이 숲에 동서양의 흔적이 섞여있는 이유는 무엇일까요?",
+            img: "https://images.unsplash.com/photo-1533134486753-c81769482274?q=80&w=1000"
+        },
+        town: {
+            title: "동쪽 안개 마을",
+            text: "마을 입구의 대장간에서 카타나를 제련하는 망치 소리가 들려옵니다. 상인들이 당신을 반갑게 맞이합니다.",
+            img: "https://images.unsplash.com/photo-1528164344705-47542687994d?q=80&w=1000"
+        },
+        battle: {
+            title: "피할 수 없는 교전",
+            text: "거대한 오크가 포효하며 덤불에서 튀어나옵니다! 그는 동양의 찰갑을 입고 서양의 롱소드를 휘두르고 있습니다.",
+            img: "https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?q=80&w=1000"
+        }
+    };
 
-/* ================= UTIL ================= */
-const PIXEL=2;
-function px(x,y,c){
-  ctx.fillStyle=c;
-  ctx.fillRect(x,y,PIXEL,PIXEL);
-}
-function logMsg(msg,event=false){
-  const d=document.createElement("div");
-  d.className=event?"event":"";
-  d.innerText="> "+msg;
-  document.getElementById("log").prepend(d);
-}
+    function next(type) {
+        if(type === 'pet') {
+            love = Math.min(100, love + 10);
+            document.getElementById('loveBar').style.width = love + "%";
+            addText("펫이 당신의 손길에 기분 좋게 갸르릉거립니다. 유대감이 깊어집니다.");
+            return;
+        }
 
-/* ================= PALETTE ================= */
-const P={
-  grass:["#1b4332","#163a2b","#0f2e22"],
-  soil:"#0b1d14",
-  skin:"#d7b38c",
-  cloth:"#7c2f2f",
-  eye:"#1b1b1b",
-  steel:"#b0b0b0",
-  orc:"#4a7c44",
-  red:"#b00020"
-};
-
-/* ================= SPRITES ================= */
-const HERO_IDLE=[
-[
-"000001111111000000",
-"000011111111100000",
-"000112222222210000",
-"000112200002210000",
-"000112200002210000",
-"000113333333310000",
-"000113333333310000",
-"000113333333310000",
-"000001333333100000",
-"000001330033100000",
-"000001330033100000",
-"000000330033000000"
-],
-[
-"000001111111000000",
-"000011111111100000",
-"000112222222210000",
-"000112200002210000",
-"000112200002210000",
-"000113333333310000",
-"000113333333310000",
-"000001333333100000",
-"000001333333100000",
-"000001330033100000",
-"000000330033000000",
-"000000330033000000"
-]
-];
-
-const HERO_ATTACK=[
-[
-"000001111111000000",
-"000011111111100000",
-"000112222222210000",
-"000112200002210000",
-"000113333333310000",
-"000113333333310000",
-"000113333333310000",
-"000001333333100000",
-"000001330033100000",
-"000001330033100000",
-"000000330033000000",
-"000000330033000000"
-],
-[
-"000001111111000000",
-"000011111111100000",
-"000112222222210000",
-"000112200002210000",
-"000113333333310000",
-"000113333333310000",
-"000001333333100000",
-"000001333333100000",
-"000001330033100000",
-"000000330033000000",
-"000000330033000000",
-"000000330033000000"
-]
-];
-
-const SWORD=[
-"010",
-"010",
-"010",
-"010",
-"111"
-];
-
-const ORC=[
-"001111111100",
-"011111111110",
-"011144441110",
-"011144441110",
-"011100001110",
-"011111111110",
-"001111111100"
-];
-
-/* ================= DRAW ================= */
-function drawSprite(sprite,x,y,map){
-  for(let sy=0;sy<sprite.length;sy++){
-    for(let sx=0;sx<sprite[sy].length;sx++){
-      const k=sprite[sy][sx];
-      if(k==="0") continue;
-      px(x+sx*PIXEL,y+sy*PIXEL,map[k]);
+        const scene = data[type];
+        sceneTitle.innerText = scene.title;
+        sceneImg.src = scene.img;
+        
+        addText(scene.text);
     }
-  }
-}
 
-function drawForest(){
-  for(let y=0;y<240;y++)
-    for(let x=0;x<360;x++)
-      px(x,y,P.grass[(x+y)%3]);
-  for(let y=200;y<240;y++)
-    for(let x=0;x<360;x++)
-      px(x,y,P.soil);
-}
+    function addText(msg) {
+        const p = document.createElement('p');
+        p.className = 'story-text';
+        p.innerText = msg;
+        storyBox.appendChild(p);
+        storyBox.scrollTop = storyBox.scrollHeight;
 
-function render(){
-  ctx.clearRect(0,0,360,240);
-  drawForest();
-
-  const heroFrames=animState==="attack"?HERO_ATTACK:HERO_IDLE;
-  const frame=heroFrames[animFrame%heroFrames.length];
-
-  const hx=180-(frame[0].length*PIXEL)/2;
-  const hy=120;
-
-  drawSprite(frame,hx,hy,{
-    "1":P.skin,
-    "2":P.eye,
-    "3":P.cloth
-  });
-
-  // weapon
-  if(animState==="attack"){
-    drawSprite(SWORD,hx+frame[0].length*PIXEL-4,hy+16,{
-      "1":P.steel
-    });
-  }
-
-  if(inBattle){
-    drawSprite(ORC,260,130,{
-      "1":P.orc,
-      "4":P.red
-    });
-  }
-}
-
-/* ================= GAME LOOP ================= */
-function update(dt){
-  animTimer+=dt;
-  if(animTimer>400){
-    animTimer=0;
-    animFrame++;
-    if(animState==="attack" && animFrame>1){
-      animState="idle";
-      animFrame=0;
+        if(storyBox.children.length > 6) {
+            storyBox.removeChild(storyBox.firstChild);
+        }
     }
-  }
-  render();
-  requestAnimationFrame(()=>update(16));
-}
-update(16);
-
-/* ================= ACTION ================= */
-function act(type){
-  turn++;
-  document.getElementById("turn").innerText=turn;
-
-  if(type==="explore"){
-    inBattle=false;
-    logMsg("숲을 탐험하며 오래된 유적을 발견했습니다.",true);
-  }
-  if(type==="town"){
-    inBattle=false;
-    hp=Math.min(100,hp+20);
-    logMsg("마을에서 휴식을 취했습니다.");
-  }
-  if(type==="pet"){
-    inBattle=false;
-    logMsg("펫과 교감했습니다.");
-  }
-  if(type==="battle"){
-    if(!inBattle){
-      inBattle=true;
-      enemyHp=40;
-      logMsg("숲의 오크가 나타났습니다!",true);
-    }else{
-      animState="attack";
-      animFrame=0;
-      enemyHp-=15;
-      hp-=10;
-      logMsg("공격!",true);
-      if(enemyHp<=0){
-        inBattle=false;
-        logMsg("오크를 처치했습니다!");
-      }
-    }
-  }
-
-  hp=Math.max(0,hp);
-  document.getElementById("hp").innerText=hp;
-  document.getElementById("hpBar").style.width=hp+"%";
-}
-
-/* INIT */
-logMsg("에버블룸의 고대 숲에 들어섰습니다.",true);
 </script>
-
 </body>
 </html>
