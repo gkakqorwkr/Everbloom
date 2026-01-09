@@ -354,6 +354,27 @@ if(rerollBtn){
 // 최초 1회 그리기
 drawDot();
 
+  // ===== FORCE DOT TEST =====
+window.addEventListener("load", ()=>{
+  const c = document.getElementById("csDot");
+  if(!c){
+    alert("❌ csDot 캔버스 없음");
+    return;
+  }
+
+  const ctx = c.getContext("2d");
+  if(!ctx){
+    alert("❌ context 못 가져옴");
+    return;
+  }
+
+  // 테스트용 강제 그림
+  ctx.fillStyle = "#ffd966";
+  ctx.fillRect(20,20,40,40);
+
+  console.log("✅ 캔버스 테스트 성공");
+});
+
 /* ================= COPY ================= */
 $("copyPrompt").onclick=async()=>{
   try{await navigator.clipboard.writeText($("prompt").value);alert("복사됨")}
