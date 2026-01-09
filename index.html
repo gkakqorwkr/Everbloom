@@ -39,15 +39,23 @@
         .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: #666; font-weight: bold; font-size: 12px; cursor: pointer; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        /* 로그 창 수정 핵심 부분 */
+        /* --- 레이아웃 수정 핵심 --- */
         .main-content { 
             flex: 1; 
             overflow-y: auto; 
             padding: 15px; 
             background: #0a0a0a; 
             -webkit-overflow-scrolling: touch; 
-            overscroll-behavior: contain; /* 부모 스크롤 방해 금지 */
+            overscroll-behavior: contain;
         }
+
+        /* 로그창만 5줄 높이(약 140px)로 고정 */
+        #pane-log { 
+            flex: none; 
+            height: 140px; 
+            border-bottom: 1px solid var(--border);
+        }
+
         .log-line { margin-bottom: 8px; font-size: 13px; color: #ccc; border-left: 2px solid var(--border); padding-left: 10px; line-height: 1.6; animation: fadeIn 0.3s ease; }
         
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -133,7 +141,6 @@
     </div>
 
 <script>
-// DB와 기본 데이터는 동일
 const DB = {
     races: [
         { id:'human', name:'인간', hp:100, desc:'균형 잡힌 육체와 적응력을 가졌습니다.' },
@@ -191,8 +198,11 @@ const game = {
     tab(t, el) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         el.classList.add('active');
+        // 모든 패널 숨기기
         ['log','inv','pet','ency'].forEach(p => document.getElementById('pane-'+p).style.display = 'none');
+        // 선택한 패널 보이기
         document.getElementById('pane-'+t).style.display = 'block';
+        
         if(t === 'inv') this.renderInv();
         if(t === 'pet') this.renderPets();
         if(t === 'ency') this.renderEncy();
@@ -297,7 +307,6 @@ const game = {
                     { n: "유골의 반지를 훔친다 (100G)", r: () => { this.p.gold += 100; this.log("💰 100G를 챙겼습니다."); }}
                 ]
             }
-            // ... 다른 이벤트들
         ];
 
         const ev = events[Math.floor(Math.random()*events.length)];
@@ -369,19 +378,16 @@ const game = {
         this.tab('pet', document.querySelectorAll('.tab-btn')[2]);
     },
 
-    // 수정된 로그 함수
     log(m) {
         const p = document.getElementById('pane-log');
         const d = document.createElement('div'); d.className = 'log-line';
         d.innerText = `> ${m}`; 
         
-        p.appendChild(d); // 아래에 추가 (정석적인 로그 방식)
+        p.appendChild(d);
         
-        // 로그가 100개 넘으면 오래된 것 삭제 (성능 최적화)
         if(p.childNodes.length > 100) p.removeChild(p.firstChild);
         
-        // 스크롤을 항상 아래로 (사용자가 수동으로 올릴 때는 방해하지 않음)
-        // setTimeout을 사용하여 렌더링 후 스크롤 계산
+        // 새로운 로그가 생기면 가장 아래로 자동 스크롤
         setTimeout(() => {
             p.scrollTop = p.scrollHeight;
         }, 10);
