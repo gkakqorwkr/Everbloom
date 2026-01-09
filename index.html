@@ -20,12 +20,10 @@ body{
   color:var(--text);
   height:100vh;
   overflow:hidden;
-  font-family:-apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   display:flex;
   flex-direction:column;
 }
-
-/* UI */
 #game{
   flex:1;
   padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
@@ -74,7 +72,7 @@ canvas{
   border-radius:4px;
   overflow:hidden;
 }
-.bar > div{height:100%;background:var(--accent);}
+.bar>div{height:100%;background:var(--accent);}
 .buttons{
   margin-top:10px;
   display:grid;
@@ -117,25 +115,23 @@ button{
 </div>
 
 <script>
-/* =========================
-   STATE
-========================= */
-let turn=1;
-let hp=100;
+/* ================= STATE ================= */
+let turn=1, hp=100, enemyHp=0;
 let inBattle=false;
-let enemyHp=0;
+let animFrame=0, animTimer=0;
+let animState="idle";
 
-/* =========================
-   CANVAS
-========================= */
+/* ================= CANVAS ================= */
 const cv=document.getElementById("cv");
 const ctx=cv.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 
-/* =========================
-   UTIL
-========================= */
-function px(x,y,c){ctx.fillStyle=c;ctx.fillRect(x,y,1,1);}
+/* ================= UTIL ================= */
+const PIXEL=2;
+function px(x,y,c){
+  ctx.fillStyle=c;
+  ctx.fillRect(x,y,PIXEL,PIXEL);
+}
 function logMsg(msg,event=false){
   const d=document.createElement("div");
   d.className=event?"event":"";
@@ -143,41 +139,90 @@ function logMsg(msg,event=false){
   document.getElementById("log").prepend(d);
 }
 
-/* =========================
-   PALETTE
-========================= */
-const PALETTE={
-  t:null,
-  g1:"#1b4332",
-  g2:"#163a2b",
-  g3:"#0f2e22",
+/* ================= PALETTE ================= */
+const P={
+  grass:["#1b4332","#163a2b","#0f2e22"],
   soil:"#0b1d14",
   skin:"#d7b38c",
   cloth:"#7c2f2f",
   eye:"#1b1b1b",
+  steel:"#b0b0b0",
   orc:"#4a7c44",
   red:"#b00020"
 };
 
-/* =========================
-   SPRITE DATA (분리 핵심)
-========================= */
-
-/* 0 = transparent */
-const HERO_SPRITE=[
-"000111110000",
-"001111111000",
-"001122221000",
-"001122221000",
-"001100001000",
-"001333333000",
-"001333333000",
-"001333333000",
-"000033330000",
-"000033330000"
+/* ================= SPRITES ================= */
+const HERO_IDLE=[
+[
+"000001111111000000",
+"000011111111100000",
+"000112222222210000",
+"000112200002210000",
+"000112200002210000",
+"000113333333310000",
+"000113333333310000",
+"000113333333310000",
+"000001333333100000",
+"000001330033100000",
+"000001330033100000",
+"000000330033000000"
+],
+[
+"000001111111000000",
+"000011111111100000",
+"000112222222210000",
+"000112200002210000",
+"000112200002210000",
+"000113333333310000",
+"000113333333310000",
+"000001333333100000",
+"000001333333100000",
+"000001330033100000",
+"000000330033000000",
+"000000330033000000"
+]
 ];
 
-const ORC_SPRITE=[
+const HERO_ATTACK=[
+[
+"000001111111000000",
+"000011111111100000",
+"000112222222210000",
+"000112200002210000",
+"000113333333310000",
+"000113333333310000",
+"000113333333310000",
+"000001333333100000",
+"000001330033100000",
+"000001330033100000",
+"000000330033000000",
+"000000330033000000"
+],
+[
+"000001111111000000",
+"000011111111100000",
+"000112222222210000",
+"000112200002210000",
+"000113333333310000",
+"000113333333310000",
+"000001333333100000",
+"000001333333100000",
+"000001330033100000",
+"000000330033000000",
+"000000330033000000",
+"000000330033000000"
+]
+];
+
+const SWORD=[
+"010",
+"010",
+"010",
+"010",
+"111"
+];
+
+const ORC=[
 "001111111100",
 "011111111110",
 "011144441110",
@@ -187,63 +232,74 @@ const ORC_SPRITE=[
 "001111111100"
 ];
 
-/* =========================
-   SPRITE RENDER
-========================= */
-function drawSprite(sprite,x,y,colorMap){
+/* ================= DRAW ================= */
+function drawSprite(sprite,x,y,map){
   for(let sy=0;sy<sprite.length;sy++){
     for(let sx=0;sx<sprite[sy].length;sx++){
-      const key=sprite[sy][sx];
-      if(key==="0") continue;
-      px(x+sx,y+sy,colorMap[key]);
+      const k=sprite[sy][sx];
+      if(k==="0") continue;
+      px(x+sx*PIXEL,y+sy*PIXEL,map[k]);
     }
   }
 }
 
-/* =========================
-   DRAW
-========================= */
 function drawForest(){
-  for(let y=0;y<240;y++){
-    for(let x=0;x<360;x++){
-      const r=(x+y)%3;
-      px(x,y,[PALETTE.g1,PALETTE.g2,PALETTE.g3][r]);
-    }
-  }
+  for(let y=0;y<240;y++)
+    for(let x=0;x<360;x++)
+      px(x,y,P.grass[(x+y)%3]);
   for(let y=200;y<240;y++)
     for(let x=0;x<360;x++)
-      px(x,y,PALETTE.soil);
+      px(x,y,P.soil);
 }
 
 function render(){
   ctx.clearRect(0,0,360,240);
   drawForest();
 
-  drawSprite(
-    HERO_SPRITE,
-    160,120,
-    {
-      "1":PALETTE.skin,
-      "2":PALETTE.eye,
-      "3":PALETTE.cloth
-    }
-  );
+  const heroFrames=animState==="attack"?HERO_ATTACK:HERO_IDLE;
+  const frame=heroFrames[animFrame%heroFrames.length];
+
+  const hx=180-(frame[0].length*PIXEL)/2;
+  const hy=120;
+
+  drawSprite(frame,hx,hy,{
+    "1":P.skin,
+    "2":P.eye,
+    "3":P.cloth
+  });
+
+  // weapon
+  if(animState==="attack"){
+    drawSprite(SWORD,hx+frame[0].length*PIXEL-4,hy+16,{
+      "1":P.steel
+    });
+  }
 
   if(inBattle){
-    drawSprite(
-      ORC_SPRITE,
-      250,125,
-      {
-        "1":PALETTE.orc,
-        "4":PALETTE.red
-      }
-    );
+    drawSprite(ORC,260,130,{
+      "1":P.orc,
+      "4":P.red
+    });
   }
 }
 
-/* =========================
-   GAME LOGIC
-========================= */
+/* ================= GAME LOOP ================= */
+function update(dt){
+  animTimer+=dt;
+  if(animTimer>400){
+    animTimer=0;
+    animFrame++;
+    if(animState==="attack" && animFrame>1){
+      animState="idle";
+      animFrame=0;
+    }
+  }
+  render();
+  requestAnimationFrame(()=>update(16));
+}
+update(16);
+
+/* ================= ACTION ================= */
 function act(type){
   turn++;
   document.getElementById("turn").innerText=turn;
@@ -252,27 +308,26 @@ function act(type){
     inBattle=false;
     logMsg("숲을 탐험하며 오래된 유적을 발견했습니다.",true);
   }
-
   if(type==="town"){
     inBattle=false;
     hp=Math.min(100,hp+20);
     logMsg("마을에서 휴식을 취했습니다.");
   }
-
   if(type==="pet"){
     inBattle=false;
     logMsg("펫과 교감했습니다.");
   }
-
   if(type==="battle"){
     if(!inBattle){
       inBattle=true;
-      enemyHp=30;
+      enemyHp=40;
       logMsg("숲의 오크가 나타났습니다!",true);
     }else{
+      animState="attack";
+      animFrame=0;
       enemyHp-=15;
       hp-=10;
-      logMsg("전투가 이어집니다!",true);
+      logMsg("공격!",true);
       if(enemyHp<=0){
         inBattle=false;
         logMsg("오크를 처치했습니다!");
@@ -283,13 +338,10 @@ function act(type){
   hp=Math.max(0,hp);
   document.getElementById("hp").innerText=hp;
   document.getElementById("hpBar").style.width=hp+"%";
-
-  render();
 }
 
 /* INIT */
 logMsg("에버블룸의 고대 숲에 들어섰습니다.",true);
-render();
 </script>
 
 </body>
