@@ -2,264 +2,294 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Everbloom Fantasy</title>
+<title>Everbloom</title>
 
 <style>
 :root{
-    --dark:#121212;
-    --panel:#2a2a2a;
-    --border:#444;
-    --accent:#caa24d;
-    --text:#e0e0e0;
+  --bg:#121212;
+  --panel:#2a2a2a;
+  --border:#3f3f3f;
+  --accent:#d1a954;
+  --text:#e0e0e0;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{
-    background:var(--dark);
-    color:var(--text);
-    height:100vh;
-    overflow:hidden;
-    font-family:system-ui, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh;
+  overflow:hidden;
+  font-family:-apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  display:flex;
+  flex-direction:column;
 }
 
-/* SPLASH */
-#splash{
-    position:fixed; inset:0; z-index:10;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    background:#000;
-}
-.start-hint{margin-top:40vh; animation:blink 1.5s infinite;}
-@keyframes blink{50%{opacity:.4}}
-
-/* GAME */
+/* UI */
 #game{
-    display:none;
-    height:100%;
-    padding:12px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
+  flex:1;
+  padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
-
-/* VISUAL */
-.visual-frame{
-    height:34vh;
-    background:#000;
-    border:2px solid var(--border);
-    border-radius:12px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+.visual{
+  height:34vh;
+  background:#000;
+  border:2px solid var(--border);
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 canvas{
-    width:100%;
-    height:100%;
-    image-rendering:pixelated;
+  width:100%;
+  height:100%;
+  image-rendering:pixelated;
 }
-
-/* LOG */
-.log-frame{
-    flex:1;
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:12px;
-    overflow-y:auto;
-    font-size:.95rem;
+.log{
+  flex:1;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
+  overflow-y:auto;
 }
-.log-item{margin-bottom:6px; color:#aaa;}
-.log-item.new{color:var(--accent); font-weight:bold;}
-
-/* CONTROL */
-.control-frame{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:12px;
+.log div{margin-bottom:6px;color:#aaa;}
+.log .event{color:var(--accent);font-weight:600;}
+.hud{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:12px;
 }
-.status{
-    display:flex;
-    justify-content:space-between;
-    font-size:.8rem;
-    margin-bottom:6px;
+.hud-top{
+  display:flex;
+  justify-content:space-between;
+  font-size:.85rem;
 }
-.bar-bg{
-    height:8px;
-    background:#111;
-    border-radius:4px;
-    overflow:hidden;
+.bar{
+  height:8px;
+  background:#111;
+  border-radius:4px;
+  overflow:hidden;
 }
-.bar-fill{
-    height:100%;
-    background:var(--accent);
-    transition:.3s;
-}
-.btn-grid{
-    margin-top:10px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
+.bar > div{height:100%;background:var(--accent);}
+.buttons{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
 }
 button{
-    background:#3d3d3d;
-    border:1px solid #555;
-    color:#fff;
-    padding:14px;
-    border-radius:10px;
-    font-weight:bold;
+  padding:16px;
+  border-radius:12px;
+  background:#3a3a3a;
+  border:1px solid #555;
+  color:#fff;
+  font-weight:600;
 }
-button:active{background:#555;}
 </style>
 </head>
 
-<body onclick="init()">
-
-<div id="splash">
-    <h1>EVERBLOOM</h1>
-    <div class="start-hint">TOUCH TO START</div>
-</div>
+<body>
 
 <div id="game">
+  <div class="visual">
+    <canvas id="cv" width="360" height="240"></canvas>
+  </div>
 
-    <div class="visual-frame">
-        <canvas id="gameCanvas" width="320" height="240"></canvas>
+  <div class="log" id="log"></div>
+
+  <div class="hud">
+    <div class="hud-top">
+      <span>턴 <b id="turn">1</b></span>
+      <span>HP <b id="hp">100</b></span>
     </div>
-
-    <div class="log-frame" id="logBox">
-        <div class="log-item new">에버블룸의 고대 숲에 들어섰습니다.</div>
+    <div class="bar"><div id="hpBar" style="width:100%"></div></div>
+    <div class="buttons">
+      <button onclick="act('explore')">🔍 탐험</button>
+      <button onclick="act('town')">🏡 마을</button>
+      <button onclick="act('battle')">⚔️ 전투</button>
+      <button onclick="act('pet')">🐾 교감</button>
     </div>
-
-    <div class="control-frame">
-        <div class="status">
-            <span>턴 <b id="turn">1</b></span>
-            <span>HP <b id="hp">100</b></span>
-        </div>
-        <div class="bar-bg">
-            <div id="hpBar" class="bar-fill" style="width:100%"></div>
-        </div>
-
-        <div class="btn-grid">
-            <button onclick="act('explore')">🔍 탐험</button>
-            <button onclick="act('town')">🏡 마을</button>
-            <button onclick="act('battle')">⚔️ 사건</button>
-            <button onclick="act('pet')">🐾 교감</button>
-        </div>
-    </div>
-
+  </div>
 </div>
 
 <script>
-/* ===== STATE ===== */
-let started=false;
+/* =========================
+   STATE
+========================= */
 let turn=1;
 let hp=100;
-let enemyHp=0;
 let inBattle=false;
+let enemyHp=0;
 
-const canvas=document.getElementById("gameCanvas");
-const ctx=canvas.getContext("2d");
+/* =========================
+   CANVAS
+========================= */
+const cv=document.getElementById("cv");
+const ctx=cv.getContext("2d");
 ctx.imageSmoothingEnabled=false;
 
-/* ===== UTIL ===== */
-function px(x,y,c){
-    ctx.fillStyle=c;
-    ctx.fillRect(x,y,1,1);
-}
-function log(msg,newFlag=false){
-    const d=document.createElement("div");
-    d.className="log-item"+(newFlag?" new":"");
-    d.innerText="> "+msg;
-    document.getElementById("logBox").prepend(d);
+/* =========================
+   UTIL
+========================= */
+function px(x,y,c){ctx.fillStyle=c;ctx.fillRect(x,y,1,1);}
+function logMsg(msg,event=false){
+  const d=document.createElement("div");
+  d.className=event?"event":"";
+  d.innerText="> "+msg;
+  document.getElementById("log").prepend(d);
 }
 
-/* ===== DRAW ===== */
-function drawForest(){
-    for(let y=0;y<240;y++){
-        for(let x=0;x<320;x++){
-            px(x,y,Math.random()>.5?"#1b4332":"#163a2b");
-        }
+/* =========================
+   PALETTE
+========================= */
+const PALETTE={
+  t:null,
+  g1:"#1b4332",
+  g2:"#163a2b",
+  g3:"#0f2e22",
+  soil:"#0b1d14",
+  skin:"#d7b38c",
+  cloth:"#7c2f2f",
+  eye:"#1b1b1b",
+  orc:"#4a7c44",
+  red:"#b00020"
+};
+
+/* =========================
+   SPRITE DATA (분리 핵심)
+========================= */
+
+/* 0 = transparent */
+const HERO_SPRITE=[
+"000111110000",
+"001111111000",
+"001122221000",
+"001122221000",
+"001100001000",
+"001333333000",
+"001333333000",
+"001333333000",
+"000033330000",
+"000033330000"
+];
+
+const ORC_SPRITE=[
+"001111111100",
+"011111111110",
+"011144441110",
+"011144441110",
+"011100001110",
+"011111111110",
+"001111111100"
+];
+
+/* =========================
+   SPRITE RENDER
+========================= */
+function drawSprite(sprite,x,y,colorMap){
+  for(let sy=0;sy<sprite.length;sy++){
+    for(let sx=0;sx<sprite[sy].length;sx++){
+      const key=sprite[sy][sx];
+      if(key==="0") continue;
+      px(x+sx,y+sy,colorMap[key]);
     }
-    for(let y=200;y<240;y++)
-        for(let x=0;x<320;x++)
-            px(x,y,"#0b1d14");
+  }
 }
 
-function drawHero(x,y){
-    const skin="#d7b38c", cloth="#7c2f2f", dark="#1b1b1b";
-    for(let i=0;i<10;i++) for(let j=0;j<10;j++) px(x+i,y+j,skin);
-    px(x+3,y+4,dark); px(x+6,y+4,dark);
-    for(let i=0;i<12;i++) for(let j=0;j<14;j++) px(x-1+i,y+10+j,cloth);
-}
-
-function drawOrc(x,y){
-    const g="#4a7c44", d="#1b1b1b";
-    for(let i=0;i<16;i++) for(let j=0;j<16;j++) px(x+i,y+j,g);
-    px(x+4,y+6,"red"); px(x+10,y+6,"red");
-    px(x+3,y+12,d); px(x+12,y+12,d);
+/* =========================
+   DRAW
+========================= */
+function drawForest(){
+  for(let y=0;y<240;y++){
+    for(let x=0;x<360;x++){
+      const r=(x+y)%3;
+      px(x,y,[PALETTE.g1,PALETTE.g2,PALETTE.g3][r]);
+    }
+  }
+  for(let y=200;y<240;y++)
+    for(let x=0;x<360;x++)
+      px(x,y,PALETTE.soil);
 }
 
 function render(){
-    ctx.clearRect(0,0,320,240);
-    drawForest();
-    drawHero(140,110);
-    if(inBattle) drawOrc(220,120);
+  ctx.clearRect(0,0,360,240);
+  drawForest();
+
+  drawSprite(
+    HERO_SPRITE,
+    160,120,
+    {
+      "1":PALETTE.skin,
+      "2":PALETTE.eye,
+      "3":PALETTE.cloth
+    }
+  );
+
+  if(inBattle){
+    drawSprite(
+      ORC_SPRITE,
+      250,125,
+      {
+        "1":PALETTE.orc,
+        "4":PALETTE.red
+      }
+    );
+  }
 }
 
-/* ===== GAME LOGIC ===== */
+/* =========================
+   GAME LOGIC
+========================= */
 function act(type){
-    if(!started) return;
+  turn++;
+  document.getElementById("turn").innerText=turn;
 
-    turn++;
-    document.getElementById("turn").innerText=turn;
+  if(type==="explore"){
+    inBattle=false;
+    logMsg("숲을 탐험하며 오래된 유적을 발견했습니다.",true);
+  }
 
-    if(type==="explore"){
+  if(type==="town"){
+    inBattle=false;
+    hp=Math.min(100,hp+20);
+    logMsg("마을에서 휴식을 취했습니다.");
+  }
+
+  if(type==="pet"){
+    inBattle=false;
+    logMsg("펫과 교감했습니다.");
+  }
+
+  if(type==="battle"){
+    if(!inBattle){
+      inBattle=true;
+      enemyHp=30;
+      logMsg("숲의 오크가 나타났습니다!",true);
+    }else{
+      enemyHp-=15;
+      hp-=10;
+      logMsg("전투가 이어집니다!",true);
+      if(enemyHp<=0){
         inBattle=false;
-        log("숲을 탐험하며 오래된 유적을 발견했습니다.",true);
+        logMsg("오크를 처치했습니다!");
+      }
     }
+  }
 
-    if(type==="town"){
-        inBattle=false;
-        hp=Math.min(100,hp+25);
-        log("마을에서 휴식을 취해 체력을 회복했습니다.");
-    }
+  hp=Math.max(0,hp);
+  document.getElementById("hp").innerText=hp;
+  document.getElementById("hpBar").style.width=hp+"%";
 
-    if(type==="pet"){
-        inBattle=false;
-        log("펫과 교감했습니다. 마음이 안정됩니다.");
-    }
-
-    if(type==="battle"){
-        if(!inBattle){
-            enemyHp=30;
-            inBattle=true;
-            log("야생 오크가 나타났습니다!",true);
-        }else{
-            enemyHp-=15;
-            hp-=10;
-            log("오크와 격렬한 전투를 벌였습니다!",true);
-            if(enemyHp<=0){
-                inBattle=false;
-                log("오크를 쓰러뜨렸습니다!");
-            }
-        }
-    }
-
-    hp=Math.max(0,hp);
-    document.getElementById("hp").innerText=hp;
-    document.getElementById("hpBar").style.width=hp+"%";
-
-    render();
+  render();
 }
 
-function init(){
-    if(started) return;
-    started=true;
-    document.getElementById("splash").style.display="none";
-    document.getElementById("game").style.display="flex";
-    render();
-}
+/* INIT */
+logMsg("에버블룸의 고대 숲에 들어섰습니다.",true);
+render();
 </script>
 
 </body>
