@@ -62,7 +62,6 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .stat-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
 .stat-up-btn { background: var(--accent); color: #000; border: none; padding: 2px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-/* 수정됨: flex:1 제거 및 세로 정렬 최적화 */
 footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 20px); display:flex; flex-direction:column;}
 #action-list{display:flex; flex-direction:column; gap:8px;}
 .btn{background:var(--btn-bg);padding:14px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s; font-size: 15px;}
@@ -309,7 +308,6 @@ const game={
 
  closePopup() { document.getElementById('result-popup').style.display = 'none'; },
 
- /* 수정됨: if-else 구조로 이벤트 버튼 노출 보장 */
  renderActions(){
   const a=document.getElementById('action-list'); a.innerHTML='';
   
@@ -412,33 +410,156 @@ const game={
 
  triggerEvent() {
   const eventPool = [
-      {
-          t: "길가에 버려진 반짝이는 상자를 발견했습니다.",
-          o: [
-              { text: "상자를 연다 (LUK 영향)", run: () => {
-                  if(Math.random() < 0.4 + (this.p.baseLuk * 0.05)) { 
-                      this.p.gold += 200; this.log("200골드를 획득했습니다!"); 
-                  } else { 
-                      this.p.hp -= 20; this.log("함정이었습니다! 체력이 20 감소합니다."); 
-                  }
-              }},
-              { text: "지나친다 (안전함)", run: () => { this.log("무시하고 길을 재촉합니다."); }}
-          ]
-      },
-      {
-          t: "수상한 약초술사가 말을 걸어옵니다.",
-          o: [
-              { text: "약을 마신다 (HP -10 / ATK +5)", run: () => { this.p.hp -= 10; this.p.baseAtk += 5; this.log("몸이 타오르는 느낌과 함께 강해졌습니다!"); }},
-              { text: "거절한다 (HP +10 획득)", run: () => { this.p.hp = Math.min(this.p.baseMhp, this.p.hp+10); this.log("술사가 건넨 사탕을 먹고 기운을 차립니다."); }}
-          ]
-      },
-      {
-          t: "고대의 비석에 정체불명의 문자가 새겨져 있습니다.",
-          o: [
-              { text: "해독한다 (연계 발생)", run: () => { this.triggerChainEvent('monument'); }},
-              { text: "무시한다 (EXP +10)", run: () => { this.p.exp += 10; this.log("지나치며 문자의 형태를 기억합니다."); }}
-          ]
-      }
+      { t: "동굴에서 잠자는 거대한 곰을 마주쳤습니다.", o: [
+          { text: "조용히 도망친다", run: () => { this.log("숨을 죽이고 빠져나왔습니다."); }},
+          { text: "선빵필승! 기습한다", run: () => { this.p.hp -= 20; this.log("곰이 분노하여 반격했습니다! HP -20"); }},
+          { text: "보물을 훔친다", run: () => { this.p.gold += 300; this.log("잠든 곰 몰래 300G를 챙겼습니다!"); }}
+      ]},
+      { t: "낡은 마법서를 발견했습니다.", o: [
+          { text: "주문을 외운다", run: () => { this.p.baseAtk += 3; this.log("지혜가 샘솟습니다. ATK +3"); }},
+          { text: "책을 판다", run: () => { this.p.gold += 200; this.log("고서적 상인에게 200G에 팔았습니다."); }},
+          { text: "그대로 둔다", run: () => { this.p.hp += 20; this.log("마음의 평온을 얻어 HP를 회복합니다."); }}
+      ]},
+      { t: "지친 여행자가 물을 구걸합니다.", o: [
+          { text: "물을 나눠준다", run: () => { this.p.baseLuk += 2; this.log("축복을 받았습니다. LUK +2"); }},
+          { text: "무시한다", run: () => { this.log("여행자가 원망 섞인 눈초리를 보냅니다."); }},
+          { text: "소지품을 턴다", run: () => { this.p.gold += 100; this.p.baseLuk -= 1; this.log("100G를 뺏었지만 불운해집니다."); }}
+      ]},
+      { t: "버려진 신전의 제단이 빛납니다.", o: [
+          { text: "기도를 올린다", run: () => { this.p.hp = this.p.baseMhp; this.log("모든 체력이 회복되었습니다."); }},
+          { text: "제물을 훔친다", run: () => { this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item'); }},
+          { text: "제단을 부순다", run: () => { this.p.exp += 250; this.log("파괴된 제단에서 마력이 뿜어져 나옵니다. EXP +250"); }}
+      ]},
+      { t: "늪지대에서 신비로운 꽃을 발견했습니다.", o: [
+          { text: "꽃을 채취한다", run: () => { this.p.gold += 150; this.log("비싼 가격에 팔릴 꽃입니다. 150G"); }},
+          { text: "향기를 맡는다", run: () => { this.p.baseDef += 2; this.log("피부가 단단해지는 기분이 듭니다. DEF +2"); }},
+          { text: "뿌리를 먹는다", run: () => { this.p.hp -= 15; this.p.baseAtk += 5; this.log("독성이 있지만 힘이 솟습니다. ATK +5"); }}
+      ]},
+      { t: "수상한 도박판이 벌어지고 있습니다.", o: [
+          { text: "판돈을 건다", run: () => { if(Math.random()>0.5){this.p.gold+=500; this.log("성공! 500G를 땄습니다.");}else{this.p.gold=Math.max(0,this.p.gold-300); this.log("실패! 300G를 잃었습니다.");} }},
+          { text: "속임수를 쓴다", run: () => { if(Math.random()<(this.p.baseLuk*0.1)){this.p.gold+=1000; this.log("대성공! 1000G를 챙겼습니다.");}else{this.p.hp-=40; this.log("들켰습니다! 흠씬 두들겨 맞았습니다.");} }},
+          { text: "떠난다", run: () => { this.log("도박은 건강에 해롭습니다."); }}
+      ]},
+      { t: "우물 속에 반짝이는 것이 보입니다.", o: [
+          { text: "내려간다", run: () => { this.p.gold += 400; this.log("바닥에서 금화를 찾았습니다! 400G"); }},
+          { text: "동전을 던진다", run: () => { this.p.baseLuk += 3; this.log("소원이 이루어질 것 같습니다. LUK +3"); }},
+          { text: "돌을 던진다", run: () => { this.log("우물 안에서 괴성이 들려 도망칩니다."); }}
+      ]},
+      { t: "길 잃은 아기 고양이가 따라옵니다.", o: [
+          { text: "먹이를 준다", run: () => { this.showResult(DB.pets[11], 'pet'); }},
+          { text: "쫓아낸다", run: () => { this.p.baseLuk -= 1; this.log("찜찜한 기분이 듭니다. LUK -1"); }},
+          { text: "놀아준다", run: () => { this.p.baseAgi += 2; this.log("몸이 가벼워졌습니다. AGI +2"); }}
+      ]},
+      { t: "요정의 샘물에 도착했습니다.", o: [
+          { text: "물을 마신다", run: () => { this.p.baseMhp += 10; this.p.hp += 10; this.log("생명력이 영구히 증가합니다."); }},
+          { text: "세수를 한다", run: () => { this.p.baseAgi += 3; this.log("반사 신경이 좋아집니다. AGI +3"); }},
+          { text: "무기를 담근다", run: () => { this.p.baseAtk += 4; this.log("무기가 예리해집니다. ATK +4"); }}
+      ]},
+      { t: "거대한 독수리가 하늘에서 급강하합니다.", o: [
+          { text: "맞서 싸운다", run: () => { this.p.exp += 150; this.p.hp -= 20; this.log("힘겨운 승리였습니다."); }},
+          { text: "죽은 척 한다", run: () => { if(Math.random()>0.3){this.log("다행히 그냥 지나갔습니다.");}else{this.p.gold-=100; this.log("독수리가 지갑을 채갔습니다!");} }},
+          { text: "화살을 쏜다", run: () => { this.p.gold += 200; this.log("독수리의 깃털을 얻었습니다. 200G"); }}
+      ]},
+      { t: "무너진 돌탑 앞에서 노인이 쉬고 있습니다.", o: [
+          { text: "길을 묻는다", run: () => { this.p.exp += 100; this.log("유용한 정보를 얻었습니다. EXP +100"); }},
+          { text: "식량을 준다", run: () => { this.p.baseDef += 3; this.log("노인이 갑옷을 수리해 주었습니다. DEF +3"); }},
+          { text: "말 없이 지난다", run: () => { this.log("노인이 인사를 건넵니다."); }}
+      ]},
+      { t: "풀숲에서 은색 열매를 발견했습니다.", o: [
+          { text: "먹는다", run: () => { this.p.statPt += 1; this.log("정신이 맑아집니다. 포인트 +1"); }},
+          { text: "주머니에 넣는다", run: () => { this.p.gold += 300; this.log("상점에 고가로 매입되었습니다. 300G"); }},
+          { text: "으깨서 바른다", run: () => { this.p.hp = Math.min(this.p.baseMhp, this.p.hp+60); this.log("상처가 씻은 듯 낫습니다."); }}
+      ]},
+      { t: "고대의 비석에 비문이 새겨져 있습니다.", o: [
+          { text: "해독한다", run: () => { this.p.exp += 300; this.log("잊혀진 지식을 깨우쳤습니다. EXP +300"); }},
+          { text: "탁본을 뜬다", run: () => { this.p.gold += 250; this.log("학자들에게 팔 수 있습니다. 250G"); }},
+          { text: "파괴한다", run: () => { this.p.baseAtk += 5; this.log("비석의 파편이 무기에 스며듭니다. ATK +5"); }}
+      ]},
+      { t: "지진이 일어나 지면이 갈라집니다.", o: [
+          { text: "틈으로 뛴다", run: () => { this.p.hp -= 30; this.p.gold += 600; this.log("추락했지만 보물을 발견했습니다!"); }},
+          { text: "매달린다", run: () => { this.p.baseAgi += 2; this.log("근력이 상승했습니다. AGI +2"); }},
+          { text: "멀리 도망친다", run: () => { this.log("안전한 곳으로 피했습니다."); }}
+      ]},
+      { t: "버려진 마차에 상자가 가득합니다.", o: [
+          { text: "상자를 연다", run: () => { this.p.gold += 350; this.log("금장 장식품을 얻었습니다. 350G"); }},
+          { text: "말을 살핀다", run: () => { this.p.hp += 40; this.log("마차 안의 구급약을 썼습니다."); }},
+          { text: "불을 지른다", run: () => { this.p.exp += 120; this.log("타오르는 불꽃에서 영감을 얻습니다."); }}
+      ]},
+      { t: "은색 늑대가 길을 가로막고 짖습니다.", o: [
+          { text: "쓰다듬는다", run: () => { if(Math.random()>0.5){this.p.baseLuk+=3; this.log("늑대가 꼬리를 흔듭니다.");}else{this.p.hp-=25; this.log("늑대가 손을 물었습니다!");} }},
+          { text: "전투 준비", run: () => { this.p.exp += 180; this.log("늑대를 쫓아내고 경험치를 얻습니다."); }},
+          { text: "고기를 던진다", run: () => { this.showResult(DB.pets[4], 'pet'); }}
+      ]},
+      { t: "허름한 술집에서 시비가 붙었습니다.", o: [
+          { text: "돈으로 해결", run: () => { this.p.gold -= 200; this.log("조용히 넘어갑니다. -200G"); }},
+          { text: "주먹다짐", run: () => { this.p.baseAtk += 2; this.p.hp -= 20; this.log("싸우면서 강해집니다. ATK +2"); }},
+          { text: "술을 한 잔 산다", run: () => { this.p.baseLuk += 2; this.log("친구가 되었습니다. LUK +2"); }}
+      ]},
+      { t: "빛나는 나비 떼를 만났습니다.", o: [
+          { text: "나비를 쫓는다", run: () => { this.p.baseAgi += 3; this.log("몸이 한결 가벼워집니다. AGI +3"); }},
+          { text: "그림을 그린다", run: () => { this.p.exp += 150; this.log("예술적 영감을 받았습니다. EXP +150"); }},
+          { text: "나비 가루 채집", run: () => { this.p.gold += 200; this.log("비싼 약재입니다. 200G"); }}
+      ]},
+      { t: "거대한 버섯 군락지를 발견했습니다.", o: [
+          { text: "붉은 버섯", run: () => { this.p.baseAtk += 6; this.p.hp -= 20; this.log("광폭해집니다. ATK +6"); }},
+          { text: "푸른 버섯", run: () => { this.p.baseDef += 4; this.log("몸이 단단해집니다. DEF +4"); }},
+          { text: "노란 버섯", run: () => { this.p.gold += 300; this.log("식재료로 아주 비쌉니다."); }}
+      ]},
+      { t: "오래된 갑옷 거치대를 찾았습니다.", o: [
+          { text: "갑옷을 입어본다", run: () => { this.showResult(DB.items[20], 'item'); }},
+          { text: "갑옷을 닦는다", run: () => { this.p.baseDef += 2; this.log("방어 기술을 연마합니다. DEF +2"); }},
+          { text: "고철로 분해", run: () => { this.p.gold += 150; this.log("쇠붙이를 챙깁니다. 150G"); }}
+      ]},
+      { t: "수수께끼의 상인이 상자를 내밉니다.", o: [
+          { text: "왼쪽 상자", run: () => { this.p.gold += 500; this.log("금화가 가득합니다!"); }},
+          { text: "오른쪽 상자", run: () => { this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item'); }},
+          { text: "가운데 상자", run: () => { this.p.statPt += 2; this.log("신비한 기운이 몸에 감돕니다."); }}
+      ]},
+      { t: "검은 소용돌이가 앞길을 막습니다.", o: [
+          { text: "뛰어든다", run: () => { this.p.hp -= 50; this.p.exp += 800; this.log("고통스럽지만 엄청난 경험입니다."); }},
+          { text: "돌아간다", run: () => { this.p.day += 2; this.log("시간이 지체되었습니다. Day +2"); }},
+          { text: "마력을 쏟는다", run: () => { this.p.baseAtk += 4; this.log("소용돌이의 힘을 흡수했습니다."); }}
+      ]},
+      { t: "벌집이 나무에 매달려 있습니다.", o: [
+          { text: "꿀을 딴다", run: () => { this.p.hp = this.p.baseMhp; this.p.hp -= 10; this.log("쏘였지만 꿀은 달콤합니다."); }},
+          { text: "벌집을 판다", run: () => { this.p.gold += 200; this.log("귀한 벌집입니다. 200G"); }},
+          { text: "멀리서 관찰", run: () => { this.p.baseAgi += 2; this.log("벌의 움직임을 배웠습니다."); }}
+      ]},
+      { t: "바위에 꽂힌 전설의 검(?)을 발견했습니다.", o: [
+          { text: "힘껏 뽑는다", run: () => { if(Math.random()>0.8){this.showResult(DB.items[13], 'item');}else{this.p.hp-=20; this.log("허리만 삐끗했습니다.");} }},
+          { text: "기름을 붓는다", run: () => { this.p.gold += 100; this.log("칼 손잡이의 보석만 뺐습니다."); }},
+          { text: "주변을 판다", run: () => { this.p.exp += 150; this.log("고고학적 가치가 있습니다."); }}
+      ]},
+      { t: "안개 속에서 유령 병사를 보았습니다.", o: [
+          { text: "결투 신청", run: () => { this.p.baseAtk += 5; this.log("유령과의 대련으로 강해졌습니다."); }},
+          { text: "성불시킨다", run: () => { this.p.baseLuk += 4; this.log("영혼이 고마워하며 성불합니다."); }},
+          { text: "몰래 소지품 탈취", run: () => { this.p.gold += 300; this.log("유령의 금화를 챙겼습니다."); }}
+      ]},
+      { t: "떨어진 별똥별의 파편을 찾았습니다.", o: [
+          { text: "가공한다", run: () => { this.p.baseAtk += 3; this.p.baseDef += 3; this.log("무기와 방어구를 강화했습니다."); }},
+          { text: "기도한다", run: () => { this.p.statPt += 2; this.log("소원이 하늘에 닿았습니다."); }},
+          { text: "학회에 기부", run: () => { this.p.gold += 800; this.log("엄청난 포상금을 받았습니다."); }}
+      ]},
+      { t: "폭포 아래서 수련 중인 달인을 만났습니다.", o: [
+          { text: "함께 수련", run: () => { this.p.baseMhp += 20; this.p.hp -= 40; this.log("혹독한 훈련을 마쳤습니다."); }},
+          { text: "비급을 훔친다", run: () => { if(Math.random()>0.4){this.p.baseAtk+=10;}else{this.p.hp=1; this.log("들켜서 죽도록 맞았습니다.");} }},
+          { text: "가르침을 청함", run: () => { this.p.exp += 400; this.log("깨달음을 얻었습니다."); }}
+      ]},
+      { t: "숲의 정령이 수수께끼를 냅니다.", o: [
+          { text: "정답을 맞힌다", run: () => { this.showResult(DB.pets[7], 'pet'); }},
+          { text: "모른다고 한다", run: () => { this.p.hp += 30; this.log("정직함에 감동해 치유해줍니다."); }},
+          { text: "정령을 가둔다", run: () => { this.p.gold += 400; this.log("정령의 눈물을 얻었습니다."); }}
+      ]},
+      { t: "거대한 거미줄에 나비가 걸려있습니다.", o: [
+          { text: "나비를 구해줌", run: () => { this.p.baseLuk += 3; this.log("나비가 행운의 가루를 뿌립니다."); }},
+          { text: "거미를 잡음", run: () => { this.p.exp += 200; this.log("거미의 독주머니를 챙깁니다."); }},
+          { text: "모두 무시", run: () => { this.log("자연의 섭리에 맡깁니다."); }}
+      ]},
+      { t: "모닥불이 피워진 빈 텐트를 발견했습니다.", o: [
+          { text: "잠을 자며 휴식", run: () => { this.p.hp = this.p.baseMhp; this.log("푹 쉬어서 기운이 납니다."); }},
+          { text: "음식을 먹음", run: () => { this.p.baseMhp += 5; this.log("맛있는 스튜였습니다."); }},
+          { text: "보급품 탈취", run: () => { this.p.gold += 250; this.log("유용한 물건들을 챙깁니다."); }}
+      ]}
   ];
 
   const ev = eventPool[Math.floor(Math.random() * eventPool.length)];
@@ -458,6 +579,9 @@ const game={
                 }},
                 { text: "입구만 조사한다 (아이템 획득)", run: () => {
                     this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item');
+                }},
+                { text: "입구를 봉쇄한다 (경험치)", run: () => {
+                    this.p.exp += 200; this.log("위험을 사전에 차단했습니다. EXP +200");
                 }}
             ]
         };
@@ -510,37 +634,37 @@ const game={
  },
 
  sellItem(id, type, price, e) {
-  e.stopPropagation();
-  if(this.loc !== 'village') { alert("상점 기능은 마을에서만 가능합니다."); return; }
-  const target = type==='item'?'inv':'pets';
-  const idx = this.p[target].findIndex(i=>i.id===id);
-  if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;
-  if(this.p.equip.armor?.id===id) this.p.equip.armor=null;
-  if(this.p.equip.pet?.id===id) this.p.equip.pet=null;
-  this.p[target].splice(idx,1); this.p.gold+=price;
-  this.updateUI(); type==='item'?this.renderInv():this.renderPets();
+ e.stopPropagation();
+ if(this.loc !== 'village') { alert("상점 기능은 마을에서만 가능합니다."); return; }
+ const target = type==='item'?'inv':'pets';
+ const idx = this.p[target].findIndex(i=>i.id===id);
+ if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;
+ if(this.p.equip.armor?.id===id) this.p.equip.armor=null;
+ if(this.p.equip.pet?.id===id) this.p.equip.pet=null;
+ this.p[target].splice(idx,1); this.p.gold+=price;
+ this.updateUI(); type==='item'?this.renderInv():this.renderPets();
  },
 
  tab(t,el){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  ['log','inv','pet','col'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
-  document.getElementById('pane-'+t).style.display='flex';
-  if(t==='inv')this.renderInv();
-  if(t==='pet')this.renderPets();
-  if(t==='col')this.renderCol();
+ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+ el.classList.add('active');
+ ['log','inv','pet','col'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
+ document.getElementById('pane-'+t).style.display='flex';
+ if(t==='inv')this.renderInv();
+ if(t==='pet')this.renderPets();
+ if(t==='col')this.renderCol();
  },
 
  addBtn(t,f,s=false){
-  const b=document.createElement('div');
-  b.className='btn'+(s?' special':''); b.innerText=t; b.onclick=f;
-  document.getElementById('action-list').appendChild(b);
+ const b=document.createElement('div');
+ b.className='btn'+(s?' special':''); b.innerText=t; b.onclick=f;
+ document.getElementById('action-list').appendChild(b);
  },
 
  start() {
-  document.getElementById('start-screen').style.display='none';
-  document.getElementById('game-ui').style.display='flex';
-  this.load(); this.updateUI(); this.renderActions();
+ document.getElementById('start-screen').style.display='none';
+ document.getElementById('game-ui').style.display='flex';
+ this.load(); this.updateUI(); this.renderActions();
  }
 };
 </script>
