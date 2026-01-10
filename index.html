@@ -44,7 +44,6 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .tab-btn{flex:1;padding:12px 5px;background:none;border:none;color:#666;font-weight:bold;cursor:pointer; white-space: nowrap; font-size: 13px;}
 .tab-btn.active{color:var(--accent);border-bottom:2px solid var(--accent)}
 
-/* 버튼을 위로 올리기 위해 main-content 높이 축소 및 footer 여백 조정 */
 .main-content{flex:1;overflow-y:auto;padding:15px;background:#0a0a0a;display:flex;flex-direction:column;-webkit-overflow-scrolling:touch; max-height: 35vh;}
 .log-line{margin-bottom:8px;font-size:13px;border-left:2px solid var(--border);padding-left:12px; animation: fadeIn 0.3s ease; color:#bbb}
 
@@ -63,7 +62,6 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .stat-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
 .stat-up-btn { background: var(--accent); color: #000; border: none; padding: 2px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-/* 버튼 영역 확보를 위해 footer 확장 */
 footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 20px);flex: 1; display:flex; flex-direction:column; justify-content: flex-start;}
 #action-list{display:flex; flex-direction:column; gap:8px;}
 .btn{background:var(--btn-bg);padding:14px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s; font-size: 15px;}
@@ -205,7 +203,7 @@ const game={
     inv:[],pets:[],equip:{weapon:null,armor:null,pet:null},
     col:{items:[],pets:[],monsters:[]}
  },
- loc:'ruin',state:'idle', enemy: null,
+ loc:'ruin',state:'idle', enemy: null, currentEvent: null,
 
  save(){ localStorage.setItem(SAVE_KEY,JSON.stringify(this.p)) },
  load(){
@@ -247,44 +245,44 @@ const game={
   });
   
   if(this.p.hp <= 0) {
-   alert("쓰러졌습니다! 마을로 돌아갑니다.");
+   alert("쓰러졌습니다! 유적 입구에서 다시 시작합니다.");
    this.p.hp = this.p.baseMhp; this.p.day++; this.p.gold = Math.floor(this.p.gold*0.7);
-   this.loc = 'village'; this.state = 'idle';
+   this.loc = 'ruin'; this.state = 'idle';
    this.renderActions();
   }
   this.save();
  },
 
  checkEnding(){
-     let msg = "";
-     if(this.p.gold >= 1000000) msg = "💰 [엔딩 1: 대륙의 지배자] 상상을 초월하는 부로 세상을 샀습니다.";
-     else if(this.p.lv >= 200) msg = "⚔️ [엔딩 2: 투신] 신의 경지에 도달한 무력으로 평화를 가져왔습니다.";
-     else if(this.p.col.monsters.length >= 15) msg = "👾 [엔딩 3: 마물 마스터] 모든 마물을 길들인 전설의 조련사.";
-     else if(this.p.day >= 500 && this.p.lv < 50) msg = "🏕️ [엔딩 4: 유적의 신선] 반평생을 유적에서 보낸 기인.";
-     else if(this.p.day >= 500 && this.p.gold < 1000) msg = "🏚️ [엔딩 5: 빈털터리 노병] 남은 건 상처뿐인 은퇴 생활.";
-     else if(this.p.baseMhp >= 5000) msg = "🛡️ [엔딩 6: 금강불괴] 어떤 재앙도 당신을 뚫지 못합니다.";
-     else msg = "🌹 [엔딩 7: 연대기의 마침표] 평범하지만 위대한 여정이 끝났습니다.";
-     alert(msg); this.resetGame();
+      let msg = "";
+      if(this.p.gold >= 1000000) msg = "💰 [엔딩 1: 대륙의 지배자] 상상을 초월하는 부로 세상을 샀습니다.";
+      else if(this.p.lv >= 200) msg = "⚔️ [엔딩 2: 투신] 신의 경지에 도달한 무력으로 평화를 가져왔습니다.";
+      else if(this.p.col.monsters.length >= 15) msg = "👾 [엔딩 3: 마물 마스터] 모든 마물을 길들인 전설의 조련사.";
+      else if(this.p.day >= 500 && this.p.lv < 50) msg = "🏕️ [엔딩 4: 유적의 신선] 반평생을 유적에서 보낸 기인.";
+      else if(this.p.day >= 500 && this.p.gold < 1000) msg = "🏚️ [엔딩 5: 빈털터리 노병] 남은 건 상처뿐인 은퇴 생활.";
+      else if(this.p.baseMhp >= 5000) msg = "🛡️ [엔딩 6: 금강불괴] 어떤 재앙도 당신을 뚫지 못합니다.";
+      else msg = "🌹 [엔딩 7: 연대기의 마침표] 평범하지만 위대한 여정이 끝났습니다.";
+      alert(msg); this.resetGame();
  },
 
  upStat(type){
-     if(this.p.statPt <= 0) return;
-     if(type==='atk') this.p.baseAtk+=2;
-     if(type==='def') this.p.baseDef+=1;
-     if(type==='hp') {this.p.baseMhp+=10; this.p.hp+=10;}
-     this.p.statPt--;
-     this.updateStatPane();
-     this.updateUI();
+      if(this.p.statPt <= 0) return;
+      if(type==='atk') this.p.baseAtk+=2;
+      if(type==='def') this.p.baseDef+=1;
+      if(type==='hp') {this.p.baseMhp+=10; this.p.hp+=10;}
+      this.p.statPt--;
+      this.updateStatPane();
+      this.updateUI();
  },
 
  updateStatPane(){
-     const pane = document.getElementById('stat-upgrade-pane');
-     if(this.p.statPt > 0){
-         pane.style.display = 'block';
-         document.getElementById('pane-pt-val').innerText = this.p.statPt;
-     } else {
-         pane.style.display = 'none';
-     }
+      const pane = document.getElementById('stat-upgrade-pane');
+      if(this.p.statPt > 0){
+          pane.style.display = 'block';
+          document.getElementById('pane-pt-val').innerText = this.p.statPt;
+      } else {
+          pane.style.display = 'none';
+      }
  },
 
  showResult(target, type) {
@@ -332,37 +330,33 @@ const game={
   }
   if(this.state === 'event' && this.currentEvent) {
    this.currentEvent.options.forEach(opt => {
-    this.addBtn(opt.text, () => { opt.run(); this.state = 'idle'; this.renderActions(); this.updateUI(); }, true);
+    this.addBtn(opt.text, () => { opt.run(); if(this.state==='event') this.state = 'idle'; this.renderActions(); this.updateUI(); }, true);
    });
    return;
   }
   if(this.loc === 'village') {
+   document.getElementById('loc-tag').innerText = "안식의 마을";
    this.addBtn("⚒️ 대장간 (300G)", () => this.craft());
    this.addBtn("🥚 펫 상점 (500G)", () => this.buyPet());
    this.addBtn("🌲 탐사 출발", () => { this.loc = 'ruin'; document.getElementById('loc-tag').innerText = "잊혀진 유적"; this.renderActions(); });
   } else {
+   document.getElementById('loc-tag').innerText = "잊혀진 유적";
    this.addBtn("🧭 탐사 전진",()=>this.explore());
    this.addBtn("⛺ 휴식 및 정비",()=>{ this.p.hp=Math.min(this.p.baseMhp,this.p.hp+20); this.updateUI(); this.log("체력을 일부 회복했습니다."); });
-   this.addBtn("🏠 마을 귀환", () => { this.loc = 'village'; document.getElementById('loc-tag').innerText = "안식의 마을"; this.renderActions(); });
   }
  },
 
  explore(){
   this.p.day++;
   const rand = Math.random();
+  // 마을은 이벤트성으로만 방문 (10% 확률)
   if(rand < 0.1) {
-   this.log("마을 근처에 도달했습니다.");
-   this.loc = 'village'; document.getElementById('loc-tag').innerText = "안식의 마을";
+   this.log("안전한 마을에 도착했습니다.");
+   this.loc = 'village'; 
   } else if(rand < 0.5) {
    this.startBattle();
-  } else if(rand < 0.85) {
-   this.triggerEvent();
   } else {
-   if(Math.random() < 0.05){
-    this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item');
-   } else {
-    this.p.gold+=30+this.p.lv; this.p.hp-=1; this.log("길가에서 소량의 골드를 주웠습니다.");
-   }
+   this.triggerEvent();
   }
   this.updateUI(); this.renderActions();
  },
@@ -379,6 +373,7 @@ const game={
  battleTurn(act) {
   let damageReduction = 1;
   if(act === 'run') {
+   // 도망 확률 증가 (60% 성공)
    if(Math.random() > 0.4) { this.log("도망 성공."); this.state = 'idle'; this.enemy = null; this.renderActions(); return; }
    else this.log("도망 실패!");
   } else if(act === 'defend') {
@@ -410,45 +405,60 @@ const game={
 
  triggerEvent() {
   const evs = [];
-  
-  // 30종 이상의 다양한 이벤트 생성 (각 선택지 3개)
-  for(let i=1; i<=35; i++){
-      const rIdx = i;
+  const eventPool = [
+      { t: "어디선가 구슬픈 울음 소리가 들려옵니다.", o: ["근원을 찾아간다", "무시하고 지나간다", "함정인지 살핀다"] },
+      { t: "짙은 안개 속에서 고대의 비석을 발견했습니다.", o: ["비문을 읽는다", "명상을 한다", "파괴한다"] },
+      { t: "부서진 마차 옆에 보급 상자가 버려져 있습니다.", o: ["상자를 연다", "주변을 매복한다", "공물로 바친다"] },
+      { t: "푸른 빛을 내는 희귀한 식물을 발견했습니다.", o: ["직접 먹어본다", "채집하여 보관한다", "뿌리를 태운다"] },
+      { t: "동굴 벽면에 기괴한 낙서가 가득합니다.", o: ["기록을 남긴다", "낙서를 덧칠한다", "벽을 두드려본다"] },
+      { t: "길가에 버려진 낡은 인형이 혼자 움직입니다.", o: ["인형을 챙긴다", "태워버린다", "멀리 던진다"] },
+      { t: "지하에서 흘러나온 듯한 정체불명의 연기가 깔립니다.", o: ["숨을 참는다", "마법으로 정화한다", "바람을 일으킨다"] },
+      { t: "하늘에서 은빛 깃털이 천천히 떨어집니다.", o: ["손으로 잡는다", "행운을 빈다", "화살을 쏜다"] },
+      { t: "버려진 캠프파이어 자리에 온기가 남아있습니다.", o: ["휴식을 취한다", "흔적을 지운다", "음식을 찾는다"] },
+      { t: "갑자기 발밑의 지면이 크게 흔들립니다.", o: ["균형을 잡는다", "낮게 엎드린다", "도약한다"] }
+  ];
+
+  // 기본 이벤트 30종 생성
+  for(let i=0; i<30; i++) {
+      let data = eventPool[i % eventPool.length];
       evs.push({
-          text: `[구역 ${rIdx}] 신비한 현상이 발견되었습니다.`,
+          text: `[구역 ${this.p.day % 100}] ${data.t}`,
           options: [
-              { text: "적극 조사한다", run: () => {
-                  if(Math.random() > 0.6) { game.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item'); }
-                  else { game.p.hp -= 15; game.log("조사 중 부상을 입었습니다."); }
+              { text: data.o[0], run: () => { 
+                  if(Math.random() > 0.5) { this.log("좋은 예감이 듭니다!"); this.triggerChainEvent(); }
+                  else { this.p.hp -= 10; this.log("결과가 좋지 못했습니다."); }
               }},
-              { text: "물자를 챙긴다", run: () => { game.p.gold += (50 + game.p.lv * 2); game.log("약간의 물자를 확보했습니다."); }},
-              { text: "기도를 올린다", run: () => { game.p.hp = Math.min(game.p.baseMhp, game.p.hp + 30); game.log("마음이 평온해지며 회복됩니다."); }}
+              { text: data.o[1], run: () => { this.p.gold += 50; this.log("안전하게 이득을 챙겼습니다."); }},
+              { text: data.o[2], run: () => { this.p.exp += 30; this.log("새로운 지식을 습득했습니다."); }}
           ]
       });
   }
 
-  // 특수 이벤트들 추가
-  evs.push({
-      text: "길가에 버려진 상자를 발견했습니다.",
-      options: [
-          { text: "조심스레 연다", run: () => { game.showResult(DB.items[0], 'item'); }},
-          { text: "부숴버린다", run: () => { game.p.gold += 150; game.log("파편 속에서 골드를 찾았습니다."); }},
-          { text: "그냥 지나친다", run: () => { game.log("찝찝함을 뒤로하고 떠납니다."); }}
-      ]
-  });
-
-  evs.push({
-      text: "떠돌이 상인이 말을 걸어옵니다.",
-      options: [
-          { text: "물건을 산다(400G)", run: () => { if(game.p.gold>=400){game.p.gold-=400; game.showResult(DB.items[10], 'item');} }},
-          { text: "팔 물건이 있다", run: () => { game.p.gold += 100; game.log("잡동사니를 팔아 100G를 법니다."); }},
-          { text: "작별을 고한다", run: () => { game.log("상인은 아쉬운 듯 떠납니다."); }}
-      ]
-  });
-
   this.currentEvent = evs[Math.floor(Math.random() * evs.length)];
   this.state = 'event'; 
   this.log(`[이벤트] ${this.currentEvent.text}`);
+ },
+
+ triggerChainEvent() {
+    // 연계 이벤트 20종 (호출될 때 무작위로 생성)
+    const chains = [
+        { t: "울음소리의 주인공은 다친 슬라임이었습니다.", o: ["정성껏 치료한다", "가방에 담는다", "지켜만 본다"] },
+        { t: "비문을 읽자 환영이 보이기 시작합니다.", o: ["환영을 따른다", "정신을 차린다", "주문을 외운다"] },
+        { t: "상자 속에서 고대 동전 뭉치가 튀어나옵니다!", o: ["전부 챙긴다", "가짜인지 확인한다", "신전으로 보낸다"] },
+        { t: "식물을 먹자 온몸에 힘이 솟구칩니다.", o: ["더 찾아본다", "성능을 기록한다", "잠을 청한다"] },
+        { t: "벽 너머에서 비밀 공간이 열렸습니다.", o: ["안으로 진입한다", "횃불을 던진다", "입구를 막는다"] }
+    ];
+    let selected = chains[Math.floor(Math.random() * chains.length)];
+    this.currentEvent = {
+        text: `[연계] ${selected.t}`,
+        options: [
+            { text: selected.o[0], run: () => { this.p.gold += 200; this.log("대박을 터뜨렸습니다!"); }},
+            { text: selected.o[1], run: () => { this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item'); }},
+            { text: selected.o[2], run: () => { this.p.hp = Math.min(this.p.baseMhp, this.p.hp + 50); this.log("심신이 안정되었습니다."); }}
+        ]
+    };
+    this.state = 'event';
+    this.log(`[연계] ${this.currentEvent.text}`);
  },
 
  craft() { if(this.p.gold >= 300) { this.p.gold -= 300; this.showResult(DB.items[Math.floor(Math.random() * DB.items.length)], 'item'); } },
@@ -497,7 +507,7 @@ const game={
 
  sellItem(id, type, price, e) {
   e.stopPropagation();
-  if(this.loc !== 'village') { alert("마을에서만 가능!"); return; }
+  if(this.loc !== 'village') { alert("마을에서만 판매 가능합니다!"); return; }
   const target = type==='item'?'inv':'pets';
   const idx = this.p[target].findIndex(i=>i.id===id);
   if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;
