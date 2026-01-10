@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Everbloom Chronicles - Battle Update</title>
+    <title>Everbloom Chronicles - Battle Fix</title>
     <style>
         :root {
             --bg: #0d0d0c; --panel: #1a1a17; --accent: #d4a373; --text: #e0dcd3;
@@ -150,12 +150,13 @@ const game = {
     loc: 'ruin',
     selPets: [],
     state: 'idle', // idle, battle, event
+    currentMonster: null,
 
     showOrigin() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('origin-screen').style.display = 'block';
         const list = document.getElementById('race-list');
-        list.innerHTML = ''; // 중복 생성 방지
+        list.innerHTML = '';
         DB.races.forEach(r => {
             const d = document.createElement('div'); d.className = 'race-card';
             d.innerHTML = `<h3>${r.name} (HP:${r.hp} ATK:${r.atk})</h3>`;
@@ -236,19 +237,30 @@ const game = {
 
     renderActions() {
         const area = document.getElementById('action-list'); area.innerHTML = '';
-        if (this.state === 'battle') return;
-
-        if (this.p.day % 30 === 0) {
-            this.addBtn("⚠️ 보스 몬스터 출현! (도망 불가)", () => this.startBattle(true), false, 'danger');
+        
+        // 1. 전투 중일 때의 선택지
+        if (this.state === 'battle') {
+            this.addBtn("⚔️ 싸운다", () => this.battleTurn());
+            if (!(this.p.day % 30 === 0)) { // 보스가 아닐 때만 도망 가능
+                this.addBtn("🏃 도망간다", () => this.runAway());
+            }
             return;
         }
 
+        // 2. 평상시 보스 조우 상황
+        if (this.p.day % 30 === 0) {
+            this.addBtn("⚠️ 보스 몬스터 출현!", () => this.startBattle(true), false, 'danger');
+            return;
+        }
+
+        // 3. 펫 합성 상황
         if (this.selPets.length === 2) {
             this.addBtn("🧬 선택한 펫 합성하기", () => this.petFusion());
             this.addBtn("취소", () => { this.selPets = []; this.renderPets(); this.renderActions(); });
             return;
         }
 
+        // 4. 일반 이동/마을 상황
         if (this.loc === 'village') {
             this.addBtn("🛏️ 휴식 (체력 회복 - 50G)", () => { 
                 if(this.p.gold >= 50){ this.p.gold-=50; this.p.hp = this.p.maxHp; this.log("푹 쉬고 기운을 차렸습니다."); this.updateStats(); }
@@ -277,40 +289,39 @@ const game = {
 
     startBattle(isBoss) {
         this.state = 'battle';
-        const monster = isBoss ? DB.bosses[Math.min(DB.bosses.length-1, Math.floor(this.p.day/30)-1)] : DB.monsters[Math.floor(Math.random()*DB.monsters.length)];
-        this.log(`⚠️ ${isBoss?'[BOSS] ':''}${monster.n}이(가) 나타났습니다!`);
-        
-        const area = document.getElementById('action-list'); area.innerHTML = '';
-        this.addBtn("⚔️ 싸운다", () => {
-            let playerAtk = this.p.race.atk + (this.p.equip.weapon?.stat || 0) + (this.p.equip.pet?.stat || 0);
-            let dmgToPlayer = Math.max(1, monster.atk - (this.p.equip.armor?.stat || 0));
+        this.currentMonster = isBoss ? DB.bosses[Math.min(DB.bosses.length-1, Math.floor(this.p.day/30)-1)] : DB.monsters[Math.floor(Math.random()*DB.monsters.length)];
+        this.log(`⚠️ ${isBoss?'[BOSS] ':''}${this.currentMonster.n}이(가) 나타났습니다!`);
+        this.renderActions();
+    },
 
-            if (Math.random() > 0.3) {
-                this.log(`⚔️ 승리! ${monster.n}을 물리쳤습니다. (+100G)`);
-                this.p.gold += 100;
-                if(Math.random() < 0.3) this.loot(1.0);
-            } else {
-                this.p.hp -= dmgToPlayer;
-                this.log(`💥 패배... ${monster.n}에게 ${dmgToPlayer}의 피해를 입었습니다.`);
-            }
-            this.state = 'idle';
-            this.updateStats();
-            this.renderActions();
-        });
+    battleTurn() {
+        const monster = this.currentMonster;
+        let playerAtk = this.p.race.atk + (this.p.equip.weapon?.stat || 0) + (this.p.equip.pet?.stat || 0);
+        let dmgToPlayer = Math.max(1, monster.atk - (this.p.equip.armor?.stat || 0));
 
-        if (!isBoss) {
-            this.addBtn("🏃 도망간다", () => {
-                if (Math.random() < 0.7) {
-                    this.log("🏃 무사히 도망쳤습니다.");
-                } else {
-                    this.p.hp -= 10;
-                    this.log("🚑 도망치다 발을 헛디뎌 10의 피해를 입었습니다.");
-                }
-                this.state = 'idle';
-                this.updateStats();
-                this.renderActions();
-            });
+        if (Math.random() > 0.3) {
+            this.log(`⚔️ 승리! ${monster.n}을 물리쳤습니다. (+100G)`);
+            this.p.gold += 100;
+            if(Math.random() < 0.3) this.loot(1.0);
+        } else {
+            this.p.hp -= dmgToPlayer;
+            this.log(`💥 패배... ${monster.n}에게 ${dmgToPlayer}의 피해를 입었습니다.`);
         }
+        this.state = 'idle';
+        this.updateStats();
+        this.renderActions();
+    },
+
+    runAway() {
+        if (Math.random() < 0.7) {
+            this.log("🏃 무사히 도망쳤습니다.");
+        } else {
+            this.p.hp -= 10;
+            this.log("🚑 도망치다 발을 헛디뎌 10의 피해를 입었습니다.");
+        }
+        this.state = 'idle';
+        this.updateStats();
+        this.renderActions();
     },
 
     triggerEvent() {
@@ -378,7 +389,6 @@ const game = {
     }
 };
 
-// 스크립트 실행 순서를 보장하기 위해 아래 로직 추가
 window.onload = () => {
     const startScreen = document.getElementById('start-screen');
     startScreen.addEventListener('click', () => {
