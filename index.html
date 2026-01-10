@@ -14,6 +14,12 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Apple SD Gothic Neo',sans-serif}
 body{background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 
+/* 시작 화면 추가 */
+#start-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}
+#start-screen h1{color:var(--accent);font-size:28px;margin-bottom:20px;letter-spacing:4px}
+.blink{animation:blink 1.5s infinite; color:#888; font-size:14px}
+@keyframes blink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+
 header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:14px}
 .visual-area{height:200px;position:relative;overflow:hidden;border-bottom:2px solid var(--accent)}
 #bg-img{width:100%;height:100%;object-fit:cover;opacity:.7}
@@ -28,8 +34,9 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .tab-btn.active{color:var(--accent);border-bottom:2px solid var(--accent)}
 
 .main-content{flex:1;overflow-y:auto;padding:15px;background:#0a0a0a;display:flex;flex-direction:column}
-#pane-log{flex-direction:column-reverse; justify-content: flex-end;}
-.log-line{margin-bottom:10px;font-size:14px;border-left:2px solid var(--border);padding-left:12px; animation: fadeIn 0.3s ease;}
+/* 로그 영역 높이 고정 및 버튼 가독성 확보 */
+#pane-log{flex-direction:column-reverse; justify-content: flex-end; height: 180px; overflow: hidden;} 
+.log-line{margin-bottom:8px;font-size:13px;border-left:2px solid var(--border);padding-left:12px; animation: fadeIn 0.3s ease; color:#bbb}
 
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .slot{background:#1c1c1a;padding:12px;border-radius:8px;border:1px solid #333;font-size:12px;cursor:pointer}
@@ -46,7 +53,12 @@ footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 1
 </head>
 
 <body>
-<div id="game-ui" style="display:flex;flex-direction:column;height:100%">
+<div id="start-screen" onclick="game.start()">
+    <h1>Everbloom Chronicles</h1>
+    <p class="blink">TAP TO START ADVENTURE</p>
+</div>
+
+<div id="game-ui" style="display:none;flex-direction:column;height:100%">
 <header>
  <div>Day.<span id="ui-day">1</span></div>
  <div id="ui-gold">💰 500G</div>
@@ -91,7 +103,6 @@ const DB={
   {name:"태양의 파편",type:"weapon",stat:82},{name:"심연의 갈고리",type:"weapon",stat:38},{name:"피의 갈증",type:"weapon",stat:45},
   {name:"고대 왕의 권능",type:"weapon",stat:90},{name:"요정의 활",type:"weapon",stat:20},{name:"대지의 분노",type:"weapon",stat:55},
   {name:"칠흑의 날카로움",type:"weapon",stat:40},{name:"새벽의 인도자",type:"weapon",stat:100},
-
   {name:"천 조각 옷",type:"armor",stat:3},{name:"가죽 갑옷",type:"armor",stat:8},{name:"구리 가슴보호대",type:"armor",stat:12},
   {name:"단단한 사슬 갑옷",type:"armor",stat:18},{name:"은빛 방패",type:"armor",stat:10},{name:"강철 판금 갑옷",type:"armor",stat:25},
   {name:"집행관의 흉갑",type:"armor",stat:32},{name:"기사의 영광",type:"armor",stat:38},{name:"황금 사자 갑옷",type:"armor",stat:45},
@@ -132,11 +143,12 @@ const game={
       }
  },
 
+ // 로그 5줄 제한 기능 수정
  log(m){
   const p=document.getElementById('pane-log');
   const d=document.createElement('div');
   d.className='log-line';d.innerText='> '+m;p.appendChild(d);
-  if(p.children.length>15)p.removeChild(p.children[0]);
+  if(p.children.length>5)p.removeChild(p.children[0]);
  },
 
  updateUI(){
@@ -238,7 +250,6 @@ const game={
 
  startBattle() {
      const m = DB.monsters[Math.floor(Math.random() * DB.monsters.length)];
-     // 난이도 조절: 날짜에 따라 몬스터 강화
      const difficulty = 1 + (this.p.day * 0.05);
      this.enemy = { 
          name: m.name, 
@@ -261,7 +272,6 @@ const game={
              this.log("도망에 실패했습니다!");
          }
      } else {
-         // 플레이어 공격
          const pAtk = (this.p.equip.weapon?.stat || 0) + (this.p.equip.pet?.stat || 0) + 10;
          const pDmg = Math.floor(pAtk * (0.8 + Math.random() * 0.4));
          this.enemy.hp -= pDmg;
@@ -275,7 +285,6 @@ const game={
          }
      }
 
-     // 몬스터 공격
      const pDef = (this.p.equip.armor?.stat || 0);
      const eDmg = Math.max(1, this.enemy.atk - Math.floor(pDef/2));
      this.p.hp -= eDmg;
@@ -287,246 +296,36 @@ const game={
 
  triggerEvent() {
     const events = [
-        {
-            text: "길가에 버려진 수상한 상자를 발견했습니다.",
-            options: [
-                { text: "열어본다", run: () => { if(Math.random()>0.5){game.p.gold+=100; game.log("상자에서 100G 발견!");} else {game.p.hp-=20; game.log("함정이었습니다! -20HP");} }},
-                { text: "부순다", run: () => { game.p.gold+=20; game.log("상자를 부숴 잔해에서 20G를 찾았습니다."); }},
-                { text: "무시한다", run: () => game.log("위험해 보여서 지나쳤습니다.") }
-            ]
-        },
-        {
-            text: "오래된 샘물을 발견했습니다. 물이 맑아 보입니다.",
-            options: [
-                { text: "마신다", run: () => { game.p.hp=Math.min(game.p.maxHp, game.p.hp+30); game.log("기운이 솟아납니다! +30HP"); }},
-                { text: "세수를 한다", run: () => { game.p.hp=Math.min(game.p.maxHp, game.p.hp+10); game.log("정신이 맑아집니다. +10HP"); }},
-                { text: "물통에 채운다", run: () => { game.p.gold+=10; game.log("나중에 팔기 위해 물을 채웠습니다. +10G"); }}
-            ]
-        },
-        {
-            text: "지나가는 상인이 말을 걸어옵니다.",
-            options: [
-                { text: "물건을 산다", run: () => { if(game.p.gold>=50){game.p.gold-=50; game.p.hp+=20; game.log("비타민을 샀습니다. +20HP");} else {game.log("돈이 부족합니다.");} }},
-                { text: "길을 묻는다", run: () => { game.p.gold+=20; game.log("지름길을 알아내 시간을 아꼈습니다. +20G"); }},
-                { text: "무시하고 간다", run: () => game.log("상인을 무시하고 갈 길을 갑니다.") }
-            ]
-        },
-        {
-            text: "나무 뒤에 숨은 고블린과 눈이 마주쳤습니다.",
-            options: [
-                { text: "먼저 공격", run: () => { game.p.gold+=50; game.log("고블린을 쫓아내고 돈을 뺏었습니다. +50G"); }},
-                { text: "먹이를 준다", run: () => { game.p.hp+=5; game.log("고블린이 고마워하며 약초를 줍니다. +5HP"); }},
-                { text: "도망친다", run: () => { game.p.hp-=5; game.log("도망치다 덩굴에 걸렸습니다. -5HP"); }}
-            ]
-        },
-        {
-            text: "반짝이는 광석이 박힌 바위를 발견했습니다.",
-            options: [
-                { text: "캔다", run: () => { game.p.gold+=150; game.log("귀한 광석을 얻었습니다! +150G"); }},
-                { text: "관찰한다", run: () => { game.log("아름다운 광석입니다. 정신적 안정을 얻습니다."); }},
-                { text: "지나친다", run: () => game.log("짐이 무거워질까 봐 그냥 갑니다.") }
-            ]
-        },
-        {
-            text: "숲속에서 길을 잃은 강아지를 만났습니다.",
-            options: [
-                { text: "주인을 찾아줌", run: () => { game.p.gold+=200; game.log("주인이 사례금을 듬뿍 줍니다. +200G"); }},
-                { text: "쓰다듬어줌", run: () => { game.p.hp+=10; game.log("강아지가 꼬리를 흔듭니다. +10HP"); }},
-                { text: "무시한다", run: () => game.log("강아지를 두고 갈 길을 갑니다.") }
-            ]
-        },
-        {
-            text: "버려진 마차에 짐이 가득합니다.",
-            options: [
-                { text: "뒤져본다", run: () => { game.p.gold+=80; game.log("쓸만한 잡동사니를 팔았습니다. +80G"); }},
-                { text: "매장해줌", run: () => { game.p.hp=game.p.maxHp; game.log("신성한 축복을 받아 체력이 완치됩니다!"); }},
-                { text: "떠난다", run: () => game.log("찝찝한 기분에 빠르게 떠납니다.") }
-            ]
-        },
-        {
-            text: "거대한 독수리가 하늘에서 내려옵니다.",
-            options: [
-                { text: "맞서 싸운다", run: () => { game.p.hp-=30; game.p.gold+=300; game.log("독수리를 잡고 깃털을 팔았습니다. -30HP +300G"); }},
-                { text: "죽은 척 한다", run: () => { game.log("독수리가 그냥 지나쳐갔습니다."); }},
-                { text: "고기를 던져줌", run: () => { game.p.gold-=20; game.log("독수리가 고기를 먹고 사라졌습니다. -20G"); }}
-            ]
-        },
-        {
-            text: "잠들어 있는 거인을 발견했습니다.",
-            options: [
-                { text: "도둑질", run: () => { game.p.gold+=500; game.log("거대한 금화를 훔쳤습니다! +500G"); }},
-                { text: "몰래 통과", run: () => { game.log("숨을 죽이고 무사히 통과했습니다."); }},
-                { text: "소리 지르기", run: () => { game.p.hp-=50; game.log("거인이 깨어나 몽둥이를 휘둘렀습니다! -50HP"); }}
-            ]
-        },
-        {
-            text: "동굴 안에서 신비로운 꽃이 피어있습니다.",
-            options: [
-                { text: "꽃을 꺾는다", run: () => { game.p.gold+=120; game.log("연금술 재료로 비싸게 팔립니다. +120G"); }},
-                { text: "꽃향기를 맡음", run: () => { game.p.hp+=40; game.log("피로가 싹 가십니다. +40HP"); }},
-                { text: "기도한다", run: () => { game.p.maxHp+=5; game.updateUI(); game.log("최대 체력이 증가했습니다! +5 MaxHP"); }}
-            ]
-        },
-        {
-            text: "낡은 표지판이 두 갈래 길을 가리킵니다.",
-            options: [
-                { text: "지름길로 간다", run: () => { game.p.hp-=10; game.p.gold+=100; game.log("험난하지만 보상이 큽니다. -10HP +100G"); }},
-                { text: "큰길로 간다", run: () => { game.log("안전하게 이동했습니다."); }},
-                { text: "표지판 수정", run: () => { game.p.gold+=30; game.log("다른 모험가를 돕고 보람을 느낍니다. +30G"); }}
-            ]
-        },
-        {
-            text: "말하는 돌이 퀴즈를 내겠다고 합니다.",
-            options: [
-                { text: "퀴즈를 푼다", run: () => { game.p.gold+=150; game.log("정답입니다! 돌이 보물을 뱉습니다. +150G"); }},
-                { text: "돌을 던진다", run: () => { game.p.hp-=5; game.log("돌이 화가 나 튕겨 나왔습니다. -5HP"); }},
-                { text: "대화를 거부", run: () => game.log("돌을 무시하고 지나갑니다.") }
-            ]
-        },
-        {
-            text: "폭포 아래 비쳐 보이는 동굴이 있습니다.",
-            options: [
-                { text: "헤엄쳐 들어감", run: () => { game.p.gold+=250; game.log("숨겨진 보물 상자를 찾았습니다! +250G"); }},
-                { text: "낚시를 한다", run: () => { game.p.hp+=20; game.log("물고기를 잡아 구워 먹었습니다. +20HP"); }},
-                { text: "멀리서 구경", run: () => game.log("아름다운 풍경을 감상합니다.") }
-            ]
-        },
-        {
-            text: "함정에 걸린 사냥꾼을 만났습니다.",
-            options: [
-                { text: "구해준다", run: () => { game.p.gold+=100; game.log("사냥꾼이 사례금을 줍니다. +100G"); }},
-                { text: "장비를 훔침", run: () => { game.p.gold+=200; game.p.hp-=10; game.log("죄책감과 함께 장비를 챙겼습니다. -10HP +200G"); }},
-                { text: "모르는 척", run: () => game.log("귀찮은 일에 엮이기 싫어 떠납니다.") }
-            ]
-        },
-        {
-            text: "숲의 정령이 나타나 당신을 축복하려 합니다.",
-            options: [
-                { text: "돈을 요구", run: () => { game.p.gold+=150; game.log("정령이 실망하며 돈을 줍니다. +150G"); }},
-                { text: "체력을 요구", run: () => { game.p.hp=game.p.maxHp; game.log("몸이 가벼워집니다! 완치"); }},
-                { text: "지혜를 요구", run: () => { game.p.day+=1; game.log("시간의 흐름을 깨닫습니다. Day+1"); }}
-            ]
-        },
-        {
-            text: "늪지대에서 발이 빠지기 시작합니다.",
-            options: [
-                { text: "침착하게 탈출", run: () => { game.p.hp-=10; game.log("조금 다쳤지만 탈출했습니다. -10HP"); }},
-                { text: "주변 나무 잡기", run: () => { game.p.hp-=5; game.log("나무 덕분에 금방 나왔습니다. -5HP"); }},
-                { text: "도움 요청", run: () => { game.p.gold-=50; game.log("지나가던 사람이 도와주고 돈을 받아갑니다. -50G"); }}
-            ]
-        },
-        {
-            text: "고대 유적의 문자가 빛나고 있습니다.",
-            options: [
-                { text: "해독한다", run: () => { game.p.gold+=300; game.log("숨겨진 금고의 위치를 알았습니다! +300G"); }},
-                { text: "손을 댄다", run: () => { game.p.hp-=30; game.log("강력한 마력 충격이 발생했습니다! -30HP"); }},
-                { text: "파괴한다", run: () => { game.p.gold+=50; game.log("유적의 파편을 챙겼습니다. +50G"); }}
-            ]
-        },
-        {
-            text: "벌집이 낮게 매달려 있습니다.",
-            options: [
-                { text: "꿀을 딴다", run: () => { game.p.hp+=30; game.p.gold-=20; game.log("벌에 쏘였지만 꿀은 맛있습니다. +30HP"); }},
-                { text: "벌집을 떨어뜨림", run: () => { game.p.gold+=40; game.log("벌을 쫓아내고 밀랍을 얻었습니다. +40G"); }},
-                { text: "피해간다", run: () => game.log("벌을 자극하지 않고 돌아갑니다.") }
-            ]
-        },
-        {
-            text: "구름 속에서 용의 그림자가 비칩니다.",
-            options: [
-                { text: "소리를 지름", run: () => { game.p.hp-=40; game.log("용이 불을 뿜고 지나갔습니다! -40HP"); }},
-                { text: "숨는다", run: () => { game.log("무사히 지나가길 기도합니다."); }},
-                { text: "그림을 그린다", run: () => { game.p.gold+=100; game.log("용의 모습이 담긴 그림을 팔았습니다. +100G"); }}
-            ]
-        },
-        {
-            text: "버려진 캠프파이어에 불씨가 남아있습니다.",
-            options: [
-                { text: "불을 피운다", run: () => { game.p.hp+=20; game.log("따뜻하게 밤을 보냈습니다. +20HP"); }},
-                { text: "요리를 한다", run: () => { game.p.maxHp+=2; game.updateUI(); game.log("영양가 있는 식사를 했습니다. +2 MaxHP"); }},
-                { text: "불을 끈다", run: () => { game.p.gold+=10; game.log("화재를 예방하고 칭찬을 받습니다. +10G"); }}
-            ]
-        },
-        {
-            text: "길바닥에 금이 간 항아리가 있습니다.",
-            options: [
-                { text: "깨뜨린다", run: () => { game.p.gold+=40; game.log("항아리 안에서 동전이 나옵니다. +40G"); }},
-                { text: "안을 살핀다", run: () => { game.p.hp-=5; game.log("항아리 속 뱀에게 물렸습니다. -5HP"); }},
-                { text: "무시한다", run: () => game.log("평범한 항아리입니다.") }
-            ]
-        },
-        {
-            text: "낡은 신전에서 신비로운 기운이 느껴집니다.",
-            options: [
-                { text: "헌금한다", run: () => { if(game.p.gold>=100){game.p.gold-=100; game.p.hp=game.p.maxHp; game.log("신의 가호로 회복되었습니다!");} else {game.log("돈이 부족합니다.");} }},
-                { text: "기도한다", run: () => { game.p.hp+=10; game.log("마음이 평온해집니다. +10HP"); }},
-                { text: "보물을 훔침", run: () => { game.p.gold+=400; game.p.hp-=50; game.log("저주를 받았지만 금술잔을 챙겼습니다! -50HP +400G"); }}
-            ]
-        },
-        {
-            text: "버섯들이 원형으로 자라나 있습니다.",
-            options: [
-                { text: "먹는다", run: () => { if(Math.random()>0.5){game.p.hp+=50; game.log("맛있는 버섯입니다! +50HP");} else {game.p.hp-=30; game.log("독버섯이었습니다! -30HP");} }},
-                { text: "채집한다", run: () => { game.p.gold+=70; game.log("연구소에 팔 버섯을 챙겼습니다. +70G"); }},
-                { text: "밟고 지나감", run: () => game.log("버섯을 으깨며 길을 갑니다.") }
-            ]
-        },
-        {
-            text: "갑자기 안개가 자욱하게 낍니다.",
-            options: [
-                { text: "기다린다", run: () => { game.log("안개가 걷힐 때까지 기다렸습니다."); }},
-                { text: "무작정 전진", run: () => { game.p.hp-=10; game.p.gold+=50; game.log("길을 헤맸지만 보물을 발견했습니다. -10HP +50G"); }},
-                { text: "마법으로 제거", run: () => { game.p.gold-=20; game.log("마법 가루를 사용해 길을 열었습니다. -20G"); }}
-            ]
-        },
-        {
-            text: "거대한 거미줄이 길을 막고 있습니다.",
-            options: [
-                { text: "불로 태운다", run: () => { game.log("길이 깔끔해졌습니다."); }},
-                { text: "칼로 자른다", run: () => { game.p.hp-=5; game.log("거미줄이 끈적여 고생했습니다. -5HP"); }},
-                { text: "거미와 대화", run: () => { game.p.gold+=100; game.log("거미가 지름길을 알려줬습니다. +100G"); }}
-            ]
-        },
-        {
-            text: "나무 구멍 속에 무언가 들어있습니다.",
-            options: [
-                { text: "손을 넣는다", run: () => { game.p.gold+=60; game.log("다람쥐가 모아둔 비상금을 찾았습니다. +60G"); }},
-                { text: "나무를 흔듬", run: () => { game.p.hp-=10; game.log("벌집이 떨어졌습니다! -10HP"); }},
-                { text: "먹이를 넣는다", run: () => { game.p.maxHp+=2; game.updateUI(); game.log("자연과 교감하여 건강해집니다. +2 MaxHP"); }}
-            ]
-        },
-        {
-            text: "낡은 배낭이 땅에 떨어져 있습니다.",
-            options: [
-                { text: "내용물 확인", run: () => { game.p.gold+=90; game.log("주인 없는 배낭에서 돈을 챙겼습니다. +90G"); }},
-                { text: "주인 찾기", run: () => { game.p.gold+=150; game.log("나중에 주인이 사례를 합니다. +150G"); }},
-                { text: "그대로 둠", run: () => game.log("남의 물건에 손대지 않습니다.") }
-            ]
-        },
-        {
-            text: "이상한 냄새가 나는 연기가 피어오릅니다.",
-            options: [
-                { text: "연기를 마심", run: () => { game.p.hp-=20; game.log("환각을 보았습니다. -20HP"); }},
-                { text: "부채질", run: () => { game.p.gold+=30; game.log("연기를 쫓아내니 밑에 동전이 있습니다. +30G"); }},
-                { text: "코를 막고 이동", run: () => game.log("빠르게 자리를 피합니다.") }
-            ]
-        },
-        {
-            text: "허수아비가 당신을 쳐다보는 것 같습니다.",
-            options: [
-                { text: "옷을 갈아입힘", run: () => { game.p.gold+=40; game.log("허수아비가 만족한 것 같습니다. +40G"); }},
-                { text: "공격한다", run: () => { game.p.hp-=5; game.log("허수아비 안의 짚단에 쓸렸습니다. -5HP"); }},
-                { text: "인사한다", run: () => { game.p.hp+=5; game.log("기분이 좋아집니다. +5HP"); }}
-            ]
-        },
-        {
-            text: "하늘에서 돈이 비처럼 내리기 시작합니다.",
-            options: [
-                { text: "자루에 담는다", run: () => { game.p.gold+=500; game.log("횡재했습니다! +500G"); }},
-                { text: "머리를 보호", run: () => { game.p.hp+=10; game.log("동전에 맞지 않아 안전합니다. +10HP"); }},
-                { text: "이건 환상이다", run: () => { game.p.maxHp+=5; game.updateUI(); game.log("정신력을 단련했습니다. +5 MaxHP"); }}
-            ]
-        }
+        { text: "길가에 버려진 수상한 상자를 발견했습니다.", options: [ { text: "열어본다", run: () => { if(Math.random()>0.5){game.p.gold+=100; game.log("상자에서 100G 발견!");} else {game.p.hp-=20; game.log("함정이었습니다! -20HP");} }}, { text: "부순다", run: () => { game.p.gold+=20; game.log("상자를 부숴 잔해에서 20G를 찾았습니다."); }}, { text: "무시한다", run: () => game.log("위험해 보여서 지나쳤습니다.") } ] },
+        { text: "오래된 샘물을 발견했습니다. 물이 맑아 보입니다.", options: [ { text: "마신다", run: () => { game.p.hp=Math.min(game.p.maxHp, game.p.hp+30); game.log("기운이 솟아납니다! +30HP"); }}, { text: "세수를 한다", run: () => { game.p.hp=Math.min(game.p.maxHp, game.p.hp+10); game.log("정신이 맑아집니다. +10HP"); }}, { text: "물통에 채운다", run: () => { game.p.gold+=10; game.log("나중에 팔기 위해 물을 채웠습니다. +10G"); }} ] },
+        { text: "지나가는 상인이 말을 걸어옵니다.", options: [ { text: "물건을 산다", run: () => { if(game.p.gold>=50){game.p.gold-=50; game.p.hp+=20; game.log("비타민을 샀습니다. +20HP");} else {game.log("돈이 부족합니다.");} }}, { text: "길을 묻는다", run: () => { game.p.gold+=20; game.log("지름길을 알아내 시간을 아꼈습니다. +20G"); }}, { text: "무시하고 간다", run: () => game.log("상인을 무시하고 갈 길을 갑니다.") } ] },
+        { text: "나무 뒤에 숨은 고블린과 눈이 마주쳤습니다.", options: [ { text: "먼저 공격", run: () => { game.p.gold+=50; game.log("고블린을 쫓아내고 돈을 뺏었습니다. +50G"); }}, { text: "먹이를 준다", run: () => { game.p.hp+=5; game.log("고블린이 고마워하며 약초를 줍니다. +5HP"); }}, { text: "도망친다", run: () => { game.p.hp-=5; game.log("도망치다 덩굴에 걸렸습니다. -5HP"); }} ] },
+        { text: "반짝이는 광석이 박힌 바위를 발견했습니다.", options: [ { text: "캔다", run: () => { game.p.gold+=150; game.log("귀한 광석을 얻었습니다! +150G"); }}, { text: "관찰한다", run: () => { game.log("아름다운 광석입니다. 정신적 안정을 얻습니다."); }}, { text: "지나친다", run: () => game.log("짐이 무거워질까 봐 그냥 갑니다.") } ] },
+        { text: "숲속에서 길을 잃은 강아지를 만났습니다.", options: [ { text: "주인을 찾아줌", run: () => { game.p.gold+=200; game.log("주인이 사례금을 듬뿍 줍니다. +200G"); }}, { text: "쓰다듬어줌", run: () => { game.p.hp+=10; game.log("강아지가 꼬리를 흔듭니다. +10HP"); }}, { text: "무시한다", run: () => game.log("강아지를 두고 갈 길을 갑니다.") } ] },
+        { text: "버려진 마차에 짐이 가득합니다.", options: [ { text: "뒤져본다", run: () => { game.p.gold+=80; game.log("쓸만한 잡동사니를 팔았습니다. +80G"); }}, { text: "매장해줌", run: () => { game.p.hp=game.p.maxHp; game.log("신성한 축복을 받아 체력이 완치됩니다!"); }}, { text: "떠난다", run: () => game.log("찝찝한 기분에 빠르게 떠납니다.") } ] },
+        { text: "거대한 독수리가 하늘에서 내려옵니다.", options: [ { text: "맞서 싸운다", run: () => { game.p.hp-=30; game.p.gold+=300; game.log("독수리를 잡고 깃털을 팔았습니다. -30HP +300G"); }}, { text: "죽은 척 한다", run: () => { game.log("독수리가 그냥 지나쳐갔습니다."); }}, { text: "고기를 던져줌", run: () => { game.p.gold-=20; game.log("독수리가 고기를 먹고 사라졌습니다. -20G"); }} ] },
+        { text: "잠들어 있는 거인을 발견했습니다.", options: [ { text: "도둑질", run: () => { game.p.gold+=500; game.log("거대한 금화를 훔쳤습니다! +500G"); }}, { text: "몰래 통과", run: () => { game.log("숨을 죽이고 무사히 통과했습니다."); }}, { text: "소리 지르기", run: () => { game.p.hp-=50; game.log("거인이 깨어나 몽둥이를 휘둘렀습니다! -50HP"); }} ] },
+        { text: "동굴 안에서 신비로운 꽃이 피어있습니다.", options: [ { text: "꽃을 꺾는다", run: () => { game.p.gold+=120; game.log("연금술 재료로 비싸게 팔립니다. +120G"); }}, { text: "꽃향기를 맡음", run: () => { game.p.hp+=40; game.log("피로가 싹 가십니다. +40HP"); }}, { text: "기도한다", run: () => { game.p.maxHp+=5; game.updateUI(); game.log("최대 체력이 증가했습니다! +5 MaxHP"); }} ] },
+        { text: "낡은 표지판이 두 갈래 길을 가리킵니다.", options: [ { text: "지름길로 간다", run: () => { game.p.hp-=10; game.p.gold+=100; game.log("험난하지만 보상이 큽니다. -10HP +100G"); }}, { text: "큰길로 간다", run: () => { game.log("안전하게 이동했습니다."); }}, { text: "표지판 수정", run: () => { game.p.gold+=30; game.log("다른 모험가를 돕고 보람을 느낍니다. +30G"); }} ] },
+        { text: "말하는 돌이 퀴즈를 내겠다고 합니다.", options: [ { text: "퀴즈를 푼다", run: () => { game.p.gold+=150; game.log("정답입니다! 돌이 보물을 뱉습니다. +150G"); }}, { text: "돌을 던진다", run: () => { game.p.hp-=5; game.log("돌이 화가 나 튕겨 나왔습니다. -5HP"); }}, { text: "대화를 거부", run: () => game.log("돌을 무시하고 지나갑니다.") } ] },
+        { text: "폭포 아래 비쳐 보이는 동굴이 있습니다.", options: [ { text: "헤엄쳐 들어감", run: () => { game.p.gold+=250; game.log("숨겨진 보물 상자를 찾았습니다! +250G"); }}, { text: "낚시를 한다", run: () => { game.p.hp+=20; game.log("물고기를 잡아 구워 먹었습니다. +20HP"); }}, { text: "멀리서 구경", run: () => game.log("아름다운 풍경을 감상합니다.") } ] },
+        { text: "함정에 걸린 사냥꾼을 만났습니다.", options: [ { text: "구해준다", run: () => { game.p.gold+=100; game.log("사냥꾼이 사례금을 줍니다. +100G"); }}, { text: "장비를 훔침", run: () => { game.p.gold+=200; game.p.hp-=10; game.log("죄책감과 함께 장비를 챙겼습니다. -10HP +200G"); }}, { text: "모르는 척", run: () => game.log("귀찮은 일에 엮이기 싫어 떠납니다.") } ] },
+        { text: "숲의 정령이 나타나 당신을 축복하려 합니다.", options: [ { text: "돈을 요구", run: () => { game.p.gold+=150; game.log("정령이 실망하며 돈을 줍니다. +150G"); }}, { text: "체력을 요구", run: () => { game.p.hp=game.p.maxHp; game.log("몸이 가벼워집니다! 완치"); }}, { text: "지혜를 요구", run: () => { game.p.day+=1; game.log("시간의 흐름을 깨닫습니다. Day+1"); }} ] },
+        { text: "늪지대에서 발이 빠지기 시작합니다.", options: [ { text: "침착하게 탈출", run: () => { game.p.hp-=10; game.log("조금 다쳤지만 탈출했습니다. -10HP"); }}, { text: "주변 나무 잡기", run: () => { game.p.hp-=5; game.log("나무 덕분에 금방 나왔습니다. -5HP"); }}, { text: "도움 요청", run: () => { game.p.gold-=50; game.log("지나가던 사람이 도와주고 돈을 받아갑니다. -50G"); }} ] },
+        { text: "고대 유적의 문자가 빛나고 있습니다.", options: [ { text: "해독한다", run: () => { game.p.gold+=300; game.log("숨겨진 금고의 위치를 알았습니다! +300G"); }}, { text: "손을 댄다", run: () => { game.p.hp-=30; game.log("강력한 마력 충격이 발생했습니다! -30HP"); }}, { text: "파괴한다", run: () => { game.p.gold+=50; game.log("유적의 파편을 챙겼습니다. +50G"); }} ] },
+        { text: "벌집이 낮게 매달려 있습니다.", options: [ { text: "꿀을 딴다", run: () => { game.p.hp+=30; game.p.gold-=20; game.log("벌에 쏘였지만 꿀은 맛있습니다. +30HP"); }}, { text: "벌집을 떨어뜨림", run: () => { game.p.gold+=40; game.log("벌을 쫓아내고 밀랍을 얻었습니다. +40G"); }}, { text: "피해간다", run: () => game.log("벌을 자극하지 않고 돌아갑니다.") } ] },
+        { text: "구름 속에서 용의 그림자가 비칩니다.", options: [ { text: "소리를 지름", run: () => { game.p.hp-=40; game.log("용이 불을 뿜고 지나갔습니다! -40HP"); }}, { text: "숨는다", run: () => { game.log("무사히 지나가길 기도합니다."); }}, { text: "그림을 그린다", run: () => { game.p.gold+=100; game.log("용의 모습이 담긴 그림을 팔았습니다. +100G"); }} ] },
+        { text: "버려진 캠프파이어에 불씨가 남아있습니다.", options: [ { text: "불을 피운다", run: () => { game.p.hp+=20; game.log("따뜻하게 밤을 보냈습니다. +20HP"); }}, { text: "요리를 한다", run: () => { game.p.maxHp+=2; game.updateUI(); game.log("영양가 있는 식사를 했습니다. +2 MaxHP"); }}, { text: "불을 끈다", run: () => { game.p.gold+=10; game.log("화재를 예방하고 칭찬을 받습니다. +10G"); }} ] },
+        { text: "길바닥에 금이 간 항아리가 있습니다.", options: [ { text: "깨뜨린다", run: () => { game.p.gold+=40; game.log("항아리 안에서 동전이 나옵니다. +40G"); }}, { text: "안을 살핀다", run: () => { game.p.hp-=5; game.log("항아리 속 뱀에게 물렸습니다. -5HP"); }}, { text: "무시한다", run: () => game.log("평범한 항아리입니다.") } ] },
+        { text: "낡은 신전에서 신비로운 기운이 느껴집니다.", options: [ { text: "헌금한다", run: () => { if(game.p.gold>=100){game.p.gold-=100; game.p.hp=game.p.maxHp; game.log("신의 가호로 회복되었습니다!");} else {game.log("돈이 부족합니다.");} }}, { text: "기도한다", run: () => { game.p.hp+=10; game.log("마음이 평온해집니다. +10HP"); }}, { text: "보물을 훔침", run: () => { game.p.gold+=400; game.p.hp-=50; game.log("저주를 받았지만 금술잔을 챙겼습니다! -50HP +400G"); }} ] },
+        { text: "버섯들이 원형으로 자라나 있습니다.", options: [ { text: "먹는다", run: () => { if(Math.random()>0.5){game.p.hp+=50; game.log("맛있는 버섯입니다! +50HP");} else {game.p.hp-=30; game.log("독버섯이었습니다! -30HP");} }}, { text: "채집한다", run: () => { game.p.gold+=70; game.log("연구소에 팔 버섯을 챙겼습니다. +70G"); }}, { text: "밟고 지나감", run: () => game.log("버섯을 으깨며 길을 갑니다.") } ] },
+        { text: "갑자기 안개가 자욱하게 낍니다.", options: [ { text: "기다린다", run: () => { game.log("안개가 걷힐 때까지 기다렸습니다."); }}, { text: "무작정 전진", run: () => { game.p.hp-=10; game.p.gold+=50; game.log("길을 헤맸지만 보물을 발견했습니다. -10HP +50G"); }}, { text: "마법으로 제거", run: () => { game.p.gold-=20; game.log("마법 가루를 사용해 길을 열었습니다. -20G"); }} ] },
+        { text: "거대한 거미줄이 길을 막고 있습니다.", options: [ { text: "불로 태운다", run: () => { game.log("길이 깔끔해졌습니다."); }}, { text: "칼로 자른다", run: () => { game.p.hp-=5; game.log("거미줄이 끈적여 고생했습니다. -5HP"); }}, { text: "거미와 대화", run: () => { game.p.gold+=100; game.log("거미가 지름길을 알려줬습니다. +100G"); }} ] },
+        { text: "나무 구멍 속에 무언가 들어있습니다.", options: [ { text: "손을 넣는다", run: () => { game.p.gold+=60; game.log("다람쥐가 모아둔 비상금을 찾았습니다. +60G"); }}, { text: "나무를 흔듬", run: () => { game.p.hp-=10; game.log("벌집이 떨어졌습니다! -10HP"); }}, { text: "먹이를 넣는다", run: () => { game.p.maxHp+=2; game.updateUI(); game.log("자연과 교감하여 건강해집니다. +2 MaxHP"); }} ] },
+        { text: "낡은 배낭이 땅에 떨어져 있습니다.", options: [ { text: "내용물 확인", run: () => { game.p.gold+=90; game.log("주인 없는 배낭에서 돈을 챙겼습니다. +90G"); }}, { text: "주인 찾기", run: () => { game.p.gold+=150; game.log("나중에 주인이 사례를 합니다. +150G"); }}, { text: "그대로 둠", run: () => game.log("남의 물건에 손대지 않습니다.") } ] },
+        { text: "이상한 냄새가 나는 연기가 피어오릅니다.", options: [ { text: "연기를 마심", run: () => { game.p.hp-=20; game.log("환각을 보았습니다. -20HP"); }}, { text: "부채질", run: () => { game.p.gold+=30; game.log("연기를 쫓아내니 밑에 동전이 있습니다. +30G"); }}, { text: "코를 막고 이동", run: () => game.log("빠르게 자리를 피합니다.") } ] },
+        { text: "허수아비가 당신을 쳐다보는 것 같습니다.", options: [ { text: "옷을 갈아입힘", run: () => { game.p.gold+=40; game.log("허수아비가 만족한 것 같습니다. +40G"); }}, { text: "공격한다", run: () => { game.p.hp-=5; game.log("허수아비 안의 짚단에 쓸렸습니다. -5HP"); }}, { text: "인사한다", run: () => { game.p.hp+=5; game.log("기분이 좋아집니다. +5HP"); }} ] },
+        { text: "하늘에서 돈이 비처럼 내리기 시작합니다.", options: [ { text: "자루에 담는다", run: () => { game.p.gold+=500; game.log("횡재했습니다! +500G"); }}, { text: "머리를 보호", run: () => { game.p.hp+=10; game.log("동전에 맞지 않아 안전합니다. +10HP"); }}, { text: "이건 환상이다", run: () => { game.p.maxHp+=5; game.updateUI(); game.log("정신력을 단련했습니다. +5 MaxHP"); }} ] }
     ];
     this.currentEvent = events[Math.floor(Math.random() * events.length)];
     this.state = 'event';
@@ -538,11 +337,9 @@ const game={
          this.p.gold -= 300;
          const it = DB.items[Math.floor(Math.random() * DB.items.length)];
          this.p.inv.push({...it, id: Date.now()});
-         this.log(`⚒️ 대장간: [${it.name}] (Stat: ${it.stat}) 제작 완료!`);
+         this.log(`⚒️ 대장간: [${it.name}] (Stat: ${it.stat}) 제작!`);
          this.updateUI();
-     } else {
-         this.log("제작 비용이 부족합니다.");
-     }
+     } else { this.log("골드가 부족합니다."); }
  },
 
  buyPet() {
@@ -550,11 +347,9 @@ const game={
          this.p.gold -= 500;
          const pt = DB.pets[Math.floor(Math.random() * DB.pets.length)];
          this.p.pets.push({...pt, id: Date.now()});
-         this.log(`🥚 펫 상점: 새로운 친구 [${pt.name}] (ATK: ${pt.stat})을 얻었습니다!`);
+         this.log(`🥚 펫 상점: [${pt.name}] 발견!`);
          this.updateUI();
-     } else {
-         this.log("펫 분양 비용이 부족합니다.");
-     }
+     } else { this.log("골드가 부족합니다."); }
  },
 
  renderInv(){
@@ -565,10 +360,7 @@ const game={
    const isEq = this.p.equip[it.type] && this.p.equip[it.type].id === it.id;
    d.className='slot'+(isEq?' selected':'');
    d.innerHTML=`<b>${it.name}</b><br>${it.type === 'weapon' ? 'ATK' : 'DEF'} +${it.stat}`;
-   d.onclick=()=>{
-       this.p.equip[it.type]= isEq ? null : it;
-       this.updateUI(); this.renderInv();
-   };
+   d.onclick=()=>{ this.p.equip[it.type]= isEq ? null : it; this.updateUI(); this.renderInv(); };
    list.appendChild(d);
   });
  },
@@ -589,9 +381,7 @@ const game={
  tab(t,el){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  ['log','inv','pet'].forEach(p=>{
-      document.getElementById('pane-'+p).style.display='none';
-  });
+  ['log','inv','pet'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
   document.getElementById('pane-'+t).style.display='flex';
   if(t==='inv')this.renderInv();
   if(t==='pet')this.renderPets();
@@ -603,14 +393,21 @@ const game={
   b.innerText=t;
   b.onclick=f;
   document.getElementById('action-list').appendChild(b);
+ },
+
+ // 게임 시작 메서드
+ start() {
+    document.getElementById('start-screen').style.display='none';
+    document.getElementById('game-ui').style.display='flex';
+    this.load();
+    this.log("모험이 시작되었습니다.");
+    this.updateUI();
+    this.renderActions();
  }
 };
 
 window.onload=()=>{
-    game.load();
-    game.log("모험이 시작되었습니다.");
-    game.updateUI();
-    game.renderActions();
+    // 초기 화면 대기
 }
 </script>
 </body>
