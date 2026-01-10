@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Everbloom Chronicles - Battle Fix</title>
+    <title>Everbloom Chronicles - Layout Fix</title>
     <style>
         :root {
             --bg: #0d0d0c; --panel: #1a1a17; --accent: #d4a373; --text: #e0dcd3;
@@ -40,8 +40,8 @@
         .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: #666; font-weight: bold; font-size: 12px; cursor: pointer; }
         .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-        .main-content { flex: 1; overflow-y: auto; padding: 15px; background: #0a0a0a; -webkit-overflow-scrolling: touch; }
-        #pane-log { height: 140px; border-bottom: 1px solid var(--border); flex: 1; }
+        /* 로그 영역 스크롤 수정 */
+        .main-content { flex: 1; min-height: 0; overflow-y: auto; padding: 15px; background: #0a0a0a; -webkit-overflow-scrolling: touch; }
         .log-line { margin-bottom: 8px; font-size: 13px; color: #ccc; border-left: 2px solid var(--border); padding-left: 10px; animation: fadeIn 0.3s ease; }
         
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -49,8 +49,8 @@
         .slot.selected { border-color: var(--accent); background: #2a2a22; }
         .slot.boss { border-color: var(--danger); }
 
-        footer { background: var(--panel); border-top: 1px solid var(--border); padding: 12px 15px calc(var(--safe-bottom) + 12px); flex-shrink: 0; }
-        #action-list { display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto; }
+        footer { background: var(--panel); border-top: 1px solid var(--border); padding: 12px 15px calc(var(--safe-bottom) + 12px); flex-shrink: 0; z-index: 110; }
+        #action-list { display: flex; flex-direction: column; gap: 8px; }
 
         .btn { background: var(--btn-bg); color: #fff; padding: 15px; border-radius: 10px; border: 1px solid #444; font-weight: bold; text-align: center; cursor: pointer; font-size: 14px; }
         .btn:active { background: var(--accent); color: #000; }
@@ -149,8 +149,9 @@ const game = {
     p: { gold:500, hp:100, maxHp: 100, inv:[], pets:[], equip:{weapon:null, armor:null, pet:null}, found:new Set(), day:1 },
     loc: 'ruin',
     selPets: [],
-    state: 'idle', // idle, battle, event
+    state: 'idle', 
     currentMonster: null,
+    currentEvent: null,
 
     showOrigin() {
         document.getElementById('start-screen').style.display = 'none';
@@ -238,29 +239,35 @@ const game = {
     renderActions() {
         const area = document.getElementById('action-list'); area.innerHTML = '';
         
-        // 1. 전투 중일 때의 선택지
         if (this.state === 'battle') {
             this.addBtn("⚔️ 싸운다", () => this.battleTurn());
-            if (!(this.p.day % 30 === 0)) { // 보스가 아닐 때만 도망 가능
+            if (!(this.p.day % 30 === 0)) {
                 this.addBtn("🏃 도망간다", () => this.runAway());
             }
             return;
         }
 
-        // 2. 평상시 보스 조우 상황
+        // 이벤트 상태일 때 버튼 추가
+        if (this.state === 'event') {
+            this.addBtn("확인", () => {
+                this.currentEvent.r();
+                this.state = 'idle';
+                this.renderActions();
+            });
+            return;
+        }
+
         if (this.p.day % 30 === 0) {
             this.addBtn("⚠️ 보스 몬스터 출현!", () => this.startBattle(true), false, 'danger');
             return;
         }
 
-        // 3. 펫 합성 상황
         if (this.selPets.length === 2) {
             this.addBtn("🧬 선택한 펫 합성하기", () => this.petFusion());
             this.addBtn("취소", () => { this.selPets = []; this.renderPets(); this.renderActions(); });
             return;
         }
 
-        // 4. 일반 이동/마을 상황
         if (this.loc === 'village') {
             this.addBtn("🛏️ 휴식 (체력 회복 - 50G)", () => { 
                 if(this.p.gold >= 50){ this.p.gold-=50; this.p.hp = this.p.maxHp; this.log("푹 쉬고 기운을 차렸습니다."); this.updateStats(); }
@@ -327,13 +334,13 @@ const game = {
     triggerEvent() {
         const evs = [
             { t: "길가에서 반짝이는 상자를 발견했습니다.", r: () => this.loot(0.7) },
-            { t: "오래된 샘물에서 물을 마십니다.", r: () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+10); this.log("기분이 상쾌해집니다."); } },
-            { t: "지나가는 상인이 인사를 건넵니다.", r: () => { this.p.gold += 50; this.log("상인이 길을 알려주며 50G를 주었습니다."); } }
+            { t: "오래된 샘물에서 물을 마십니다.", r: () => { this.p.hp = Math.min(this.p.maxHp, this.p.hp+10); this.log("기분이 상쾌해집니다."); this.updateStats();} },
+            { t: "지나가는 상인이 인사를 건넵니다.", r: () => { this.p.gold += 50; this.log("상인이 길을 알려주며 50G를 주었습니다."); this.updateStats();} }
         ];
         const e = evs[Math.floor(Math.random()*evs.length)];
         this.log(`[이벤트] ${e.t}`);
-        e.r();
-        this.updateStats();
+        this.currentEvent = e;
+        this.state = 'event';
     },
 
     loot(chance) {
