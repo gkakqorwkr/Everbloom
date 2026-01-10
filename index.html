@@ -24,11 +24,10 @@ body.hit-flash { background: #441111; animation: shake 0.2s infinite; }
  100% { transform: translate(1px, 2px) rotate(0deg); }
 }
 
-#start-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center; cursor: pointer;}
+#start-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;text-align:center}
 #start-screen h1{color:var(--accent);font-size:28px;margin-bottom:10px;letter-spacing:4px}
-.race-select-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 30px; padding: 0 20px; z-index: 1000; }
-.race-btn { background: var(--btn-bg); border: 1px solid var(--border); color: var(--text); padding: 15px 10px; border-radius: 10px; cursor: pointer; }
-.blink{animation:blink 1.5s infinite; color:#888; font-size:14px; margin-top:20px;}
+#start-screen .sub-quote{color:#555;font-style:italic;margin-bottom:30px;font-size:14px;padding:0 20px}
+.blink{animation:blink 1.5s infinite; color:#888; font-size:14px}
 @keyframes blink{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
 
 header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:14px;flex-shrink:0}
@@ -51,50 +50,74 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .slot{background:#1c1c1a;padding:12px;border-radius:8px;border:1px solid #333;font-size:12px;cursor:pointer;position:relative}
 .slot.selected{border-color:var(--accent);background:#2a2a22}
+.sell-badge{position:absolute;top:5px;right:5px;background:#442222;color:#ff6b6b;padding:2px 6px;font-size:9px;border-radius:4px;border:1px solid #663333}
 
-footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 20px);flex: 1; display:flex; flex-direction:column; justify-content: flex-start;}
+.collection-section {margin-bottom:20px;}
+.collection-title {color:var(--accent); font-size:14px; margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;}
+.col-grid {display:grid; grid-template-columns: repeat(3,1fr); gap:5px;}
+.col-item {background:#151512; padding:8px; font-size:10px; text-align:center; border-radius:4px; color:#444;}
+.col-item.unlocked {color:#ddd; border:1px solid #444;}
+
+.stat-point-box { background: #222; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--accent); }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
+.stat-up-btn { background: var(--accent); color: #000; border: none; padding: 2px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+
+/* 수정됨: flex:1 제거 및 세로 정렬 최적화 */
+footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 20px); display:flex; flex-direction:column;}
 #action-list{display:flex; flex-direction:column; gap:8px;}
 .btn{background:var(--btn-bg);padding:14px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s; font-size: 15px;}
+.btn:active{transform:scale(0.98); opacity: 0.8;}
 .btn.special{border-color:var(--accent);color:var(--accent)}
+.reset-btn{margin-top:20px; background:#442222; color:#ff6b6b; border:1px solid #663333; padding:10px; border-radius:8px; font-size:12px; width:100%;}
+
+.rarity-COMMON{color:#ffffff}
+.rarity-UNCOMMON{color:#4caf50}
+.rarity-RARE{color:#2196f3}
+.rarity-EPIC{color:#9c27b0}
+.rarity-LEGENDARY{color:#ff9800; font-weight:bold}
 
 #result-popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
-.popup-content{background:#1a1a17;border:2px solid var(--accent);border-radius:20px;width:100%;max-width:320px;padding:30px;text-align:center;}
+.popup-content{background:#1a1a17;border:2px solid var(--accent);border-radius:20px;width:100%;max-width:320px;padding:30px;text-align:center;animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)}
+.popup-rarity{font-size:18px;font-weight:bold;letter-spacing:2px;margin-bottom:10px}
+.popup-name{font-size:32px;font-weight:bold;margin-bottom:20px}
+.popup-desc{color:#888;margin-bottom:30px;font-size:14px;line-height:1.5}
+.popup-btn{background:var(--btn-bg);border:1px solid var(--border);color:white;padding:15px;width:100%;border-radius:12px;font-weight:bold}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>
 </head>
 
 <body>
-<div id="start-screen">
+<div id="start-screen" onclick="game.start()">
     <h1>Everbloom Chronicles</h1>
-    <p class="blink">TAP TO SELECT YOUR DESTINY</p>
-    <div class="race-select-box">
-        <div class="race-btn" onclick="game.start('Human')"><b>인간</b><br><small>균형</small></div>
-        <div class="race-btn" onclick="game.start('Elf')"><b>엘프</b><br><small>민첩</small></div>
-        <div class="race-btn" onclick="game.start('Dwarf')"><b>드워프</b><br><small>강인</small></div>
-    </div>
+    <p class="sub-quote">"꽃은 지지 않는 연대기의 한 페이지가 되어,<br>기록되지 않은 영웅들의 발자취를 기억하리라."</p>
+    <p class="blink">TAP TO START ADVENTURE</p>
 </div>
 
 <div id="result-popup">
     <div class="popup-content">
         <div id="pop-rarity" class="popup-rarity">COMMON</div>
-        <div id="pop-name" class="popup-name">아이템</div>
-        <button class="popup-btn" onclick="game.closePopup()" style="background:var(--btn-bg); color:white; padding:10px; width:100%; border:1px solid var(--border); border-radius:10px;">수령</button>
+        <div id="pop-name" class="popup-name">길고양이</div>
+        <div id="pop-desc" class="popup-desc">내용</div>
+        <button class="popup-btn" onclick="game.closePopup()">수령하기</button>
     </div>
 </div>
 
 <div id="game-ui" style="display:none;flex-direction:column;height:100%">
 <header>
- <div>Day.<span id="ui-day">1</span></div>
+ <div>Day.<span id="ui-day">1</span> / 500</div>
  <div id="ui-gold">💰 500G</div>
  <div id="ui-hp" style="color:#ff6b6b">❤ <span id="cur-hp">120</span> / <span id="cur-mhp">120</span></div>
 </header>
 
 <div class="status-bar">
-    <span>[<span id="ui-race">-</span>]</span>
     <span>Lv.<span id="stat-lv">1</span></span>
     <span>ATK <span id="stat-atk">10</span></span>
     <span>DEF <span id="stat-def">0</span></span>
     <span>AGI <span id="stat-agi">0</span></span>
     <span>LUK <span id="stat-luk">0</span></span>
+    <span id="stat-pt-indicator" style="color:yellow; display:none">PT <span id="stat-pt-val">0</span></span>
 </div>
 
 <div class="visual-area">
@@ -112,156 +135,412 @@ footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 1
  <button class="tab-btn active" onclick="game.tab('log',this)">로그</button>
  <button class="tab-btn" onclick="game.tab('inv',this)">가방</button>
  <button class="tab-btn" onclick="game.tab('pet',this)">펫</button>
+ <button class="tab-btn" onclick="game.tab('col',this)">도감/설정</button>
 </div>
 
 <div id="pane-log" class="main-content"></div>
-<div id="pane-inv" class="main-content" style="display:none"><div id="inv-list" class="grid"></div></div>
+<div id="pane-inv" class="main-content" style="display:none">
+    <div id="stat-upgrade-pane" class="stat-point-box" style="display:none">
+        <p style="font-size:12px; color:yellow; margin-bottom:8px;">사용 가능한 스탯 포인트: <span id="pane-pt-val">0</span></p>
+        <div class="stat-row">공격력(ATK) +2 <button class="stat-up-btn" onclick="game.upStat('atk')">+</button></div>
+        <div class="stat-row">방어력(DEF) +1 <button class="stat-up-btn" onclick="game.upStat('def')">+</button></div>
+        <div class="stat-row">민첩성(AGI) +1 <button class="stat-up-btn" onclick="game.upStat('agi')">+</button></div>
+        <div class="stat-row">최대체력(HP) +10 <button class="stat-up-btn" onclick="game.upStat('hp')">+</button></div>
+        <div class="stat-row">행운(LUK) +1 <button class="stat-up-btn" onclick="game.upStat('luk')">+</button></div>
+    </div>
+    <div id="inv-list" class="grid"></div>
+</div>
 <div id="pane-pet" class="main-content" style="display:none"><div id="pet-list" class="grid"></div></div>
+<div id="pane-col" class="main-content" style="display:none">
+    <div class="collection-section"><div class="collection-title">👾 마물 도감</div><div id="col-monsters" class="col-grid"></div></div>
+    <div class="collection-section"><div class="collection-title">⚔️ 장비 도감</div><div id="col-items" class="col-grid"></div></div>
+    <div class="collection-section"><div class="collection-title">🐾 펫 도감</div><div id="col-pets" class="col-grid"></div></div>
+    <button class="reset-btn" onclick="game.resetGame()">⚠️ 데이터 초기화 (처음부터 다시하기)</button>
+</div>
 
 <footer><div id="action-list"></div></footer>
 </div>
 
 <script>
 const SAVE_KEY="everbloom_v3_final";
-const DB = {
+
+const DB={
  items:[
-  {name:"녹슨 칼",type:"weapon",stat:5}, {name:"강철 장검",type:"weapon",stat:12}, {name:"가죽 갑옷",type:"armor",stat:8}, {name:"신의 숨결",type:"armor",stat:110},
-  {name:"훈련용 목검",type:"weapon",stat:3}, {name:"무딘 도끼",type:"weapon",stat:7}, {name:"은제 레이피어",type:"weapon",stat:18}
-  // (30종 데이터 생략 없이 내부 로직 작동)
+  {name:"녹슨 칼",type:"weapon",stat:5}, {name:"훈련용 목검",type:"weapon",stat:3}, {name:"무딘 도끼",type:"weapon",stat:7},
+  {name:"강철 장검",type:"weapon",stat:12}, {name:"은제 레이피어",type:"weapon",stat:18}, {name:"초승달 곡도",type:"weapon",stat:15},
+  {name:"장미 가시 검",type:"weapon",stat:22}, {name:"기사의 맹세",type:"weapon",stat:26}, {name:"은빛 서리 창",type:"weapon",stat:30},
+  {name:"심연의 갈고리",type:"weapon",stat:35}, {name:"영혼 약탈자",type:"weapon",stat:42}, {name:"화염 시미터",type:"weapon",stat:38},
+  {name:"드래곤 슬레이어",type:"weapon",stat:55}, {name:"성검 엑스칼리버",type:"weapon",stat:75}, {name:"천공의 활",type:"weapon",stat:50},
+  {name:"낡은 셔츠",type:"armor",stat:2}, {name:"누더기 옷",type:"armor",stat:1}, {name:"가죽 갑옷",type:"armor",stat:8},
+  {name:"단단한 사슬갑",type:"armor",stat:15}, {name:"강철 판금갑",type:"armor",stat:25}, {name:"룬 강화 갑옷",type:"armor",stat:32},
+  {name:"집행관의 흉갑",type:"armor",stat:40}, {name:"황금 사자 갑옷",type:"armor",stat:50}, {name:"미스릴 플레이트",type:"armor",stat:65},
+  {name:"드래곤 스케일",type:"armor",stat:80}, {name:"신의 숨결",type:"armor",stat:110}, {name:"밤의 수의",type:"armor",stat:70},
+  {name:"결계의 로브",type:"armor",stat:45}, {name:"영광의 방패",type:"armor",stat:35}, {name:"수호의 의지",type:"armor",stat:55}
  ],
  pets:[
-  {name:"꼬마 슬라임",stat:3}, {name:"미니 드래곤",stat:45}, {name:"그림자 늑대",stat:12}
+  {name:"꼬마 슬라임",stat:3, desc:"탱글한 생명체입니다."}, {name:"숲의 나비",stat:2, desc:"신비로운 가루를 뿌립니다."},
+  {name:"용감한 부엉이",stat:7, desc:"밤눈이 매우 밝습니다."}, {name:"사막 여우",stat:5, desc:"모래바람을 견듭니다."},
+  {name:"그림자 늑대",stat:12, desc:"어둠 속에서 적을 찢습니다."}, {name:"불타는 여우",stat:16, desc:"꼬리에 불이 붙어있습니다."},
+  {name:"번개 도마뱀",stat:14, desc:"전기를 내뿜습니다."}, {name:"달빛 유니콘",stat:25, desc:"달의 기운을 머금었습니다."},
+  {name:"미니 드래곤",stat:45, desc:"작지만 최강의 종족입니다."}, {name:"고대 피닉스",stat:55, desc:"부활의 기운이 느껴집니다."},
+  {name:"서리 예티",stat:30, desc:"차가운 한기를 뿜어냅니다."}, {name:"길고양이",stat:5, desc:"어디선가 따라왔습니다."},
+  {name:"강철 골렘",stat:40, desc:"단단한 방어력을 제공합니다."}, {name:"차원 거북",stat:35, desc:"느리지만 강력합니다."},
+  {name:"황금 벌새",stat:20, desc:"행운을 가져다줍니다."}
  ],
- monsters:[ {name:"슬라임",hp:30,atk:3,exp:15,gold:40}, {name:"가고일",hp:120,atk:18,exp:70,gold:250} ]
+ monsters:[
+  {name:"슬라임",hp:30,atk:3,exp:15,gold:40}, {name:"해골",hp:60,atk:8,exp:30,gold:100},
+  {name:"가고일",hp:120,atk:18,exp:70,gold:250}, {name:"수호자",hp:200,atk:32,exp:150,gold:600},
+  {name:"그림자",hp:90,atk:14,exp:50,gold:180}, {name:"광신도",hp:150,atk:25,exp:100,gold:400},
+  {name:"독거미",hp:75,atk:12,exp:40,gold:120}, {name:"리치",hp:300,atk:45,exp:250,gold:1000},
+  {name:"만티코어",hp:450,atk:65,exp:400,gold:2000}, {name:"미믹",hp:180,atk:30,exp:120,gold:1500}
+ ]
 };
 
-const game = {
- p:{ gold:500,hp:120,maxHp:120,day:1,lv:1,exp:0,race:'-', baseAtk:10,baseDef:0,baseAgi:0,baseLuk:0,baseMhp:120, inv:[],pets:[],equip:{weapon:null,armor:null,pet:null} },
- loc:'ruin', state:'idle', enemy: null, currentEvent: null,
+const game={
+ p:{
+    gold:500,hp:120,maxHp:120,day:1,lv:1,exp:0,statPt:0,
+    baseAtk:10,baseDef:0,baseAgi:0,baseLuk:0,baseMhp:120,
+    inv:[],pets:[],equip:{weapon:null,armor:null,pet:null},
+    col:{items:[],pets:[],monsters:[]}
+ },
+ loc:'ruin',state:'idle', enemy: null, currentEvent: null,
 
  save(){ localStorage.setItem(SAVE_KEY,JSON.stringify(this.p)) },
- log(m){ const p=document.getElementById('pane-log'); const d=document.createElement('div'); d.className='log-line'; d.innerText='> '+m; p.appendChild(d); p.scrollTop = p.scrollHeight; },
+ load(){
+  const d=localStorage.getItem(SAVE_KEY);
+  if(d) this.p = Object.assign(this.p, JSON.parse(d));
+ },
+ resetGame(){ if(confirm("초기화하시겠습니까? 모든 기록이 사라집니다.")){ localStorage.removeItem(SAVE_KEY); location.reload(); } },
+
+ log(m){
+  const p=document.getElementById('pane-log');
+  const d=document.createElement('div');
+  d.className='log-line'; d.innerText='> '+m;
+  p.appendChild(d);
+  if(p.children.length>50) p.removeChild(p.children[0]);
+  p.scrollTop = p.scrollHeight;
+ },
 
  updateUI(){
+  if(this.p.day >= 500) this.checkEnding();
   document.getElementById('ui-day').innerText=this.p.day;
   document.getElementById('ui-gold').innerText=`💰 ${this.p.gold}G`;
   document.getElementById('cur-hp').innerText=Math.max(0, this.p.hp);
   document.getElementById('cur-mhp').innerText=this.p.baseMhp;
+  document.getElementById('stat-lv').innerText=this.p.lv;
   document.getElementById('stat-atk').innerText=this.p.baseAtk + (this.p.equip.weapon?.stat||0) + (this.p.equip.pet?.stat||0);
   document.getElementById('stat-def').innerText=this.p.baseDef + (this.p.equip.armor?.stat||0);
-  document.getElementById('ui-race').innerText=this.p.race;
+  document.getElementById('stat-agi').innerText=this.p.baseAgi;
+  document.getElementById('stat-luk').innerText=this.p.baseLuk;
+  
+  const ptInd = document.getElementById('stat-pt-indicator');
+  const ptVal = document.getElementById('stat-pt-val');
+  if(this.p.statPt > 0){ ptInd.style.display='inline'; ptVal.innerText=this.p.statPt; }
+  else{ ptInd.style.display='none'; }
+
   ['weapon','armor','pet'].forEach(k=>{
-   const el=document.getElementById('eq-'+k); el.querySelector('span').innerText=this.p.equip[k]?.name||'Empty'; el.classList.toggle('active',!!this.p.equip[k]);
+   const el=document.getElementById('eq-'+k);
+   el.querySelector('span').innerText=this.p.equip[k]?.name||'Empty';
+   el.classList.toggle('active',!!this.p.equip[k]);
   });
+  
+  if(this.p.hp <= 0) {
+   alert("전투 불능! 소지금을 일부 잃고 마을로 복귀합니다.");
+   this.p.hp = this.p.baseMhp; this.p.day++; this.p.gold = Math.floor(this.p.gold*0.8);
+   this.loc = 'village'; this.state = 'idle';
+   this.renderActions();
+  }
   this.save();
  },
 
+ checkEnding(){
+      let msg = "";
+      if(this.p.gold >= 1000000) msg = "💰 [엔딩: 황금의 왕] 대륙의 모든 부를 손에 넣었습니다.";
+      else if(this.p.lv >= 100) msg = "⚔️ [엔딩: 전설의 영웅] 역사에 기록될 무력을 증명했습니다.";
+      else msg = "🌹 [엔딩: 시간의 끝] 500일간의 긴 여정이 마침표를 찍었습니다.";
+      alert(msg); this.resetGame();
+ },
+
+ upStat(type){
+      if(this.p.statPt <= 0) return;
+      if(type==='atk') this.p.baseAtk+=2;
+      if(type==='def') this.p.baseDef+=1;
+      if(type==='agi') this.p.baseAgi+=1;
+      if(type==='luk') this.p.baseLuk+=1;
+      if(type==='hp') {this.p.baseMhp+=10; this.p.hp+=10;}
+      this.p.statPt--;
+      this.updateStatPane();
+      this.updateUI();
+ },
+
+ updateStatPane(){
+      const pane = document.getElementById('stat-upgrade-pane');
+      if(this.p.statPt > 0){
+          pane.style.display = 'block';
+          document.getElementById('pane-pt-val').innerText = this.p.statPt;
+      } else {
+          pane.style.display = 'none';
+      }
+ },
+
+ showResult(target, type) {
+    const r = Math.random() + (this.p.baseLuk * 0.01);
+    let sel = "COMMON";
+    if(r > 0.98) sel = "LEGENDARY";
+    else if(r > 0.90) sel = "EPIC";
+    else if(r > 0.75) sel = "RARE";
+    else if(r > 0.50) sel = "UNCOMMON";
+
+    const mult = {COMMON:1, UNCOMMON:1.5, RARE:2.2, EPIC:3.5, LEGENDARY:6}[sel];
+    const finalStat = Math.floor(target.stat * mult);
+    const resultObj = {...target, rarity: sel, stat: finalStat, id: Date.now()};
+    
+    if(type === 'item') this.p.inv.push(resultObj);
+    else this.p.pets.push(resultObj);
+    
+    const pop = document.getElementById('result-popup');
+    const rLabel = document.getElementById('pop-rarity');
+    rLabel.innerText = sel; rLabel.className = 'popup-rarity rarity-' + sel;
+    document.getElementById('pop-name').innerText = target.name;
+    document.getElementById('pop-desc').innerHTML = `${type==='item'?'성능':'공격력'} +${finalStat}<br>획득 성공!`;
+    pop.style.display = 'flex';
+    this.updateUI();
+ },
+
+ closePopup() { document.getElementById('result-popup').style.display = 'none'; },
+
+ /* 수정됨: if-else 구조로 이벤트 버튼 노출 보장 */
  renderActions(){
   const a=document.getElementById('action-list'); a.innerHTML='';
+  
   if(this.state === 'battle' && this.enemy) {
-   this.addBtn(`⚔️ 공격 (적 HP: ${this.enemy.hp})`, () => this.battleTurn('attack'), true);
+   this.addBtn(`⚔️ 공격 (${this.enemy.hp})`, () => this.battleTurn('attack'), true);
+   this.addBtn("🛡️ 방어 (피해 반감)", () => this.battleTurn('defend'), true);
    this.addBtn("🏃 도주 시도", () => this.battleTurn('run'));
-   return;
-  }
-  if(this.state === 'event' && this.currentEvent) {
-   this.currentEvent.options.forEach(opt => { this.addBtn(opt.text, () => { opt.run(); this.state = 'idle'; this.renderActions(); this.updateUI(); }, true); });
-   return;
-  }
-  if(this.loc === 'village') {
-   this.addBtn("⚒️ 대장간 (300G)", () => this.craft());
-   this.addBtn("🥚 펫 상점 (500G)", () => this.buyPet());
-   this.addBtn("🛌 여관에서 휴식 (100G)", () => { if(this.p.gold>=100){this.p.gold-=100; this.p.hp=this.p.baseMhp; this.log("푹 쉬어서 체력을 회복했습니다."); this.updateUI();} });
-   this.addBtn("🌲 다시 탐험하러 가기", () => { this.loc = 'ruin'; this.renderActions(); });
-  } else {
-   this.addBtn("🧭 앞으로 전진 (전투/이벤트)",()=>this.explore());
-   this.addBtn("⛺ 안전한 곳에서 휴식",()=>{ this.p.hp=Math.min(this.p.baseMhp,this.p.hp+30); this.log("체력을 30 회복했습니다."); this.updateUI(); });
-   this.addBtn("🏡 마을로 돌아가기", () => { this.loc = 'village'; this.renderActions(); });
+  } 
+  else if(this.state === 'event' && this.currentEvent) {
+   this.currentEvent.options.forEach(opt => {
+    this.addBtn(opt.text, () => { 
+        opt.run(); 
+        if(this.state==='event') this.state = 'idle'; 
+        this.renderActions(); 
+        this.updateUI(); 
+    }, true);
+   });
+  } 
+  else {
+    if(this.loc === 'village') {
+      document.getElementById('loc-tag').innerText = "안식의 마을";
+      this.addBtn("⚒️ 대장간 방문 (300G)", () => this.craft());
+      this.addBtn("🥚 펫 상점 (500G)", () => this.buyPet());
+      this.addBtn("🌲 다시 탐험하러 가기", () => { this.loc = 'ruin'; this.renderActions(); });
+    } else {
+      document.getElementById('loc-tag').innerText = "잊혀진 유적";
+      this.addBtn("🧭 유적 깊숙이 전진",()=>this.explore());
+      this.addBtn("⛺ 안전한 곳에서 휴식",()=>{ this.p.hp=Math.min(this.p.baseMhp,this.p.hp+30); this.updateUI(); this.log("체력을 30 회복했습니다."); });
+      this.addBtn("🏡 마을로 돌아가기", () => { this.loc = 'village'; this.renderActions(); });
+    }
   }
  },
 
  explore(){
   this.p.day++;
-  if(Math.random() < 0.6) this.startBattle();
+  const rand = Math.random();
+  if(rand < 0.5) this.startBattle();
   else this.triggerEvent();
   this.updateUI(); this.renderActions();
  },
 
  startBattle() {
   const m = DB.monsters[Math.floor(Math.random() * DB.monsters.length)];
-  this.enemy = { ...m }; this.state = 'battle'; this.log(`⚠️ ${this.enemy.name} 출현!`);
+  const dif = 1 + (this.p.day * 0.005); 
+  this.enemy = { 
+      name: m.name, 
+      hp: Math.floor(m.hp * dif), 
+      atk: Math.floor(m.atk * (1 + (this.p.day * 0.003))), 
+      gold: Math.floor(m.gold * dif), 
+      exp: Math.floor(m.exp * dif) 
+  };
+  this.state = 'battle';
+  if(!this.p.col.monsters.includes(m.name)) this.p.col.monsters.push(m.name);
+  this.log(`⚠️ ${this.enemy.name}이(가) 나타났습니다!`);
  },
 
  battleTurn(act) {
-  if(act === 'attack') {
-   const dmg = this.p.baseAtk + (this.p.equip.weapon?.stat || 0);
-   this.enemy.hp -= dmg; this.log(`적에게 ${dmg} 피해!`);
+  if(act === 'run') {
+   const escapeChance = 0.4 + (this.p.baseAgi * 0.02);
+   if(Math.random() < escapeChance) { 
+       this.log("성공적으로 도망쳤습니다."); 
+       this.state = 'idle'; this.enemy = null; this.renderActions(); return; 
+   }
+   this.log("도망에 실패했습니다!");
   }
-  if(this.enemy.hp > 0) {
-   const eDmg = Math.max(1, this.enemy.atk - this.p.baseDef);
-   this.p.hp -= eDmg; this.log(`반격 받음! ${eDmg} 피해.`);
-  } else {
-   this.log(`승리! ${this.enemy.gold}G 획득.`); this.p.gold += this.enemy.gold; this.state = 'idle'; this.enemy = null;
+
+  if(act === 'attack') {
+   const pAtk = this.p.baseAtk + (this.p.equip.weapon?.stat || 0) + (this.p.equip.pet?.stat || 0);
+   const crit = Math.random() < (0.05 + this.p.baseLuk * 0.01) ? 1.5 : 1;
+   const dmg = Math.floor(pAtk * (0.9 + Math.random() * 0.2) * crit);
+   this.enemy.hp -= dmg;
+   this.log(`적에게 ${dmg}${crit>1?'(크리티컬!)':''} 피해를 입혔습니다.`);
+  }
+
+  if(this.enemy && this.enemy.hp > 0) {
+   if(Math.random() < (this.p.baseAgi * 0.01)) {
+       this.log("적의 공격을 민첩하게 회피했습니다!");
+   } else {
+       let eDmg = Math.max(1, this.enemy.atk - (this.p.baseDef + (this.p.equip.armor?.stat || 0)));
+       if(act === 'defend') { eDmg = Math.floor(eDmg * 0.5); this.log("방어 자세로 피해를 줄였습니다."); }
+       this.p.hp -= eDmg;
+       this.log(`적의 공격! ${eDmg}의 피해를 입었습니다.`);
+       document.body.classList.add('hit-flash');
+       setTimeout(() => document.body.classList.remove('hit-flash'), 150);
+   }
+  }
+
+  if(this.enemy && this.enemy.hp <= 0) {
+   this.log(`승리! ${this.enemy.gold}G와 ${this.enemy.exp}Exp를 얻었습니다.`);
+   this.p.gold += this.enemy.gold;
+   this.p.exp += this.enemy.exp;
+   if(this.p.exp >= this.p.lv * 100){
+    this.p.exp -= this.p.lv * 100; this.p.lv++; this.p.statPt += 3;
+    this.log(`★ 레벨업! Lv.${this.p.lv} 달성 (스탯 +3)`);
+   }
+   this.state = 'idle'; this.enemy = null;
   }
   this.updateUI(); this.renderActions();
  },
 
  triggerEvent() {
-  this.currentEvent = { t: "낡은 보물상자를 찾았습니다.", options: [
-   { text: "상자를 연다", run: () => { this.p.gold += 150; game.log("150골드 획득!"); }},
-   { text: "지나친다", run: () => { game.log("무시하고 갑니다."); }}
-  ]};
-  this.state = 'event'; this.log(`[이벤트] ${this.currentEvent.t}`);
+  const eventPool = [
+      {
+          t: "길가에 버려진 반짝이는 상자를 발견했습니다.",
+          o: [
+              { text: "상자를 연다 (LUK 영향)", run: () => {
+                  if(Math.random() < 0.4 + (this.p.baseLuk * 0.05)) { 
+                      this.p.gold += 200; this.log("200골드를 획득했습니다!"); 
+                  } else { 
+                      this.p.hp -= 20; this.log("함정이었습니다! 체력이 20 감소합니다."); 
+                  }
+              }},
+              { text: "지나친다 (안전함)", run: () => { this.log("무시하고 길을 재촉합니다."); }}
+          ]
+      },
+      {
+          t: "수상한 약초술사가 말을 걸어옵니다.",
+          o: [
+              { text: "약을 마신다 (HP -10 / ATK +5)", run: () => { this.p.hp -= 10; this.p.baseAtk += 5; this.log("몸이 타오르는 느낌과 함께 강해졌습니다!"); }},
+              { text: "거절한다 (HP +10 획득)", run: () => { this.p.hp = Math.min(this.p.baseMhp, this.p.hp+10); this.log("술사가 건넨 사탕을 먹고 기운을 차립니다."); }}
+          ]
+      },
+      {
+          t: "고대의 비석에 정체불명의 문자가 새겨져 있습니다.",
+          o: [
+              { text: "해독한다 (연계 발생)", run: () => { this.triggerChainEvent('monument'); }},
+              { text: "무시한다 (EXP +10)", run: () => { this.p.exp += 10; this.log("지나치며 문자의 형태를 기억합니다."); }}
+          ]
+      }
+  ];
+
+  const ev = eventPool[Math.floor(Math.random() * eventPool.length)];
+  this.currentEvent = ev;
+  this.state = 'event';
+  this.log(`[이벤트] ${ev.t}`);
  },
 
- craft() { if(this.p.gold>=300){this.p.gold-=300; this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)],'item');} },
- buyPet() { if(this.p.gold>=500){this.p.gold-=500; this.showResult(DB.pets[Math.floor(Math.random()*DB.pets.length)],'pet');} },
- 
- showResult(t, type) {
-  const res = {...t, rarity:"RARE", id:Date.now()};
-  if(type==='item') this.p.inv.push(res); else this.p.pets.push(res);
-  document.getElementById('pop-name').innerText = res.name;
-  document.getElementById('result-popup').style.display='flex';
-  this.updateUI();
+ triggerChainEvent(type) {
+    if(type === 'monument') {
+        this.currentEvent = {
+            t: "[연계] 문자가 빛나며 비밀 통로가 나타났습니다!",
+            options: [
+                { text: "안으로 들어간다 (보물 탐색)", run: () => { 
+                    const gain = 300 + (this.p.baseLuk * 10);
+                    this.p.gold += gain; this.log(`숨겨진 보관소에서 ${gain}골드를 찾았습니다!`); 
+                }},
+                { text: "입구만 조사한다 (아이템 획득)", run: () => {
+                    this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item');
+                }}
+            ]
+        };
+        this.log(this.currentEvent.t);
+    }
  },
- closePopup(){ document.getElementById('result-popup').style.display='none'; },
+
+ craft() { if(this.p.gold >= 300) { this.p.gold -= 300; this.showResult(DB.items[Math.floor(Math.random() * DB.items.length)], 'item'); } else { alert("골드가 부족합니다."); } },
+ buyPet() { if(this.p.gold >= 500) { this.p.gold -= 500; this.showResult(DB.pets[Math.floor(Math.random() * DB.pets.length)], 'pet'); } else { alert("골드가 부족합니다."); } },
+
+ renderInv(){
+  this.updateStatPane();
+  const list = document.getElementById('inv-list'); list.innerHTML='';
+  this.p.inv.forEach(it=>{
+   const d=document.createElement('div');
+   const isEq = this.p.equip[it.type]?.id === it.id;
+   d.className='slot'+(isEq?' selected':'');
+   d.innerHTML=`<b class="rarity-${it.rarity}">${it.name}</b><br>${it.type==='weapon'?'ATK':'DEF'} +${it.stat}
+                <div class="sell-badge" onclick="game.sellItem(${it.id},'item',${it.stat*5},event)">판매</div>`;
+   d.onclick=()=>{ this.p.equip[it.type]=isEq?null:it; this.updateUI(); this.renderInv(); };
+   list.appendChild(d);
+  });
+ },
+
+ renderPets(){
+  const list = document.getElementById('pet-list'); list.innerHTML='';
+  this.p.pets.forEach(pt=>{
+   const d=document.createElement('div');
+   const isEq = this.p.equip.pet?.id === pt.id;
+   d.className='slot'+(isEq?' selected':'');
+   d.innerHTML=`<b class="rarity-${pt.rarity}">${pt.name}</b><br>공격력 +${pt.stat}
+                <div class="sell-badge" onclick="game.sellItem(${pt.id},'pet',${pt.stat*8},event)">판매</div>`;
+   d.onclick=()=>{ this.p.equip.pet=isEq?null:pt; this.updateUI(); this.renderPets(); };
+   list.appendChild(d);
+  });
+ },
+
+ renderCol(){
+    ['monsters', 'items', 'pets'].forEach(t => {
+        const container = document.getElementById('col-'+t); container.innerHTML = '';
+        const targetDB = t==='items'?DB.items:(t==='pets'?DB.pets:DB.monsters);
+        targetDB.forEach(obj => {
+            const isUnlocked = this.p.col[t].includes(obj.name);
+            const d = document.createElement('div');
+            d.className = 'col-item' + (isUnlocked ? ' unlocked' : '');
+            d.innerText = isUnlocked ? obj.name : '???';
+            container.appendChild(d);
+        });
+    });
+ },
+
+ sellItem(id, type, price, e) {
+  e.stopPropagation();
+  if(this.loc !== 'village') { alert("상점 기능은 마을에서만 가능합니다."); return; }
+  const target = type==='item'?'inv':'pets';
+  const idx = this.p[target].findIndex(i=>i.id===id);
+  if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;
+  if(this.p.equip.armor?.id===id) this.p.equip.armor=null;
+  if(this.p.equip.pet?.id===id) this.p.equip.pet=null;
+  this.p[target].splice(idx,1); this.p.gold+=price;
+  this.updateUI(); type==='item'?this.renderInv():this.renderPets();
+ },
 
  tab(t,el){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active');
-  ['log','inv','pet'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  ['log','inv','pet','col'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
   document.getElementById('pane-'+t).style.display='flex';
-  if(t==='inv') this.renderInv(); if(t==='pet') this.renderPets();
- },
-
- renderInv() {
-  const list = document.getElementById('inv-list'); list.innerHTML='';
-  this.p.inv.forEach(it => {
-   const d = document.createElement('div'); d.className='slot' + (this.p.equip[it.type]?.id === it.id ? ' selected' : '');
-   d.innerHTML=`<b>${it.name}</b><br>+${it.stat} (장착)`;
-   d.onclick=()=>{ this.p.equip[it.type]=it; this.updateUI(); this.renderInv(); };
-   list.appendChild(d);
-  });
- },
-
- renderPets() {
-  const list = document.getElementById('pet-list'); list.innerHTML='';
-  this.p.pets.forEach(pt => {
-   const d = document.createElement('div'); d.className='slot' + (this.p.equip.pet?.id === pt.id ? ' selected' : '');
-   d.innerHTML=`<b>${pt.name}</b><br>+${pt.stat} (동행)`;
-   d.onclick=()=>{ this.p.equip.pet=pt; this.updateUI(); this.renderPets(); };
-   list.appendChild(d);
-  });
+  if(t==='inv')this.renderInv();
+  if(t==='pet')this.renderPets();
+  if(t==='col')this.renderCol();
  },
 
  addBtn(t,f,s=false){
-  const b=document.createElement('div'); b.className='btn'+(s?' special':''); b.innerText=t; b.onclick=f;
+  const b=document.createElement('div');
+  b.className='btn'+(s?' special':''); b.innerText=t; b.onclick=f;
   document.getElementById('action-list').appendChild(b);
  },
 
- start(race) {
-  this.p.race = race;
+ start() {
   document.getElementById('start-screen').style.display='none';
   document.getElementById('game-ui').style.display='flex';
-  this.updateUI(); this.renderActions();
+  this.load(); this.updateUI(); this.renderActions();
  }
 };
 </script>
