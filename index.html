@@ -61,9 +61,10 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .popup-desc{color:#888;margin-bottom:30px;font-size:14px;line-height:1.5}
 .popup-btn{background:var(--btn-bg);border:1px solid var(--border);color:white;padding:15px;width:100%;border-radius:12px;font-weight:bold}
 
-footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom)+25px);flex-shrink:0}
-#action-list{display:flex; flex-direction:column; gap:8px;}
-.btn{background:var(--btn-bg);padding:16px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s;}
+/* 하단 버튼 영역 수정: 여백 최소화 및 버튼 크기 조정 */
+footer{background:var(--panel);border-top:1px solid var(--border);padding:10px 15px calc(var(--safe-bottom) + 10px);flex-shrink:0}
+#action-list{display:flex; flex-direction:column; gap:6px;}
+.btn{background:var(--btn-bg);padding:12px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s; font-size: 14px;}
 .btn:active{transform:scale(0.98); opacity: 0.8;}
 .btn.special{border-color:var(--accent);color:var(--accent)}
 
