@@ -566,7 +566,7 @@ const game={
   this.currentEvent = ev;
   this.state = 'event';
   this.log(`[이벤트] ${ev.t}`);
-  this.renderActions(); // 이 줄을 추가해야 버튼이 화면에 그려집니다!
+  this.renderActions(); //
  },
  },
 
@@ -657,18 +657,22 @@ const game={
  if(t==='col')this.renderCol();
  },
 
- addBtn(t,f,s=false){
- const b=document.createElement('div');
- b.className='btn'+(s?' special':''); b.innerText=t; b.onclick=f;
- document.getElementById('action-list').appendChild(b);
- },
+  addBtn(t, f, s = false) {
+  const b = document.createElement('div');
+  b.className = 'btn' + (s ? ' special' : '');
+  b.innerText = t;
+  b.onclick = f;
+  document.getElementById('action-list').appendChild(b);
+ }, //
 
  start() {
- document.getElementById('start-screen').style.display='none';
- document.getElementById('game-ui').style.display='flex';
- this.load(); this.updateUI(); this.renderActions();
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('game-ui').style.display = 'flex';
+  this.load();
+  this.updateUI();
+  this.renderActions();
  }
-};
+}; // <- game
 </script>
 </body>
 </html>
