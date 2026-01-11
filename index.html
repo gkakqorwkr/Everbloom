@@ -62,7 +62,7 @@ header{padding:calc(var(--safe-top)+10px) 20px 10px;background:var(--panel);bord
 .stat-row { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; }
 .stat-up-btn { background: var(--accent); color: #000; border: none; padding: 2px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
-footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 20px); display:flex; flex-direction:column;}
+footer{background:var(--panel);border-top:1px solid var(--border);padding:15px 15px calc(var(--safe-bottom) + 5px); display:flex; flex-direction:column;}
 #action-list{display:flex; flex-direction:column; gap:8px;}
 .btn{background:var(--btn-bg);padding:14px;border-radius:10px;border:1px solid #444;font-weight:bold;text-align:center;cursor:pointer; transition: 0.1s; font-size: 15px;}
 .btn:active{transform:scale(0.98); opacity: 0.8;}
@@ -566,6 +566,7 @@ const game={
   this.currentEvent = ev;
   this.state = 'event';
   this.log(`[이벤트] ${ev.t}`);
+  this.renderActions(); // 이 줄을 추가해야 버튼이 화면에 그려집니다!
  },
 
  triggerChainEvent(type) {
