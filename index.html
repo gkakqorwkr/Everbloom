@@ -566,113 +566,112 @@ const game={
   this.currentEvent = ev;
   this.state = 'event';
   this.log(`[이벤트] ${ev.t}`);
-  this.renderActions(); //
- },
- },
-
- triggerChainEvent(type) {
-    if(type === 'monument') {
-        this.currentEvent = {
-            t: "[연계] 문자가 빛나며 비밀 통로가 나타났습니다!",
-            options: [
-                { text: "안으로 들어간다 (보물 탐색)", run: () => { 
-                    const gain = 300 + (this.p.baseLuk * 10);
-                    this.p.gold += gain; this.log(`숨겨진 보관소에서 ${gain}골드를 찾았습니다!`); 
-                }},
-                { text: "입구만 조사한다 (아이템 획득)", run: () => {
-                    this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item');
-                }},
-                { text: "입구를 봉쇄한다 (경험치)", run: () => {
-                    this.p.exp += 200; this.log("위험을 사전에 차단했습니다. EXP +200");
-                }}
-            ]
-        };
-        this.log(this.currentEvent.t);
-    }
+  this.renderActions(); 
  },
 
- craft() { if(this.p.gold >= 300) { this.p.gold -= 300; this.showResult(DB.items[Math.floor(Math.random() * DB.items.length)], 'item'); } else { alert("골드가 부족합니다."); } },
- buyPet() { if(this.p.gold >= 500) { this.p.gold -= 500; this.showResult(DB.pets[Math.floor(Math.random() * DB.pets.length)], 'pet'); } else { alert("골드가 부족합니다."); } },
+ triggerChainEvent(type) {  
+    if(type === 'monument') {  
+        this.currentEvent = {  
+            t: "[연계] 문자가 빛나며 비밀 통로가 나타났습니다!",  
+            options: [  
+                { text: "안으로 들어간다 (보물 탐색)", run: () => {   
+                    const gain = 300 + (this.p.baseLuk * 10);  
+                    this.p.gold += gain; this.log(`숨겨진 보관소에서 ${gain}골드를 찾았습니다!`);   
+                }},  
+                { text: "입구만 조사한다 (아이템 획득)", run: () => {  
+                    this.showResult(DB.items[Math.floor(Math.random()*DB.items.length)], 'item');  
+                }},  
+                { text: "입구를 봉쇄한다 (경험치)", run: () => {  
+                    this.p.exp += 200; this.log("위험을 사전에 차단했습니다. EXP +200");  
+                }}  
+            ]  
+        };  
+        this.log(this.currentEvent.t);  
+    }  
+ },  
+  
+ craft() { if(this.p.gold >= 300) { this.p.gold -= 300; this.showResult(DB.items[Math.floor(Math.random() * DB.items.length)], 'item'); } else { alert("골드가 부족합니다."); } },  
+ buyPet() { if(this.p.gold >= 500) { this.p.gold -= 500; this.showResult(DB.pets[Math.floor(Math.random() * DB.pets.length)], 'pet'); } else { alert("골드가 부족합니다."); } },  
+  
+ renderInv(){  
+  this.updateStatPane();  
+  const list = document.getElementById('inv-list'); list.innerHTML='';  
+  this.p.inv.forEach(it=>{  
+   const d=document.createElement('div');  
+   const isEq = this.p.equip[it.type]?.id === it.id;  
+   d.className='slot'+(isEq?' selected':'');  
+   d.innerHTML=`<b class="rarity-${it.rarity}">${it.name}</b><br>${it.type==='weapon'?'ATK':'DEF'} +${it.stat}  
+                <div class="sell-badge" onclick="game.sellItem(${it.id},'item',${it.stat*5},event)">판매</div>`;  
+   d.onclick=()=>{ this.p.equip[it.type]=isEq?null:it; this.updateUI(); this.renderInv(); };  
+   list.appendChild(d);  
+  });  
+ },  
+  
+ renderPets(){  
+  const list = document.getElementById('pet-list'); list.innerHTML='';  
+  this.p.pets.forEach(pt=>{  
+   const d=document.createElement('div');  
+   const isEq = this.p.equip.pet?.id === pt.id;  
+   d.className='slot'+(isEq?' selected':'');  
+   d.innerHTML=`<b class="rarity-${pt.rarity}">${pt.name}</b><br>공격력 +${pt.stat}  
+                <div class="sell-badge" onclick="game.sellItem(${pt.id},'pet',${pt.stat*8},event)">판매</div>`;  
+   d.onclick=()=>{ this.p.equip.pet=isEq?null:pt; this.updateUI(); this.renderPets(); };  
+   list.appendChild(d);  
+  });  
+ },  
+  
+ renderCol(){  
+    ['monsters', 'items', 'pets'].forEach(t => {  
+        const container = document.getElementById('col-'+t); container.innerHTML = '';  
+        const targetDB = t==='items'?DB.items:(t==='pets'?DB.pets:DB.monsters);  
+        targetDB.forEach(obj => {  
+            const isUnlocked = this.p.col[t].includes(obj.name);  
+            const d = document.createElement('div');  
+            d.className = 'col-item' + (isUnlocked ? ' unlocked' : '');  
+            d.innerText = isUnlocked ? obj.name : '???';  
+            container.appendChild(d);  
+        });  
+    });  
+ },  
+  
+ sellItem(id, type, price, e) {  
+ e.stopPropagation();  
+ if(this.loc !== 'village') { alert("상점 기능은 마을에서만 가능합니다."); return; }  
+ const target = type==='item'?'inv':'pets';  
+ const idx = this.p[target].findIndex(i=>i.id===id);  
+ if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;  
+ if(this.p.equip.armor?.id===id) this.p.equip.armor=null;  
+ if(this.p.equip.pet?.id===id) this.p.equip.pet=null;  
+ this.p[target].splice(idx,1); this.p.gold+=price;  
+ this.updateUI(); type==='item'?this.renderInv():this.renderPets();  
+ },  
+  
+ tab(t,el){  
+ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));  
+ el.classList.add('active');  
+ ['log','inv','pet','col'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });  
+ document.getElementById('pane-'+t).style.display='flex';  
+ if(t==='inv')this.renderInv();  
+ if(t==='pet')this.renderPets();  
+ if(t==='col')this.renderCol();  
+ },  
+  
+ addBtn(t, f, s = false) {  
+  const b = document.createElement('div');  
+  b.className = 'btn' + (s ? ' special' : '');  
+  b.innerText = t;  
+  b.onclick = f;  
+  document.getElementById('action-list').appendChild(b);  
+ }, 
 
- renderInv(){
-  this.updateStatPane();
-  const list = document.getElementById('inv-list'); list.innerHTML='';
-  this.p.inv.forEach(it=>{
-   const d=document.createElement('div');
-   const isEq = this.p.equip[it.type]?.id === it.id;
-   d.className='slot'+(isEq?' selected':'');
-   d.innerHTML=`<b class="rarity-${it.rarity}">${it.name}</b><br>${it.type==='weapon'?'ATK':'DEF'} +${it.stat}
-                <div class="sell-badge" onclick="game.sellItem(${it.id},'item',${it.stat*5},event)">판매</div>`;
-   d.onclick=()=>{ this.p.equip[it.type]=isEq?null:it; this.updateUI(); this.renderInv(); };
-   list.appendChild(d);
-  });
- },
-
- renderPets(){
-  const list = document.getElementById('pet-list'); list.innerHTML='';
-  this.p.pets.forEach(pt=>{
-   const d=document.createElement('div');
-   const isEq = this.p.equip.pet?.id === pt.id;
-   d.className='slot'+(isEq?' selected':'');
-   d.innerHTML=`<b class="rarity-${pt.rarity}">${pt.name}</b><br>공격력 +${pt.stat}
-                <div class="sell-badge" onclick="game.sellItem(${pt.id},'pet',${pt.stat*8},event)">판매</div>`;
-   d.onclick=()=>{ this.p.equip.pet=isEq?null:pt; this.updateUI(); this.renderPets(); };
-   list.appendChild(d);
-  });
- },
-
- renderCol(){
-    ['monsters', 'items', 'pets'].forEach(t => {
-        const container = document.getElementById('col-'+t); container.innerHTML = '';
-        const targetDB = t==='items'?DB.items:(t==='pets'?DB.pets:DB.monsters);
-        targetDB.forEach(obj => {
-            const isUnlocked = this.p.col[t].includes(obj.name);
-            const d = document.createElement('div');
-            d.className = 'col-item' + (isUnlocked ? ' unlocked' : '');
-            d.innerText = isUnlocked ? obj.name : '???';
-            container.appendChild(d);
-        });
-    });
- },
-
- sellItem(id, type, price, e) {
- e.stopPropagation();
- if(this.loc !== 'village') { alert("상점 기능은 마을에서만 가능합니다."); return; }
- const target = type==='item'?'inv':'pets';
- const idx = this.p[target].findIndex(i=>i.id===id);
- if(this.p.equip.weapon?.id===id) this.p.equip.weapon=null;
- if(this.p.equip.armor?.id===id) this.p.equip.armor=null;
- if(this.p.equip.pet?.id===id) this.p.equip.pet=null;
- this.p[target].splice(idx,1); this.p.gold+=price;
- this.updateUI(); type==='item'?this.renderInv():this.renderPets();
- },
-
- tab(t,el){
- document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
- el.classList.add('active');
- ['log','inv','pet','col'].forEach(p=>{ document.getElementById('pane-'+p).style.display='none'; });
- document.getElementById('pane-'+t).style.display='flex';
- if(t==='inv')this.renderInv();
- if(t==='pet')this.renderPets();
- if(t==='col')this.renderCol();
- },
-
-  addBtn(t, f, s = false) {
-  const b = document.createElement('div');
-  b.className = 'btn' + (s ? ' special' : '');
-  b.innerText = t;
-  b.onclick = f;
-  document.getElementById('action-list').appendChild(b);
- }, //
-
- start() {
-  document.getElementById('start-screen').style.display = 'none';
-  document.getElementById('game-ui').style.display = 'flex';
-  this.load();
-  this.updateUI();
-  this.renderActions();
- }
+ start() {  
+  document.getElementById('start-screen').style.display = 'none';  
+  document.getElementById('game-ui').style.display = 'flex';  
+  this.load();  
+  this.updateUI();  
+  this.renderActions();  
+ }  
 }; //
-</script>
-</body>
+</script>  
+</body>  
 </html>
